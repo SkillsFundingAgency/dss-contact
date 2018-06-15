@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NCS.CDS.Contact.Models;
+using NCS.DSS.Contact.Models;
 
-namespace NCS.CDS.Contact.DeleteContactHttpTrigger
+namespace NCS.DSS.Contact.DeleteContactHttpTrigger
 {
     class DeleteContactByIdHttpTriggerService
     {

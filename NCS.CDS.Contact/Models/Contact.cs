@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
-namespace NCS.CDS.Contact.Models
+namespace NCS.DSS.Contact.Models
 {
     public class Contact
     {

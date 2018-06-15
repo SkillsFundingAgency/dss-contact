@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.GetContactByIdHttpTrigger
+namespace NCS.DSS.Contact.GetContactByIdHttpTrigger
 {
     public static class GetContactByIdHttpTrigger
     {
-        [FunctionName("GetContactById")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId:guid}/contacts/{contactid:guid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        [FunctionName("GETByID")]
+        [ResponseType(typeof(Models.Contact))]
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
         {
             log.Info("C# HTTP trigger function GetContactById processed a request.");
 

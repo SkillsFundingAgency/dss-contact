@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.DeleteContactHttpTrigger
+namespace NCS.DSS.Contact.DeleteContactHttpTrigger
 {
     public static class DeleteContactHttpTrigger
     {
-        [FunctionName("DeleteContact")]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "customers/{customerId:guid}/contacts/{contactid:guid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        [FunctionName("DELETE")]
+        [ResponseType(typeof(Models.Contact))]
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
         {
             log.Info("C# HTTP trigger function DeleteContact processed a request.");
 

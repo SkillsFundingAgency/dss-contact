@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.PatchContactHttpTrigger
+namespace NCS.DSS.Contact.PatchContactHttpTrigger
 {
     public static class PatchContactHttpTrigger
     {
-        [FunctionName("PatchContact")]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "Patch", Route = "customers/{customerId:guid}/contacts/{contactid:guid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        [FunctionName("PATCH")]
+        [ResponseType(typeof(Models.Contact))]
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "Patch", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
         {
             log.Info("C# HTTP trigger function PatchContact processed a request.");
 

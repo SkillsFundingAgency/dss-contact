@@ -5,12 +5,14 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.GetContactHttpTrigger
+namespace NCS.DSS.Contact.GetContactHttpTrigger
 {
     public static class GetContactHttpTrigger
     {
-        [FunctionName("GetContact")]
+        [FunctionName("GET")]
+        [ResponseType(typeof(Models.Contact))]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/contacts/")]HttpRequestMessage req, TraceWriter log)
         {
             log.Info("C# HTTP trigger function GetContact processed a request.");

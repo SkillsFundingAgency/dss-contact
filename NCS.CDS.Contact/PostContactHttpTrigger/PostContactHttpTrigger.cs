@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.PostContactByIdHttpTrigger
+namespace NCS.DSS.Contact.PostContactByIdHttpTrigger
 {
     public static class PostContactByIdHttpTrigger
     {
-        [FunctionName("PostContact")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "Post", Route = "customers/{customerId:guid}/contacts/{contactid:guid}")]HttpRequestMessage req, TraceWriter log)
+        [FunctionName("POST")]
+        [ResponseType(typeof(Models.Contact))]
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "Post", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log)
         {
             log.Info("C# HTTP trigger function PostContact processed a request.");
 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NCS.CDS.Contact.Models;
+using NCS.DSS.Contact.Models;
 
-namespace NCS.CDS.Contact.GetContactHttpTrigger
+namespace NCS.DSS.Contact.GetContactHttpTrigger
 {
     class GetContactHttpTriggerService
     {

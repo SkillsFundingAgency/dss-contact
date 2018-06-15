@@ -6,13 +6,15 @@ using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using System.Web.Http.Description;
 
-namespace NCS.CDS.Contact.PutContactHttpTrigger
+namespace NCS.DSS.Contact.PutContactHttpTrigger
 {
     public static class PutContactHttpTrigger
     {
         [FunctionName("PutContact")]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "Put", Route = "customers/{customerId:guid}/contacts/{contactid:guid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        [ResponseType(typeof(Models.Contact))]
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "Put", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
         {
             log.Info("C# HTTP trigger function PutContact processed a request.");
 
