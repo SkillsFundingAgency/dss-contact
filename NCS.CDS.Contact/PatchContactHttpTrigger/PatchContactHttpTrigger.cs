@@ -14,7 +14,7 @@ namespace NCS.DSS.Contact.PatchContactHttpTrigger
     {
         [FunctionName("PATCH")]
         [ResponseType(typeof(Models.Contact))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "Patch", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PatchContact processed a request.");
 

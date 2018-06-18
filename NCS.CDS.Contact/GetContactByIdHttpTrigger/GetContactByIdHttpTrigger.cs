@@ -14,7 +14,7 @@ namespace NCS.DSS.Contact.GetContactByIdHttpTrigger
     {
         [FunctionName("GETByID")]
         [ResponseType(typeof(Models.Contact))]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function GetContactById processed a request.");
 

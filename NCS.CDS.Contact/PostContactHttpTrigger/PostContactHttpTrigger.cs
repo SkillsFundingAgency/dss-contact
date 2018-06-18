@@ -14,18 +14,18 @@ namespace NCS.DSS.Contact.PostContactByIdHttpTrigger
     {
         [FunctionName("POST")]
         [ResponseType(typeof(Models.Contact))]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "Post", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PostContact processed a request.");
 
-            //if (!Guid.TryParse(contactid, out var contactGuid))
-            //{
-            //    return new HttpResponseMessage(HttpStatusCode.BadRequest)
-            //    {
-            //        Content = new StringContent(JsonConvert.SerializeObject(contactid),
-            //            System.Text.Encoding.UTF8, "application/json")
-            //    };
-            //}
+            if (!Guid.TryParse(contactid, out var contactGuid))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(contactid),
+                        System.Text.Encoding.UTF8, "application/json")
+                };
+            }
 
             var values = "Successfully created new contact details with Id : " + Guid.NewGuid();
 

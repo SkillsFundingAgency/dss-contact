@@ -14,7 +14,7 @@ namespace NCS.DSS.Contact.DeleteContactHttpTrigger
     {
         [FunctionName("DELETE")]
         [ResponseType(typeof(Models.Contact))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string contactid)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function DeleteContact processed a request.");
 
