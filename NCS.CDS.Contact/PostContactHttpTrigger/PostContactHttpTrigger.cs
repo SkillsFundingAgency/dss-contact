@@ -7,14 +7,18 @@ using System.Net;
 using System.Threading.Tasks;
 using System;
 using System.Web.Http.Description;
+using NCS.DSS.ContactDetails.Annotations;
 
-namespace NCS.DSS.Contact.PostContactByIdHttpTrigger
+namespace NCS.DSS.ContactDetails.PostContactByIdHttpTrigger
 {
     public static class PostContactByIdHttpTrigger
     {
         [FunctionName("POST")]
-        [ResponseType(typeof(Models.Contact))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.Created, Description = "Contact Details Added", ShowSchema = true)]
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Unable to Add Contact Details", ShowSchema = false)]
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Forbidden", ShowSchema = false)]
+        [ResponseType(typeof(Models.ContactDetails))]
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PostContact processed a request.");
 
@@ -27,7 +31,7 @@ namespace NCS.DSS.Contact.PostContactByIdHttpTrigger
                 };
             }
 
-            var values = "Successfully created new contact details with Id : " + Guid.NewGuid();
+            var values = "Successfully created new ContactDetails details with Id : " + Guid.NewGuid();
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {

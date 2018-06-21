@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NCS.DSS.Contact.Models;
+using NCS.DSS.ContactDetails.Models;
 
-namespace NCS.DSS.Contact.PatchContactHttpTrigger
+namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
 {
     class PatchContactHttpTriggerService
     {

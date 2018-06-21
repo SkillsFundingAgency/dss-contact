@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using NCS.DSS.ContactDetails.ReferenceData;
 
-namespace NCS.DSS.Contact.Models
+namespace NCS.DSS.ContactDetails.Models
 {
-    public class Contact
+    public class ContactDetails
     {
         public Guid ContactID { get; set; }
 
-        public int PreferredContactMethodID { get; set; }
+        public PreferredContactMethod PreferredContactMethodID { get; set; }
 
+        [RegularExpression(@"^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$")]
         [StringLength(20)]
         public string MobileNumber { get; set; }
 
@@ -22,6 +24,7 @@ namespace NCS.DSS.Contact.Models
         [StringLength(20)]
         public string AlternativeNumber { get; set; }
 
+        [RegularExpression(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$")]
         [StringLength(255)]
         public string EmailAddress { get; set; }
 

@@ -7,14 +7,18 @@ using System.Net;
 using System.Threading.Tasks;
 using System;
 using System.Web.Http.Description;
+using NCS.DSS.ContactDetails.Annotations;
 
-namespace NCS.DSS.Contact.PatchContactHttpTrigger
+namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
 {
     public static class PatchContactHttpTrigger
     {
         [FunctionName("PATCH")]
-        [ResponseType(typeof(Models.Contact))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/contacts/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.Created, Description = "Contact Details Updated", ShowSchema = true)]
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Unable to Update Contact Details", ShowSchema = false)]
+        [ContactDetailsResponse(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Forbidden", ShowSchema = false)]
+        [ResponseType(typeof(Models.ContactDetails))]
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PatchContact processed a request.");
 
@@ -27,7 +31,7 @@ namespace NCS.DSS.Contact.PatchContactHttpTrigger
                 };
             }
 
-            var values = "Sucessfully Updated contact record with id : " + contactid;
+            var values = "Sucessfully Updated ContactDetails record with id : " + contactid;
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
