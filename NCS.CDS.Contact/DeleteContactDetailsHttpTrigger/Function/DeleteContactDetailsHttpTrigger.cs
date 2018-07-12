@@ -11,7 +11,7 @@ using NCS.DSS.ContactDetails.Annotations;
 
 namespace NCS.DSS.ContactDetails.DeleteContactHttpTrigger
 {
-    public static class DeleteContactHttpTrigger
+    public static class DeleteContactDetailsHttpTrigger
     {
         [FunctionName("DELETE")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Deleted", ShowSchema = true)]
@@ -22,24 +22,7 @@ namespace NCS.DSS.ContactDetails.DeleteContactHttpTrigger
         [ResponseType(typeof(Models.ContactDetails))]
         public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
-            log.Info("C# HTTP trigger function DeleteContact processed a request.");
-
-            if (!Guid.TryParse(contactid, out var contactGuid))
-            {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent(JsonConvert.SerializeObject(contactid),
-                        System.Text.Encoding.UTF8, "application/json")
-                };
-            }
-
-            var values = "Sucessfully deleted ContactDetails record with id : " + contactid;
-
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(JsonConvert.SerializeObject(values),
-                    System.Text.Encoding.UTF8, "application/json")
-            };
+            return null;
         }
 
     }
