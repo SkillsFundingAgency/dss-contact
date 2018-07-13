@@ -16,12 +16,13 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using NCS.DSS.ContactDetails.Annotations;
+using NCS.DSS.ContactDetails.Ioc;
 
-namespace NCS.DSS.ContactDetails.APIDefinition
+namespace NCS.DSS.Address.APIDefinition
 {
     public static class ApiDefinition
     {
-        public const string APITitle = "Contacts";
+        public const string APITitle = "Contact";
         public const string APIDefinitionName = "API-Definition";
         public const string APIDefRoute = APITitle + "/" + APIDefinitionName;
         public const string APIDescription = "Basic details of a National Careers Service " + APITitle + " Resource";
@@ -249,13 +250,13 @@ namespace NCS.DSS.ContactDetails.APIDefinition
 
             foreach (var response in responseCodes)
             {
-                var contactdetailsResponse = (Response)response;
+                var contactDetailsResponse = (Response)response;
 
-                if (!contactdetailsResponse.ShowSchema)
+                if (!contactDetailsResponse.ShowSchema)
                     responseDef = new ExpandoObject();
 
-                responseDef.description = contactdetailsResponse.Description;
-                AddToExpando(responses, contactdetailsResponse.HttpStatusCode.ToString(), responseDef);
+                responseDef.description = contactDetailsResponse.Description;
+                AddToExpando(responses, contactDetailsResponse.HttpStatusCode.ToString(), responseDef);
             }
 
             return responses;
@@ -269,9 +270,9 @@ namespace NCS.DSS.ContactDetails.APIDefinition
                 if (parameter.ParameterType == typeof(HttpRequestMessage)) continue;
                 if (parameter.ParameterType == typeof(TraceWriter)) continue;
                 if (parameter.ParameterType == typeof(Microsoft.Extensions.Logging.ILogger)) continue;
+                if (parameter.GetCustomAttributes().Any(attr => attr is InjectAttribute)) continue;
 
                 bool hasUriAttribute = parameter.GetCustomAttributes().Any(attr => attr is FromUriAttribute);
-
 
                 if (route.Contains('{' + parameter.Name))
                 {
@@ -477,7 +478,6 @@ namespace NCS.DSS.ContactDetails.APIDefinition
                 }
 
                 opParam.@enum = enumValues.ToArray();
-
             }
             else if (definitions != null)
             {
