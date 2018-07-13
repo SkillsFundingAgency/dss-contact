@@ -46,7 +46,7 @@ namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
 
             try
             {
-                contactdetailsPatchRequest = await httpRequestMessageHelper.GetcontactDetailsFromRequest<Models.ContactDetailsPatch>(req);
+                contactdetailsPatchRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(req);
             }
             catch (JsonSerializationException ex)
             {

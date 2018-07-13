@@ -9,7 +9,8 @@ namespace NCS.DSS.ContactDetails.Cosmos.Provider
     public interface IDocumentDBProvider
     {
         bool DoesCustomerResourceExist(Guid customerId);
-        Task<Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactDetailsId);
-        
+        Task<ResourceResponse<Document>> CreateContactDetailsAsync(Models.ContactDetails contactDetails);
+        Task<ResourceResponse<Document>> UpdateContactDetailsAsync(Models.ContactDetails contactDetails);
+
     }
 }

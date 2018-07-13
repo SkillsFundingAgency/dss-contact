@@ -43,7 +43,7 @@ namespace NCS.DSS.ContactDetails.PostContactByIdHttpTrigger
 
             try
             {
-                contactdetailsRequest = await httpRequestMessageHelper.GetcontactDetailsFromRequest<Models.ContactDetails>(req);
+                contactdetailsRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(req);
             }
             catch (JsonSerializationException ex)
             {

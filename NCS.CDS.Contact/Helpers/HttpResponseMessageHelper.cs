@@ -80,6 +80,15 @@ namespace NCS.DSS.ContactDetails.Helpers
             };
         }
 
+        public static HttpResponseMessage BadRequest()
+        {
+            return new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject("Customer not created!"),
+                    Encoding.UTF8, "application/json")
+            };
+        }
+
         #endregion
 
         #region UnprocessableEntity(422)
@@ -102,7 +111,7 @@ namespace NCS.DSS.ContactDetails.Helpers
             };
         }
 
-        public static HttpResponseMessage UnprocessableEntity(Exception requestException)
+        public static HttpResponseMessage UnprocessableEntity(JsonSerializationException requestException)
         {
             return new HttpResponseMessage((HttpStatusCode)422)
             {

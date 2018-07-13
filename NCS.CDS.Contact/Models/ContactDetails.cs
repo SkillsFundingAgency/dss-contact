@@ -13,6 +13,7 @@ namespace NCS.DSS.ContactDetails.Models
     {
         [Display(Description = "Unique identifier for a contact record")]
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
+        [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
         public Guid? ContactID { get; set; }
 
         [Required]
