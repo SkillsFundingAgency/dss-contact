@@ -20,7 +20,7 @@ namespace NCS.DSS.ContactDetails.PutContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "Unauthorised", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PutContact processed a request.");
 
