@@ -20,24 +20,24 @@ namespace NCS.DSS.ContactDetails.PutContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "Unauthorised", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactId}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
         {
             log.Info("C# HTTP trigger function PutContact processed a request.");
 
-            //if (!Guid.TryParse(contactid, out var contactGuid))
-            //{
-            //    return new HttpResponseMessage(HttpStatusCode.BadRequest)
-            //    {
-            //        Content = new StringContent(JsonConvert.SerializeObject(contactid),
-            //            System.Text.Encoding.UTF8, "application/json")
-            //    };
-            //}
+            if (!Guid.TryParse(contactid, out var contactGuid))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(contactid),
+                        System.Text.Encoding.UTF8, "application/json")
+                };
+            }
 
-            //var values = "Sucessfully Replaced ContactDetails record with id : " + contactid;
+            var values = "Sucessfully Replaced ContactDetails record with id : " + contactid;
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(null),
+                Content = new StringContent(JsonConvert.SerializeObject(values),
                     System.Text.Encoding.UTF8, "application/json")
             };
         }
