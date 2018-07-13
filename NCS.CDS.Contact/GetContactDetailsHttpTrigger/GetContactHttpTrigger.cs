@@ -19,6 +19,7 @@ namespace NCS.DSS.ContactDetails.GetContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
+        [Disable]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/ContactDetails/")]HttpRequestMessage req, TraceWriter log)
         {
             log.Info("C# HTTP trigger function GetContact processed a request.");

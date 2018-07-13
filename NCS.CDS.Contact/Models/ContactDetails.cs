@@ -44,7 +44,7 @@ namespace NCS.DSS.ContactDetails.Models
         [Example(Description = "2018-06-21T17:45:00")]
         public DateTime LastModifiedDate { get; set; }
 
-        [Example(Description = "12345678")]
+        [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
         public Guid LastModifiedTouchpointID { get; set; }
 
 
