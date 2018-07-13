@@ -24,7 +24,7 @@ namespace NCS.DSS.ContactDetails.Models
 
         [RegularExpression(@"^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$")]
         [StringLength(20)]
-        [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
+        [Example(Description = "0777 777777")]
         public string MobileNumber { get; set; }
 
         [StringLength(20)]
@@ -43,7 +43,7 @@ namespace NCS.DSS.ContactDetails.Models
         [Example(Description = "2018-06-21T17:45:00")]
         public DateTime LastModifiedDate { get; set; }
 
-        [Example(Description = "12345678")]
+        [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid LastModifiedTouchpointID { get; set; }
 
     }
