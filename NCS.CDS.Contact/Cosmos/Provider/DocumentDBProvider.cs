@@ -68,30 +68,6 @@ namespace NCS.DSS.ContactDetails.Cosmos.Provider
         }
 
 
-        //public async Task<List<Models.ContactDetails>> GetcontactDetailsForCustomerAsync(Guid customerId)
-        //{
-        //    var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
-
-        //    var client = _databaseClient.CreateDocumentClient();
-
-        //    if (client == null)
-        //        return null;
-
-        //    var querycontactDetailses = client.CreateDocumentQuery<Models.ContactDetails>(collectionUri)
-        //        .Where(so => so.CustomerId == customerId).AsDocumentQuery();
-
-        //    var contactDetailses = new List<Models.ContactDetails>();
-
-        //    while (querycontactDetailses.HasMoreResults)
-        //    {
-        //        var response = await querycontactDetailses.ExecuteNextAsync<Models.ContactDetails>();
-        //        contactDetailses.AddRange(response);
-        //    }
-
-        //    return contactDetailses.Any() ? contactDetailses : null;
-
-        //}
-
         public async Task<ResourceResponse<Document>> CreateContactDetailsAsync(Models.ContactDetails contactDetails)
         {
 

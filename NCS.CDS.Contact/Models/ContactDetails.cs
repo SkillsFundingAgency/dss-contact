@@ -24,7 +24,6 @@ namespace NCS.DSS.ContactDetails.Models
         [Example(Description = "3")]
         public PreferredContactMethod PreferredContactMethodID { get; set; }
 
-        [RegularExpression(@"^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$")]
         [StringLength(20)]
         [Example(Description = "0777 435 635")]
         public string MobileNumber { get; set; }
