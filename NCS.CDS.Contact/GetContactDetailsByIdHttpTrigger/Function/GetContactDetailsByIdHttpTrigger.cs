@@ -12,6 +12,7 @@ using NCS.DSS.ContactDetails.Ioc;
 using NCS.DSS.ContactDetails.Cosmos.Helper;
 using NCS.DSS.ContactDetails.GetContactDetailsByIdHttpTrigger.Service;
 using NCS.DSS.ContactDetails.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.ContactDetails.GetContactByIdHttpTrigger
 {
@@ -24,11 +25,11 @@ namespace NCS.DSS.ContactDetails.GetContactByIdHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid,
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, string customerId, string contactid,
             [Inject]IResourceHelper resourceHelper,
             [Inject]IGetContactDetailsByIdHttpTriggerService getContactDetailsByIdService)
         {
-            log.Info("C# HTTP trigger function processed a request.");
+            log.LogInformation("GetContactByIdHttpTrigger method was executed at " + DateTime.Now);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
                 return HttpResponseMessageHelper.BadRequest(customerGuid);

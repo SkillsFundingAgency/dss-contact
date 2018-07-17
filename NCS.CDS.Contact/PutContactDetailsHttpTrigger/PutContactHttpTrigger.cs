@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System;
 using System.Web.Http.Description;
 using NCS.DSS.ContactDetails.Annotations;
+using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.ContactDetails.PutContactHttpTrigger
 {
@@ -20,9 +21,9 @@ namespace NCS.DSS.ContactDetails.PutContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "Unauthorised", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, string customerId, string contactid)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, string customerId, string contactid)
         {
-            log.Info("C# HTTP trigger function PutContact processed a request.");
+            log.LogInformation("PutContactHttpTrigger method was executed at " + DateTime.Now);
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {

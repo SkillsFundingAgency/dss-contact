@@ -37,7 +37,7 @@ namespace NCS.DSS.ContactDetails.Models
         [RegularExpression(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$")]
         [StringLength(255)]
         [Example(Description = "user@organisation.com")]
-        public string EmailcontactDetails { get; set; }
+        public string EmailAddress { get; set; }
 
         [Example(Description = "2018-06-21T17:45:00")]
         public DateTime LastModifiedDate { get; set; }

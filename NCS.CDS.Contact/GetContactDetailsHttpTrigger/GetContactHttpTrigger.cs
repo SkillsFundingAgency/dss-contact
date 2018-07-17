@@ -7,6 +7,8 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
 using NCS.DSS.ContactDetails.Annotations;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace NCS.DSS.ContactDetails.GetContactHttpTrigger
 {
@@ -20,9 +22,9 @@ namespace NCS.DSS.ContactDetails.GetContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ResponseType(typeof(Models.ContactDetails))]
         [Disable]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/ContactDetails/")]HttpRequestMessage req, TraceWriter log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/ContactDetails/")]HttpRequestMessage req, ILogger log)
         {
-            log.Info("C# HTTP trigger function GetContact processed a request.");
+            log.LogInformation("GetContactHttpTrigger method was executed at " + DateTime.Now);
 
             var service = new GetContactHttpTriggerService();
             var values = await service.GetContactDetails();
