@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+/NCS.DSS.Contact.Tests/obj/Debug
+/packages
+/NCS.DSS.Contact.Tests/bin/Debug

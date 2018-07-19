@@ -63,7 +63,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return HttpResponseMessageHelper.NoContent(customerGuid);
 
             contactdetailsRequest.CustomerId = customerGuid;
-            var contactDetails = await contactdetailsPostService.CreateContactDetails(contactdetailsRequest);
+            var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);
 
             return contactDetails == null
                 ? HttpResponseMessageHelper.BadRequest(customerGuid)

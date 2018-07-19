@@ -7,7 +7,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
-        public async Task<Contact.Models.ContactDetails> CreateContactDetails(Contact.Models.ContactDetails contactdetails)
+        public async Task<Contact.Models.ContactDetails> CreateAsync(Contact.Models.ContactDetails contactdetails)
         {
             if (contactdetails == null)
                 return null;
