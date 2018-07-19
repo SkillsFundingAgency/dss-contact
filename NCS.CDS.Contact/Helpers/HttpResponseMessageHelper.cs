@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace NCS.DSS.ContactDetails.Helpers
+namespace NCS.DSS.Contact.Helpers
 {
     public static class HttpResponseMessageHelper
     {

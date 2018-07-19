@@ -3,7 +3,7 @@ using System;
 using System.Configuration;
 using Microsoft.Azure.Documents.Client;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Helper
+namespace NCS.DSS.Contact.Cosmos.Helper
 {
     public class DocumentDBHelper : IDocumentDBHelper
     {

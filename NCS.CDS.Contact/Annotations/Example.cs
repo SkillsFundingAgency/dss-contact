@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NCS.DSS.ContactDetails.Annotations
+namespace NCS.DSS.Contact.Annotations
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class Example : Attribute

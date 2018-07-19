@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace NCS.DSS.ContactDetails.Helpers
+namespace NCS.DSS.Contact.Helpers
 {
     public interface IHttpRequestMessageHelper
     {

@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using NCS.DSS.Contact.Models;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Provider
+namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public interface IDocumentDBProvider
     {
         bool DoesCustomerResourceExist(Guid customerId);
-        Task<ResourceResponse<Document>> CreateContactDetailsAsync(Models.ContactDetails contactDetails);
-        Task<ResourceResponse<Document>> UpdateContactDetailsAsync(Models.ContactDetails contactDetails);
+        Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId);
+        Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId);
+        Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails);
+        Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails);
 
     }
 }

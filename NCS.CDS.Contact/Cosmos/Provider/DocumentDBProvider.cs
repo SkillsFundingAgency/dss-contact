@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
-using NCS.DSS.ContactDetails.Cosmos.Client;
-using NCS.DSS.ContactDetails.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Client;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Models;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Provider
+namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
@@ -30,45 +30,49 @@ namespace NCS.DSS.ContactDetails.Cosmos.Provider
             if (client == null)
                 return false;
 
-            var customerQuery = client.CreateDocumentQuery<Document>(collectionUri, new FeedOptions() { MaxItemCount = 1 });
+            var customerQuery = client.CreateDocumentQuery<Document>(collectionUri, new FeedOptions { MaxItemCount = 1 });
             return customerQuery.Where(x => x.Id == customerId.ToString()).Select(x => x.Id).AsEnumerable().Any();
         }
 
-        public async Task<ResourceResponse<Document>> GetcontactDetailsAsync(Guid contactDetailsId)
-        {
-            var documentUri = _documentDbHelper.CreateDocumentUri(contactDetailsId);
-
-            var client = _databaseClient.CreateDocumentClient();
-
-            if (client == null)
-                return null;
-
-            var response = await client.ReadDocumentAsync(documentUri);
-
-            return response;
-        }
-
-        public async Task<Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactDetailsId)
+        public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
         {
             var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
 
             var client = _databaseClient.CreateDocumentClient();
 
             var contactDetailsForCustomerQuery = client
-                ?.CreateDocumentQuery<Models.ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.CustomerId == customerId)
+                .AsDocumentQuery();
+
+            if (contactDetailsForCustomerQuery == null)
+                return null;
+
+            var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
+
+            return contactDetails?.FirstOrDefault();
+        }
+
+        public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId)
+        {
+            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+
+            var client = _databaseClient.CreateDocumentClient();
+
+            var contactDetailsForCustomerQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
                 .Where(x => x.CustomerId == customerId && x.ContactID == contactDetailsId)
                 .AsDocumentQuery();
 
             if (contactDetailsForCustomerQuery == null)
                 return null;
 
-            var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<Models.ContactDetails>();
+            var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
 
             return contactDetails?.FirstOrDefault();
         }
 
-
-        public async Task<ResourceResponse<Document>> CreateContactDetailsAsync(Models.ContactDetails contactDetails)
+        public async Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails)
         {
 
             var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
@@ -84,7 +88,7 @@ namespace NCS.DSS.ContactDetails.Cosmos.Provider
 
         }
 
-        public async Task<ResourceResponse<Document>> UpdateContactDetailsAsync(Models.ContactDetails contactDetails)
+        public async Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails)
         {
             var documentUri = _documentDbHelper.CreateDocumentUri(contactDetails.ContactID.GetValueOrDefault());
 

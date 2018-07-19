@@ -1,22 +1,21 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Net;
-using System.Threading.Tasks;
-using System;
-using System.Web.Http.Description;
-using NCS.DSS.ContactDetails.Annotations;
-using NCS.DSS.ContactDetails.Ioc;
-using NCS.DSS.ContactDetails.Cosmos.Helper;
-using NCS.DSS.ContactDetails.Helpers;
-using NCS.DSS.ContactDetails.Validation;
-using NCS.DSS.ContactDetails.PostContactDetailsHttpTrigger.Service;
+﻿using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http.Description;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Ioc;
+using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Annotations;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Validation;
+using Newtonsoft.Json;
 
-namespace NCS.DSS.ContactDetails.PostContactByIdHttpTrigger
+namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
     public static class PostContactByIdHttpTrigger
     {
@@ -27,7 +26,7 @@ namespace NCS.DSS.ContactDetails.PostContactByIdHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
-        [ResponseType(typeof(Models.ContactDetails))]
+        [ResponseType(typeof(Contact.Models.ContactDetails))]
         public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, ILogger log, 
             string customerId,
             [Inject]IResourceHelper resourceHelper,
@@ -40,10 +39,10 @@ namespace NCS.DSS.ContactDetails.PostContactByIdHttpTrigger
             if (!Guid.TryParse(customerId, out var customerGuid))
                 return HttpResponseMessageHelper.BadRequest(customerGuid);
 
-            Models.ContactDetails contactdetailsRequest;
+            Contact.Models.ContactDetails contactdetailsRequest;
             try
             {
-                contactdetailsRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(req);
+                contactdetailsRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Contact.Models.ContactDetails>(req);
             }
             catch (JsonSerializationException ex)
             {

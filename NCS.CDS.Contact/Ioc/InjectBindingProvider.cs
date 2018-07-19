@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Extensions.DependencyInjection;
+using NCS.DSS.Contact.Ioc;
 
-
-namespace NCS.DSS.ContactDetails.Ioc
+namespace NCS.DSS.Contact.Ioc
 {
     internal class InjectBindingProvider : IBindingProvider
     {

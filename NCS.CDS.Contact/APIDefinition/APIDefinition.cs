@@ -15,10 +15,10 @@ using System.Web.Http.Description;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
-using NCS.DSS.ContactDetails.Annotations;
-using NCS.DSS.ContactDetails.Ioc;
+using NCS.DSS.Contact.Ioc;
+using NCS.DSS.Contact.Annotations;
 
-namespace NCS.DSS.Address.APIDefinition
+namespace NCS.DSS.Contact.APIDefinition
 {
     public static class ApiDefinition
     {

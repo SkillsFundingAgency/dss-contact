@@ -1,7 +1,8 @@
 ﻿using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Config;
+using NCS.DSS.Contact.Ioc;
 
-namespace NCS.DSS.ContactDetails.Ioc
+namespace NCS.DSS.Contact.Ioc
 {
     public class InjectConfiguration : IExtensionConfigProvider
     {

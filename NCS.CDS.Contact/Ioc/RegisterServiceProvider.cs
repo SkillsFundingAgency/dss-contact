@@ -1,20 +1,22 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using NCS.DSS.ContactDetails.Cosmos.Helper;
-using NCS.DSS.ContactDetails.GetContactDetailsByIdHttpTrigger.Service;
-using NCS.DSS.ContactDetails.Helpers;
-using NCS.DSS.ContactDetails.PatchContactDetailsHttpTrigger.Service;
-using NCS.DSS.ContactDetails.PostContactDetailsHttpTrigger.Service;
-using NCS.DSS.ContactDetails.Validation;
+using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service;
+using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Validation;
 
-
-namespace NCS.DSS.ContactDetails.Ioc
+namespace NCS.DSS.Contact.Ioc
 {
     public class RegisterServiceProvider
     {
         public IServiceProvider CreateServiceProvider()
         {
             var services = new ServiceCollection();
+            services.AddTransient<IGetContactHttpTriggerService, GetContactHttpTriggerService>();
             services.AddTransient<IGetContactDetailsByIdHttpTriggerService, GetContactDetailsByIdHttpTriggerService>();
             services.AddTransient<IPostContactDetailsHttpTriggerService, PostContactDetailsHttpTriggerService>();
             services.AddTransient<IPatchContactDetailsHttpTriggerService, PatchContactDetailsHttpTriggerService>();

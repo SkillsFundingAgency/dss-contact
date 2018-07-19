@@ -2,7 +2,7 @@
 using System.Configuration;
 using Microsoft.Azure.Documents.Client;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Client
+namespace NCS.DSS.Contact.Cosmos.Client
 {
     public class DocumentDBClient : IDocumentDBClient
     {

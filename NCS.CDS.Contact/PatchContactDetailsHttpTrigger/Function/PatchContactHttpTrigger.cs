@@ -1,21 +1,22 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http.Description;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
+using NCS.DSS.Contact.Ioc;
+using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Annotations;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
-using System.Net.Http;
-using System.Net;
-using System.Threading.Tasks;
-using System;
-using System.Web.Http.Description;
-using NCS.DSS.ContactDetails.Annotations;
-using NCS.DSS.ContactDetails.Ioc;
-using NCS.DSS.ContactDetails.Cosmos.Helper;
-using NCS.DSS.ContactDetails.Helpers;
-using NCS.DSS.ContactDetails.Validation;
-using System.Linq;
-using NCS.DSS.ContactDetails.PatchContactDetailsHttpTrigger.Service;
 
-namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
+namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
     public static class PatchContactHttpTrigger
     {
@@ -26,7 +27,7 @@ namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
-        [ResponseType(typeof(Models.ContactDetails))]
+        [ResponseType(typeof(Contact.Models.ContactDetails))]
         public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, TraceWriter log, 
             string customerId, string contactid,
             [Inject]IResourceHelper resourceHelper,
@@ -42,11 +43,11 @@ namespace NCS.DSS.ContactDetails.PatchContactHttpTrigger
             if (!Guid.TryParse(contactid, out var contactGuid))
                 return HttpResponseMessageHelper.BadRequest(contactGuid);
 
-            Models.ContactDetailsPatch contactdetailsPatchRequest;
+            ContactDetailsPatch contactdetailsPatchRequest;
 
             try
             {
-                contactdetailsPatchRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(req);
+                contactdetailsPatchRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<ContactDetailsPatch>(req);
             }
             catch (JsonSerializationException ex)
             {

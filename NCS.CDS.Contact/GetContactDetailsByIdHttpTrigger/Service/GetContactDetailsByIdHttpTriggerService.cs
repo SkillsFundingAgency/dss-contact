@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using NCS.DSS.ContactDetails.Cosmos.Provider;
-using NCS.DSS.ContactDetails.Models;
+using NCS.DSS.Contact.Cosmos.Provider;
 
-namespace NCS.DSS.ContactDetails.GetContactDetailsByIdHttpTrigger.Service
+namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 {
     public class GetContactDetailsByIdHttpTriggerService : IGetContactDetailsByIdHttpTriggerService
     {
-        public async Task<Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
+        public async Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
         {
             var documentDbProvider = new DocumentDBProvider();
-            var address = await documentDbProvider.GetContactDetailsForCustomerAsync(customerId, contactId);
+            var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
-            return address;
+            return contactdetails;
         }
     }
 }

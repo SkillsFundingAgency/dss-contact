@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace NCS.DSS.ContactDetails.Validation
+namespace NCS.DSS.Contact.Validation
 {
     public class Validate : IValidate
     {

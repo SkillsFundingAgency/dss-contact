@@ -1,7 +1,7 @@
 ﻿using System;
-using NCS.DSS.ContactDetails.Cosmos.Provider;
+using NCS.DSS.Contact.Cosmos.Provider;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Helper
+namespace NCS.DSS.Contact.Cosmos.Helper
 {
     public class ResourceHelper : IResourceHelper
     {

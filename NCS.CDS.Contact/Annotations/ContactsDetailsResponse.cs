@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NCS.DSS.ContactDetails.Annotations
+namespace NCS.DSS.Contact.Annotations
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class Response : Attribute

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using NCS.DSS.Contact.Models;
 
-namespace NCS.DSS.ContactDetails.PatchContactDetailsHttpTrigger.Service
+namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public interface IPatchContactDetailsHttpTriggerService
     {
-        Task<ContactDetails.Models.ContactDetails> UpdateAsync(ContactDetails.Models.ContactDetails contactdetails, ContactDetails.Models.ContactDetailsPatch contactdetailsPatch);
-        Task<ContactDetails.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactdetailsId);
+        Task<Contact.Models.ContactDetails> UpdateAsync(Contact.Models.ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch);
+        Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactdetailsId);
 
     }
 }

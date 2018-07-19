@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using NCS.DSS.ContactDetails.Cosmos.Provider;
-using NCS.DSS.ContactDetails.Models;
+using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.Cosmos.Provider;
 
-namespace NCS.DSS.ContactDetails.PatchContactDetailsHttpTrigger.Service
+namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
-        public async Task<Models.ContactDetails> UpdateAsync(Models.ContactDetails contactdetails, Models.ContactDetailsPatch contactdetailsPatch)
+        public async Task<Contact.Models.ContactDetails> UpdateAsync(Contact.Models.ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
                 return null;
@@ -26,10 +23,10 @@ namespace NCS.DSS.ContactDetails.PatchContactDetailsHttpTrigger.Service
             return responseStatusCode == HttpStatusCode.OK ? contactdetails : null;
         }
 
-        public async Task<Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
+        public async Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
         {
             var documentDbProvider = new DocumentDBProvider();
-            var contactdetails = await documentDbProvider.GetContactDetailsForCustomerAsync(customerId, contactId);
+            var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;
         }

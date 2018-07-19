@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NCS.DSS.ContactDetails.ReferenceData
+namespace NCS.DSS.Contact.ReferenceData
 {
     public enum PreferredContactMethod
     {

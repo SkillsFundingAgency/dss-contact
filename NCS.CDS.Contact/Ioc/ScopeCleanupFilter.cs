@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host;
 
-namespace NCS.DSS.ContactDetails.Ioc
+namespace NCS.DSS.Contact.Ioc
 {
     internal class ScopeCleanupFilter : IFunctionInvocationFilter, IFunctionExceptionFilter
     {

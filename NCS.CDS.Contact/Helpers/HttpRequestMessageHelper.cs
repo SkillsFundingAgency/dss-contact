@@ -1,9 +1,8 @@
 ﻿using System.Net.Http;
-using System.Net.Mime;
 using System.Threading.Tasks;
-using NCS.DSS.ContactDetails.Models;
+using NCS.DSS.Contact.Helpers;
 
-namespace NCS.DSS.ContactDetails.Helpers
+namespace NCS.DSS.Contact.Helpers
 {
     public class HttpRequestMessageHelper : IHttpRequestMessageHelper
     {

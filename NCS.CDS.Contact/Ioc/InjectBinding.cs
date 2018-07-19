@@ -4,7 +4,7 @@ using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Protocols;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NCS.DSS.ContactDetails.Ioc
+namespace NCS.DSS.Contact.Ioc
 {
     internal class InjectBinding : IBinding
     {

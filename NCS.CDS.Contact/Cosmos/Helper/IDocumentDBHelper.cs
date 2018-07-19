@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NCS.DSS.ContactDetails.Cosmos.Helper
+namespace NCS.DSS.Contact.Cosmos.Helper
 {
     public interface IDocumentDBHelper
     {

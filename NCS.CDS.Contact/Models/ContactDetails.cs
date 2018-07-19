@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
-using NCS.DSS.ContactDetails.ReferenceData;
-using NCS.DSS.ContactDetails.Annotations;
+using NCS.DSS.Contact.Annotations;
+using NCS.DSS.Contact.ReferenceData;
 
-namespace NCS.DSS.ContactDetails.Models
+namespace NCS.DSS.Contact.Models
 {
     public class ContactDetails
     {
@@ -21,7 +17,7 @@ namespace NCS.DSS.ContactDetails.Models
         public Guid? CustomerId { get; set; }
 
         [Example(Description = "3")]
-        public PreferredContactMethod PreferredContactMethodID { get; set; }
+        public PreferredContactMethod? PreferredContactMethodID { get; set; }
 
         [StringLength(20)]
         [Example(Description = "0777 435 635")]
@@ -41,10 +37,10 @@ namespace NCS.DSS.ContactDetails.Models
         public string EmailAddress { get; set; }
 
         [Example(Description = "2018-06-21T17:45:00")]
-        public DateTime LastModifiedDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
 
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
-        public Guid LastModifiedTouchpointID { get; set; }
+        public Guid? LastModifiedTouchpointID { get; set; }
 
 
         public void Patch(ContactDetailsPatch contactdetailsPatch)
@@ -52,15 +48,27 @@ namespace NCS.DSS.ContactDetails.Models
             if (contactdetailsPatch == null)
                 return;
 
-            this.PreferredContactMethodID = contactdetailsPatch.PreferredContactMethodID;
-            this.AlternativeNumber = contactdetailsPatch.AlternativeNumber;
-            this.EmailAddress = contactdetailsPatch.EmailAddress;
-            this.HomeNumber = contactdetailsPatch.HomeNumber;
-            this.MobileNumber = contactdetailsPatch.MobileNumber;
-            this.LastModifiedTouchpointID = contactdetailsPatch.LastModifiedTouchpointID;
-            this.LastModifiedDate = contactdetailsPatch.LastModifiedDate;
-        }
+            if(contactdetailsPatch.PreferredContactMethodID.HasValue)
+                PreferredContactMethodID = contactdetailsPatch.PreferredContactMethodID;
 
-    }
-    
+            if(!string.IsNullOrEmpty(contactdetailsPatch.AlternativeNumber))
+                AlternativeNumber = contactdetailsPatch.AlternativeNumber;
+
+            if(!string.IsNullOrEmpty(contactdetailsPatch.EmailAddress))
+                EmailAddress = contactdetailsPatch.EmailAddress;
+
+            if (!string.IsNullOrEmpty(contactdetailsPatch.HomeNumber))
+                HomeNumber = contactdetailsPatch.HomeNumber;
+
+            if (!string.IsNullOrEmpty(contactdetailsPatch.MobileNumber))
+                MobileNumber = contactdetailsPatch.MobileNumber;
+
+            if(contactdetailsPatch.LastModifiedDate.HasValue)
+                LastModifiedDate = contactdetailsPatch.LastModifiedDate;
+
+            if (contactdetailsPatch.LastModifiedTouchpointID.HasValue)
+                LastModifiedTouchpointID = contactdetailsPatch.LastModifiedTouchpointID;
+
+        }
+    }    
 }
