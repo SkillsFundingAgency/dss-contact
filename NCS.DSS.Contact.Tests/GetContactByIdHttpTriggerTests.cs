@@ -105,9 +105,9 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
         }
 
-        private async Task<HttpResponseMessage> RunFunction(string customerId, string addressId)
+        private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailsId)
         {
-            return await GetContactByIdHttpTrigger.Run(_request, _log, customerId, addressId, _resourceHelper, _getContactByIdHttpTriggerService).ConfigureAwait(false);
+            return await GetContactByIdHttpTrigger.Run(_request, _log, customerId, contactDetailsId, _resourceHelper, _getContactByIdHttpTriggerService).ConfigureAwait(false);
         }
     }
 }
