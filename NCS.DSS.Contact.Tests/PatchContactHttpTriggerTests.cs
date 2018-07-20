@@ -10,7 +10,9 @@ using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
+using Newtonsoft.Json;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
 namespace NCS.DSS.Contact.Tests
@@ -78,9 +80,8 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactRequestIsInvalid()
         {
-            var validationResults = new List<ValidationResult> { new ValidationResult("Customer Id is Required") };
-            _validate.ValidateResource(Arg.Any<Models.ContactDetailsPatch>()).Returns(validationResults);
-
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Throws(new JsonException());
+            
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert

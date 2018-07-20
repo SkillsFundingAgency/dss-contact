@@ -28,7 +28,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
-        [ResponseType(typeof(Contact.Models.ContactDetails))]
+        [ResponseType(typeof(ContactDetails))]
         public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, 
             string customerId, string contactid,
             [Inject]IResourceHelper resourceHelper,
@@ -50,7 +50,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             {
                 contactdetailsPatchRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<ContactDetailsPatch>(req);
             }
-            catch (JsonSerializationException ex)
+            catch (JsonException ex)
             {
                 return HttpResponseMessageHelper.UnprocessableEntity(ex);
             }

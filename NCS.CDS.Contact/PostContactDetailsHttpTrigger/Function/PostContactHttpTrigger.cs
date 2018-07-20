@@ -44,7 +44,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             {
                 contactdetailsRequest = await httpRequestMessageHelper.GetContactDetailsFromRequest<Contact.Models.ContactDetails>(req);
             }
-            catch (JsonSerializationException ex)
+            catch (JsonException ex)
             {
                 return HttpResponseMessageHelper.UnprocessableEntity(ex);
             }
