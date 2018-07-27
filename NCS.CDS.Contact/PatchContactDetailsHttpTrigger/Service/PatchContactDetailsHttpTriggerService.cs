@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
-        public async Task<Contact.Models.ContactDetails> UpdateAsync(Contact.Models.ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
+        public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
                 return null;
 
+            contactdetailsPatch.SetDefaultValues();
             contactdetails.Patch(contactdetailsPatch);
 
             var documentDbProvider = new DocumentDBProvider();
@@ -23,7 +24,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
             return responseStatusCode == HttpStatusCode.OK ? contactdetails : null;
         }
 
-        public async Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
+        public async Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
         {
             var documentDbProvider = new DocumentDBProvider();
             var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);

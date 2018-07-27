@@ -12,8 +12,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
             if (contactdetails == null)
                 return null;
 
-            var contactdetailsId = Guid.NewGuid();
-            contactdetails.ContactID = contactdetailsId;
+            contactdetails.SetDefaultValues();
 
             var documentDbProvider = new DocumentDBProvider();
 

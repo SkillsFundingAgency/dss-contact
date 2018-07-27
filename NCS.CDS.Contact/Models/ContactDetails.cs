@@ -5,19 +5,19 @@ using NCS.DSS.Contact.ReferenceData;
 
 namespace NCS.DSS.Contact.Models
 {
-    public class ContactDetails
+    public class ContactDetails : IContactDetails
     {
         [Display(Description = "Unique identifier for a contact record")]
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
         [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
-        public Guid? ContactID { get; set; }
+        public Guid? ContactId { get; set; }
      
         [Display(Description = "Unique identifier of a customer")]
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid? CustomerId { get; set; }
 
         [Example(Description = "3")]
-        public PreferredContactMethod? PreferredContactMethodID { get; set; }
+        public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
         [Example(Description = "0777 435 635")]
@@ -40,16 +40,27 @@ namespace NCS.DSS.Contact.Models
         public DateTime? LastModifiedDate { get; set; }
 
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
-        public Guid? LastModifiedTouchpointID { get; set; }
+        public Guid? LastModifiedTouchpointId { get; set; }
 
+        public void SetDefaultValues()
+        {
+            var contactdetailsId = Guid.NewGuid();
+            ContactId = contactdetailsId;
+
+            if (!LastModifiedDate.HasValue)
+                LastModifiedDate = DateTime.Now;
+
+            if (PreferredContactMethod == null)
+                PreferredContactMethod = ReferenceData.PreferredContactMethod.NotKnown;
+        }
 
         public void Patch(ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetailsPatch == null)
                 return;
 
-            if(contactdetailsPatch.PreferredContactMethodID.HasValue)
-                PreferredContactMethodID = contactdetailsPatch.PreferredContactMethodID;
+            if(contactdetailsPatch.PreferredContactMethod.HasValue)
+                PreferredContactMethod = contactdetailsPatch.PreferredContactMethod;
 
             if(!string.IsNullOrEmpty(contactdetailsPatch.AlternativeNumber))
                 AlternativeNumber = contactdetailsPatch.AlternativeNumber;
@@ -66,8 +77,8 @@ namespace NCS.DSS.Contact.Models
             if(contactdetailsPatch.LastModifiedDate.HasValue)
                 LastModifiedDate = contactdetailsPatch.LastModifiedDate;
 
-            if (contactdetailsPatch.LastModifiedTouchpointID.HasValue)
-                LastModifiedTouchpointID = contactdetailsPatch.LastModifiedTouchpointID;
+            if (contactdetailsPatch.LastModifiedTouchpointId.HasValue)
+                LastModifiedTouchpointId = contactdetailsPatch.LastModifiedTouchpointId;
 
         }
     }    

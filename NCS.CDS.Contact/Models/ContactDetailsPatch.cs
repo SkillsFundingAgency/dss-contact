@@ -5,10 +5,10 @@ using NCS.DSS.Contact.ReferenceData;
 
 namespace NCS.DSS.Contact.Models
 {
-    public class ContactDetailsPatch
+    public class ContactDetailsPatch : IContactDetails
     {
         [Example(Description = "3")]
-        public PreferredContactMethod? PreferredContactMethodID { get; set; }
+        public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
         [Example(Description = "0777 777777")]
@@ -31,7 +31,12 @@ namespace NCS.DSS.Contact.Models
         public DateTime? LastModifiedDate { get; set; }
 
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
-        public Guid? LastModifiedTouchpointID { get; set; }
+        public Guid? LastModifiedTouchpointId { get; set; }
 
+        public void SetDefaultValues()
+        {
+            if (!LastModifiedDate.HasValue)
+                LastModifiedDate = DateTime.Now;
+        }
     }
 }

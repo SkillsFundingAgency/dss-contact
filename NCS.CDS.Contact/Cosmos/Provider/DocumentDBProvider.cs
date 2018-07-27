@@ -61,7 +61,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             var contactDetailsForCustomerQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
-                .Where(x => x.CustomerId == customerId && x.ContactID == contactDetailsId)
+                .Where(x => x.CustomerId == customerId && x.ContactId == contactDetailsId)
                 .AsDocumentQuery();
 
             if (contactDetailsForCustomerQuery == null)
@@ -90,7 +90,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails)
         {
-            var documentUri = _documentDbHelper.CreateDocumentUri(contactDetails.ContactID.GetValueOrDefault());
+            var documentUri = _documentDbHelper.CreateDocumentUri(contactDetails.ContactId.GetValueOrDefault());
 
             var client = _databaseClient.CreateDocumentClient();
 
