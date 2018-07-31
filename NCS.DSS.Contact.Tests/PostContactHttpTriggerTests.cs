@@ -46,8 +46,21 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _validate = Substitute.For<IValidate>();
             _postContactHttpTriggerService = Substitute.For<IPostContactDetailsHttpTriggerService>();
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns(new Guid());
         }
 
+        [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
+        {
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns((Guid?)null);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        }
         [Test]
         public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenCustomerIdIsInvalid()
         {

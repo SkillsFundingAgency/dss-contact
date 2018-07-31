@@ -25,9 +25,17 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
         [ResponseType(typeof(Models.ContactDetails))]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, ILogger log, string customerId,
             [Inject]IResourceHelper resourceHelper,
+            [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
             [Inject]IGetContactHttpTriggerService getContactsService)
         {
-            log.LogInformation("GetContactHttpTrigger method was executed at " + DateTime.Now);
+            var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
+            if (touchpointId == null)
+            {
+                log.LogInformation("Unable to locate 'APIM-TouchpointId' in request header.");
+                return HttpResponseMessageHelper.BadRequest();
+            }
+
+            log.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
                 return HttpResponseMessageHelper.BadRequest(customerGuid);

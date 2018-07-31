@@ -82,11 +82,7 @@ namespace NCS.DSS.Contact.Helpers
 
         public static HttpResponseMessage BadRequest()
         {
-            return new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent(JsonConvert.SerializeObject("Customer not created!"),
-                    Encoding.UTF8, "application/json")
-            };
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
 
         #endregion

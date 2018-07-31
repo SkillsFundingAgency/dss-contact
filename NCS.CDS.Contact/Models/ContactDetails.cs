@@ -44,11 +44,10 @@ namespace NCS.DSS.Contact.Models
 
         public void SetDefaultValues()
         {
-            var contactdetailsId = Guid.NewGuid();
-            ContactId = contactdetailsId;
+            ContactId = Guid.NewGuid();
 
             if (!LastModifiedDate.HasValue)
-                LastModifiedDate = DateTime.Now;
+                LastModifiedDate = DateTime.UtcNow;
 
             if (PreferredContactMethod == null)
                 PreferredContactMethod = ReferenceData.PreferredContactMethod.NotKnown;

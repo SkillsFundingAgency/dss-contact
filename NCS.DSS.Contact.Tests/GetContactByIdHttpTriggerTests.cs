@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service;
+using NCS.DSS.Contact.Helpers;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -20,6 +21,7 @@ namespace NCS.DSS.Contact.Tests
         private ILogger _log;
         private HttpRequestMessage _request;
         private IResourceHelper _resourceHelper;
+        private IHttpRequestMessageHelper _httpRequestMessageHelper;
         private IGetContactDetailsByIdHttpTriggerService _getContactByIdHttpTriggerService;
         private Models.ContactDetails _contact;
 
@@ -37,9 +39,24 @@ namespace NCS.DSS.Contact.Tests
 
             _log = Substitute.For<ILogger>();
             _resourceHelper = Substitute.For<IResourceHelper>();
+            _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _getContactByIdHttpTriggerService = Substitute.For<IGetContactDetailsByIdHttpTriggerService>();
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns(new Guid());
         }
 
+        [Test]
+        public async Task GetContacByIdHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
+        {
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns((Guid?)null);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+        
         [Test]
         public async Task GetContactByIdHttpTrigger_ReturnsStatusCodeBadRequest_WhenCustomerIdIsInvalid()
         {
@@ -107,7 +124,7 @@ namespace NCS.DSS.Contact.Tests
 
         private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailsId)
         {
-            return await GetContactByIdHttpTrigger.Run(_request, _log, customerId, contactDetailsId, _resourceHelper, _getContactByIdHttpTriggerService).ConfigureAwait(false);
+            return await GetContactByIdHttpTrigger.Run(_request, _log, customerId, contactDetailsId, _resourceHelper, _httpRequestMessageHelper, _getContactByIdHttpTriggerService).ConfigureAwait(false);
         }
     }
 }

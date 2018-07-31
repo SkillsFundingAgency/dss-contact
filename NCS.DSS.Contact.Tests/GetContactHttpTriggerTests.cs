@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Helpers;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -20,6 +21,7 @@ namespace NCS.DSS.Contact.Tests
         private ILogger _log;
         private HttpRequestMessage _request;
         private IResourceHelper _resourceHelper;
+        private IHttpRequestMessageHelper _httpRequestMessageHelper;
         private IGetContactHttpTriggerService _getContactHttpTriggerService;
 
         [SetUp]
@@ -34,7 +36,22 @@ namespace NCS.DSS.Contact.Tests
 
             _log = Substitute.For<ILogger>();
             _resourceHelper = Substitute.For<IResourceHelper>();
+            _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _getContactHttpTriggerService = Substitute.For<IGetContactHttpTriggerService>();
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns(new Guid());
+        }
+
+        [Test]
+        public async Task GetContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
+        {
+            _httpRequestMessageHelper.GetTouchpointId(_request).Returns((Guid?)null);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         }
 
         [Test]
@@ -94,7 +111,7 @@ namespace NCS.DSS.Contact.Tests
 
         private async Task<HttpResponseMessage> RunFunction(string customerId)
         {
-            return await GetContactHttpTrigger.Run(_request, _log, customerId, _resourceHelper, _getContactHttpTriggerService).ConfigureAwait(false);
+            return await GetContactHttpTrigger.Run(_request, _log, customerId, _resourceHelper, _httpRequestMessageHelper, _getContactHttpTriggerService).ConfigureAwait(false);
         }
     }
 }
