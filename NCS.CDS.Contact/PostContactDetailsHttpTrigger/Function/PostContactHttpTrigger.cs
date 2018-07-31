@@ -61,7 +61,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             contactdetailsRequest.LastModifiedTouchpointId = touchpointId;
 
-            var errors = validate.ValidateResource(contactdetailsRequest);
+            var errors = validate.ValidateResource(contactdetailsRequest, true);
 
             if (errors != null && errors.Any())
                 return HttpResponseMessageHelper.UnprocessableEntity(errors);

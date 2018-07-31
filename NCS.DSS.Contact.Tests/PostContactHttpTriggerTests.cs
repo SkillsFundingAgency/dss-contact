@@ -77,7 +77,7 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
 
             var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
-            _validate.ValidateResource(Arg.Any<Models.ContactDetails>()).Returns(validationResults);
+            _validate.ValidateResource(Arg.Any<Models.ContactDetails>(), true).Returns(validationResults);
 
             var result = await RunFunction(ValidCustomerId);
 

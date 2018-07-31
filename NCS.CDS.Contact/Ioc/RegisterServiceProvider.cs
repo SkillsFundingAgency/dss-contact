@@ -6,7 +6,6 @@ using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Cosmos.Helper;
-using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Validation;
 
 namespace NCS.DSS.Contact.Ioc
