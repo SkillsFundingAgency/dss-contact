@@ -52,7 +52,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 
             return contact == null ?
                 HttpResponseMessageHelper.NoContent(contactGuid) :
-                HttpResponseMessageHelper.Ok(contact);
+                HttpResponseMessageHelper.Ok(JsonHelper.SerializeObject(contact));
         }
     }
 }

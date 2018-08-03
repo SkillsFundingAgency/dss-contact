@@ -86,7 +86,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             return updatedContactDetails == null ?
                 HttpResponseMessageHelper.BadRequest(contactGuid) :
-                HttpResponseMessageHelper.Ok(updatedContactDetails);
+                HttpResponseMessageHelper.Ok(JsonHelper.SerializeObject(updatedContactDetails));
         }
 
     }
