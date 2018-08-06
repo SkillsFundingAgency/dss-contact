@@ -11,7 +11,7 @@ namespace NCS.DSS.Contact.Models
         string AlternativeNumber { get; set; }
         string EmailAddress { get; set; }
         DateTime? LastModifiedDate { get; set; }
-        Guid? LastModifiedTouchpointId { get; set; }
+        string LastModifiedTouchpointId { get; set; }
 
         void SetDefaultValues();
 

@@ -29,9 +29,9 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             [Inject]IGetContactDetailsByIdHttpTriggerService getContactDetailsByIdService)
         {
             var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
-            if (touchpointId == null)
+            if (string.IsNullOrEmpty(touchpointId))
             {
-                log.LogInformation("Unable to locate 'APIM-TouchpointId' in request header.");
+                log.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return HttpResponseMessageHelper.BadRequest();
             }
 

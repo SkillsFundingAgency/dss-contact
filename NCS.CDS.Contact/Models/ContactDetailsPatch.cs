@@ -30,8 +30,10 @@ namespace NCS.DSS.Contact.Models
         [Example(Description = "2018-06-21T17:45:00")]
         public DateTime? LastModifiedDate { get; set; }
 
-        [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
-        public Guid? LastModifiedTouchpointId { get; set; }
+        [StringLength(10, MinimumLength = 10)]
+        [Display(Description = "Identifier of the touchpoint who made the last change to the record")]
+        [Example(Description = "0000000001")]
+        public string LastModifiedTouchpointId { get; set; }
 
         public void SetDefaultValues()
         {
