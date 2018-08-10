@@ -55,6 +55,13 @@ namespace NCS.DSS.Contact.Models
                 PreferredContactMethod = ReferenceData.PreferredContactMethod.NotKnown;
         }
 
+        public void SetIds(Guid customerId, string touchpointId)
+        {
+            ContactId = Guid.NewGuid();
+            CustomerId = customerId;
+            LastModifiedTouchpointId = touchpointId;
+        }
+
         public void Patch(ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetailsPatch == null)
