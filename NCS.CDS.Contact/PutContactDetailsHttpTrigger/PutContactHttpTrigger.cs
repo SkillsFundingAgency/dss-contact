@@ -12,6 +12,7 @@ namespace NCS.DSS.Contact.PutContactDetailsHttpTrigger
 {
     public static class PutContactHttpTrigger
     {
+        [Disable]
         [FunctionName("PUT")]
         [Response(HttpStatusCode = (int)HttpStatusCode.Created, Description = "Contact Details Replaced", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Unable to Replace Customer", ShowSchema = false)]
