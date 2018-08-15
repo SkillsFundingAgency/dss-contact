@@ -10,6 +10,7 @@ namespace NCS.DSS.Contact.DeleteContactDetailsHttpTrigger.Function
 {
     public static class DeleteContactDetailsHttpTrigger
     {
+        [Disable]
         [FunctionName("DELETE")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Deleted", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
