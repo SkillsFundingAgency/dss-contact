@@ -4,6 +4,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
     public interface IPostContactDetailsHttpTriggerService
     {
-        Task<Contact.Models.ContactDetails> CreateAsync(Contact.Models.ContactDetails contactdetails);
+        Task<Models.ContactDetails> CreateAsync(Models.ContactDetails contactdetails);
+        Task SendToServiceBusQueueAsync(Models.ContactDetails contactdetails, string reqUrl);
     }
 }

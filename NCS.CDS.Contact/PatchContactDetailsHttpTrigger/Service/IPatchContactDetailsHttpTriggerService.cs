@@ -6,8 +6,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public interface IPatchContactDetailsHttpTriggerService
     {
-        Task<Contact.Models.ContactDetails> UpdateAsync(Contact.Models.ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch);
-        Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactdetailsId);
-
+        Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch);
+        Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactdetailsId);
+        Task SendToServiceBusQueueAsync(Models.ContactDetails contactdetails, Guid customerId, string reqUrl);
     }
 }
