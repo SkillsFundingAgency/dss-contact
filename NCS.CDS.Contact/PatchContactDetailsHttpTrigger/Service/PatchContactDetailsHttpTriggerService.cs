@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.ServiceBus;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
@@ -32,5 +33,9 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
             return contactdetails;
         }
 
+        public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, Guid customerId, string reqUrl)
+        {
+            await ServiceBusClient.SendPatchMessageAsync(contactdetails, customerId, reqUrl);
+        }
     }
 }

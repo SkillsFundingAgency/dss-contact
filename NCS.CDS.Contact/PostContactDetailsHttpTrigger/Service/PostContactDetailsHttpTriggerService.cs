@@ -2,6 +2,8 @@
 using System.Net;
 using System.Threading.Tasks;
 using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.ServiceBus;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
@@ -19,6 +21,11 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
             var response = await documentDbProvider.CreateContactDetailsAsync(contactdetails);
 
             return response.StatusCode == HttpStatusCode.Created ? (dynamic)response.Resource : (Guid?)null;
+        }
+
+        public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, string reqUrl)
+        {
+            await ServiceBusClient.SendPostMessageAsync(contactdetails, reqUrl);
         }
     }
 }
