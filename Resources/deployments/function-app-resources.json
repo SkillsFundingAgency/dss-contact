@@ -1,29 +1,41 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "appServicePlanId": {
-            "type": "string"
-        },
-        "configEnvironmentName": {
-            "type": "string"
-        },
-        "cosmosDbCollectionId": {
-            "type": "string"
-        },
-        "cosmosDbDatabaseId": {
-            "type": "string"
-        },
-        "cosmosDbEndpoint": {
-            "type": "string"
-        },
-        "cosmosDbKey": {
-            "type": "string"
-        },
-        "functionAppName": {
-            "type": "string"
-        }
+  "parameters": {
+    "appServicePlanId": {
+      "type": "string"
     },
+    "configEnvironmentName": {
+      "type": "string"
+    },
+    "cosmosDbCollectionId": {
+      "type": "string"
+    },
+    "cosmosDbDatabaseId": {
+      "type": "string"
+    },
+    "cosmosDbEndpoint": {
+      "type": "string"
+    },
+    "cosmosDbKey": {
+      "type": "string"
+    },
+    "functionAppName": {
+      "type": "string"
+    },
+    "serviceBusAccessKey": {
+      "type": "string"
+    },
+    "serviceBusAccessKeyName": {
+      "type": "string"
+    },
+    "serviceBusBaseAddress": {
+      "type": "string"
+    },
+    "serviceBusQueueName": {
+      "type": "string"
+    }
+  },
     "variables": {
         "appInsightsName": "[concat('dss-', toLower(parameters('configEnvironmentName')), '-', split(parameters('functionAppName'), '-')[2], '-ai')]"
     },
@@ -41,44 +53,60 @@
                 "serverFarmId": "[parameters('appServicePlanId')]",
                 "siteConfig": {
                     "alwaysOn": true,
-                    "appSettings": [
-                        {
-                            "name": "EnvironmentName",
-                            "value": "[toUpper(parameters('configEnvironmentName'))]"
-                        },
-                        {
-                            "name": "MSDEPLOY_RENAME_LOCKED_FILES",
-                            "value": "1"
-                        },
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]"
-                        },
-                        {
-                            "name": "CollectionId",
-                            "value": "[parameters('cosmosDbCollectionId')]"
-                        },
-                        {
-                            "name": "DatabaseId",
-                            "value": "[parameters('cosmosDbDatabaseId')]"
-                        },
-                        {
-                            "name": "Endpoint",
-                            "value": "[parameters('cosmosDbEndpoint')]"
-                        },
-                        {
-                            "name": "Key",
-                            "value": "[parameters('cosmosDbKey')]"
-                        },
-                        {
-                            "name": "CustomerCollectionId",
-                            "value": "customers"
-                        },
-                        {
-                            "name": "CustomerDatabaseId",
-                            "value": "customers"
-                        }
-                    ]
+                  "appSettings": [
+                    {
+                      "name": "EnvironmentName",
+                      "value": "[toUpper(parameters('configEnvironmentName'))]"
+                    },
+                    {
+                      "name": "MSDEPLOY_RENAME_LOCKED_FILES",
+                      "value": "1"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]"
+                    },
+                    {
+                      "name": "CollectionId",
+                      "value": "[parameters('cosmosDbCollectionId')]"
+                    },
+                    {
+                      "name": "DatabaseId",
+                      "value": "[parameters('cosmosDbDatabaseId')]"
+                    },
+                    {
+                      "name": "Endpoint",
+                      "value": "[parameters('cosmosDbEndpoint')]"
+                    },
+                    {
+                      "name": "Key",
+                      "value": "[parameters('cosmosDbKey')]"
+                    },
+                    {
+                      "name": "CustomerCollectionId",
+                      "value": "customers"
+                    },
+                    {
+                      "name": "CustomerDatabaseId",
+                      "value": "customers"
+                    },
+                    {
+                      "name": "KeyName",
+                      "value": "[parameters('serviceBusAccessKeyName')]"
+                    },
+                    {
+                      "name": "AccessKey",
+                      "value": "[parameters('serviceBusAccessKey')]"
+                    },
+                    {
+                      "name": "BaseAddress",
+                      "value": "[parameters('serviceBusBaseAddress')]"
+                    },
+                    {
+                      "name": "QueueName",
+                      "value": "[parameters('serviceBusQueueName')]"
+                    }
+                  ]
                 }
             }
         },
