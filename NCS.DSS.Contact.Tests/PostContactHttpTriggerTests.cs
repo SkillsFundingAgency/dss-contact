@@ -113,6 +113,21 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeConflict_WhenContactDetailsForCustomerExists()
+        {
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
+
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).Returns(true);
+            _postContactHttpTriggerService.DoesContactDetailsExistForCustomer(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+        }
+
+        [Test]
         public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenUnableToCreateContactRecord()
         {
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
