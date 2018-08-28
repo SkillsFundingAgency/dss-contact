@@ -26,12 +26,25 @@ namespace NCS.DSS.Contact.Validation
 
             if (validateModelForPost)
             {
-                if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) &&
-                    string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) &&
-                    string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber) &&
+
+                if(contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Mobile &&
+                   string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) || 
+                   string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                    results.Add(new ValidationResult("Mobile Number or Alternative Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+
+                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Telephone && 
+                    string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) ||
+                    string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                    results.Add(new ValidationResult("Home Number or Alternative Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+
+                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.SMS &&
+                    string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
+                    results.Add(new ValidationResult("Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+
+                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Email &&
                     string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress))
-                    results.Add(new ValidationResult("At least one of the following fields 'Mobile Number', 'Home Number', 'Alternative Number' or 'Email Address' must be supplied.",
-                        new[] { "MobileNumber", "HomeNumber", "AlternativeNumber", "EmailAddress" }));
+                    results.Add(new ValidationResult("Email Address must be supplied.", new[] { "EmailAddress" }));
+
             }
 
             if (contactDetailsResource.LastModifiedDate.HasValue && contactDetailsResource.LastModifiedDate.Value > DateTime.UtcNow)
