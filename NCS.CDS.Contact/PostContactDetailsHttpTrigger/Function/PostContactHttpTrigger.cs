@@ -25,6 +25,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Post request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ResponseType(typeof(Contact.Models.ContactDetails))]
         public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, ILogger log, 
@@ -70,6 +71,11 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (!doesCustomerExist)
                 return HttpResponseMessageHelper.NoContent(customerGuid);
+
+            var doesContactDetailsExist = contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
+
+            if (doesContactDetailsExist)
+                return HttpResponseMessageHelper.Conflict();
 
             var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);
 

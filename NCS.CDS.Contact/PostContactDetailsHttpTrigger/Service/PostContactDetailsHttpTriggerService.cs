@@ -9,7 +9,16 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
-        public async Task<Contact.Models.ContactDetails> CreateAsync(Contact.Models.ContactDetails contactdetails)
+        public bool DoesContactDetailsExistForCustomer(Guid customerId)
+        {
+            var documentDbProvider = new DocumentDBProvider();
+
+            var doesContactDetailsExistForCustomer = documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
+
+            return doesContactDetailsExistForCustomer;
+        }
+
+        public async Task<ContactDetails> CreateAsync(ContactDetails contactdetails)
         {
             if (contactdetails == null)
                 return null;

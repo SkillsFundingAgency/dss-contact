@@ -31,7 +31,20 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 return false;
 
             var customerQuery = client.CreateDocumentQuery<Document>(collectionUri, new FeedOptions { MaxItemCount = 1 });
-            return customerQuery.Where(x => x.Id == customerId.ToString()).Select(x => x.Id).AsEnumerable().Any();
+            return customerQuery.Where(x => x.Id == customerId.ToString()).AsEnumerable().Any();
+        }
+
+        public bool DoesContactDetailsExistForCustomer(Guid customerId)
+        {
+            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+
+            var client = _databaseClient.CreateDocumentClient();
+
+            if (client == null)
+                return false;
+
+            var contactDetailsForCustomerQuery = client.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 });
+            return contactDetailsForCustomerQuery.Where(x => x.CustomerId == customerId).AsEnumerable().Any();
         }
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
@@ -101,5 +114,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             return response;
         }
+
+       
     }
 }
