@@ -22,7 +22,7 @@ namespace NCS.DSS.Contact.APIDefinition
 {
     public static class ApiDefinition
     {
-        public const string APITitle = "Contacts";
+        public const string APITitle = "ContactDetails";
         public const string APIDefinitionName = "API-Definition";
         public const string APIDefRoute = APITitle + "/" + APIDefinitionName;
         public const string APIDescription = "Basic details of a National Careers Service " + APITitle + " Resource";
