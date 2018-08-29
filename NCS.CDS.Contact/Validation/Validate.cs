@@ -28,13 +28,13 @@ namespace NCS.DSS.Contact.Validation
             {
 
                 if(contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Mobile &&
-                   string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) || 
-                   string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                   (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) || 
+                   string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber)))
                     results.Add(new ValidationResult("Mobile Number or Alternative Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
 
                 if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Telephone && 
-                    string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) ||
-                    string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                    (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) ||
+                    string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber)))
                     results.Add(new ValidationResult("Home Number or Alternative Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
 
                 if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.SMS &&
