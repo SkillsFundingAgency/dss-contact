@@ -77,6 +77,11 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
                 return HttpResponseMessageHelper.NoContent(customerGuid);
 
+            var isCustomerReadOnly = await resourceHelper.IsCustomerReadOnly(customerGuid);
+
+            if (isCustomerReadOnly)
+                return HttpResponseMessageHelper.Forbidden(customerGuid);
+
             var contactdetails = await contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
 
             if (contactdetails == null)
