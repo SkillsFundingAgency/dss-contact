@@ -75,6 +75,19 @@ namespace NCS.DSS.Contact.Helpers
 
         #endregion
 
+        #region Forbidden(403)
+
+        public static HttpResponseMessage Forbidden(Guid id)
+        {
+            return new HttpResponseMessage(HttpStatusCode.Forbidden)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(id),
+                    Encoding.UTF8, "application/json")
+            };
+        }
+
+        #endregion
+
         #region Conflict(409)
 
         public static HttpResponseMessage Conflict()
