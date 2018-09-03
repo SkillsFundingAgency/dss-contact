@@ -16,7 +16,7 @@ namespace NCS.DSS.Contact.Models
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid? CustomerId { get; set; }
 
-        [Display(Description = "Customers preferred contact method" +
+        [Display(Description = "Customers preferred contact method   :   " +
                                 "1 - Email,   " +
                                 "2 - Mobile,   " +
                                 "3 - Telephone,   " +

@@ -8,7 +8,7 @@ namespace NCS.DSS.Contact.Models
     public class ContactDetailsPatch : IContactDetails
     {
         [Example(Description = "3")]
-        [Display(Description = "Customers preferred contact method" +
+        [Display(Description = "Customers preferred contact method   :   " +
                                 "1 - Email,   " +
                                 "2 - Mobile,   " +
                                 "3 - Telephone,   " +
