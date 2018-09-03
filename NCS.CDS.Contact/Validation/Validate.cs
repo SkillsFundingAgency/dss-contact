@@ -34,13 +34,13 @@ namespace NCS.DSS.Contact.Validation
                         break;
 
                     case PreferredContactMethod.Mobile:
-                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) || string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
-                            results.Add(new ValidationResult("Mobile Number or Alternative Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber))
+                            results.Add(new ValidationResult("Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.Telephone:
-                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) || string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
-                            results.Add(new ValidationResult("Home Number or Alternative Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber))
+                            results.Add(new ValidationResult("Home Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.SMS:
