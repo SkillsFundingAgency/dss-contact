@@ -26,25 +26,28 @@ namespace NCS.DSS.Contact.Validation
 
             if (validateModelForPost)
             {
+                switch (contactDetailsResource.PreferredContactMethod)
+                {
+                    case PreferredContactMethod.Email:
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress))
+                            results.Add(new ValidationResult("Email Address must be supplied.", new[] { "EmailAddress" }));
+                        break;
 
-                if(contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Mobile &&
-                   (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) || 
-                   string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber)))
-                    results.Add(new ValidationResult("Mobile Number or Alternative Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+                    case PreferredContactMethod.Mobile:
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) || string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                            results.Add(new ValidationResult("Mobile Number or Alternative Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+                        break;
 
-                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Telephone && 
-                    (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) ||
-                    string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber)))
-                    results.Add(new ValidationResult("Home Number or Alternative Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+                    case PreferredContactMethod.Telephone:
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) || string.IsNullOrWhiteSpace(contactDetailsResource.AlternativeNumber))
+                            results.Add(new ValidationResult("Home Number or Alternative Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+                        break;
 
-                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.SMS &&
-                    string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
-                    results.Add(new ValidationResult("Mobile Number must be supplied.", new[] { "MobileNumbers" }));
-
-                if (contactDetailsResource.PreferredContactMethod == PreferredContactMethod.Email &&
-                    string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress))
-                    results.Add(new ValidationResult("Email Address must be supplied.", new[] { "EmailAddress" }));
-
+                    case PreferredContactMethod.SMS:
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
+                            results.Add(new ValidationResult("Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+                        break;
+                }
             }
 
             if (contactDetailsResource.LastModifiedDate.HasValue && contactDetailsResource.LastModifiedDate.Value > DateTime.UtcNow)
@@ -52,8 +55,6 @@ namespace NCS.DSS.Contact.Validation
 
             if (contactDetailsResource.PreferredContactMethod.HasValue && !Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value))
                 results.Add(new ValidationResult("Please supply a valid Preferred Contact Method", new[] { "PreferredContactMethod" }));
-
         }
-
     }
 }
