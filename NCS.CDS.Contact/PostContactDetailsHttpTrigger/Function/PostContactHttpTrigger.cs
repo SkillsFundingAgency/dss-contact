@@ -42,6 +42,13 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return HttpResponseMessageHelper.BadRequest();
             }
 
+            var ApimURL = httpRequestMessageHelper.GetApimURL(req);
+            if (string.IsNullOrEmpty(ApimURL))
+            {
+                log.LogInformation("Unable to locate 'apimurl' in request header");
+                return HttpResponseMessageHelper.BadRequest();
+            }
+
             log.LogInformation("C# HTTP trigger function Post Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
@@ -80,7 +87,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);
 
             if (contactDetails != null)
-                await contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, req.RequestUri.AbsoluteUri);
+                await contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
 
             return contactDetails == null
                 ? HttpResponseMessageHelper.BadRequest(customerGuid)
