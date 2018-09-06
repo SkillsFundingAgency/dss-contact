@@ -8,5 +8,6 @@ namespace NCS.DSS.Contact.Helpers
     {
         Task<T> GetContactDetailsFromRequest<T>(HttpRequestMessage req);
         string GetTouchpointId(HttpRequestMessage req);
+        string GetApimURL(HttpRequestMessage req);
     }
 }
