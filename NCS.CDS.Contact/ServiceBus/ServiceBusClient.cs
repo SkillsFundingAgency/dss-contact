@@ -27,7 +27,7 @@ namespace NCS.DSS.Contact.ServiceBus
                 TitleMessage = "New Contact Details record {" + contactDetails.ContactId + "} added at " + DateTime.UtcNow,
                 CustomerGuid = contactDetails.CustomerId,
                 LastModifiedDate = contactDetails.LastModifiedDate,
-                URL = reqUrl,
+                URL = reqUrl + "/" + contactDetails.ContactId,
                 IsNewCustomer = false,
                 TouchpointId = contactDetails.LastModifiedTouchpointId
             };
