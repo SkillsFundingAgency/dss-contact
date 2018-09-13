@@ -16,9 +16,6 @@ namespace NCS.DSS.Contact.ReferenceData
         [Description("SMS")]
         SMS = 4,
 
-        [Description("Post")]
-        Post = 5,
-
         [Description("Not Known")]
         NotKnown = 99
     }
