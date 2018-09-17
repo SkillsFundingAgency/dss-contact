@@ -16,6 +16,7 @@ namespace NCS.DSS.Contact.Models
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid? CustomerId { get; set; }
 
+        [Required]
         [Display(Description = "Customers preferred contact method   :   " +
                                 "1 - Email,   " +
                                 "2 - Mobile,   " +
@@ -57,9 +58,6 @@ namespace NCS.DSS.Contact.Models
 
             if (!LastModifiedDate.HasValue)
                 LastModifiedDate = DateTime.UtcNow;
-
-            if (PreferredContactMethod == null)
-                PreferredContactMethod = ReferenceData.PreferredContactMethod.NotKnown;
         }
 
         public void SetIds(Guid customerId, string touchpointId)
