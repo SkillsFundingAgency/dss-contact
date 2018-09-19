@@ -12,20 +12,11 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
-        private readonly DocumentDBHelper _documentDbHelper;
-        private readonly DocumentDBClient _databaseClient;
-
-        public DocumentDBProvider()
-        {
-            _documentDbHelper = new DocumentDBHelper();
-            _databaseClient = new DocumentDBClient();
-        }
-
         public bool DoesCustomerResourceExist(Guid customerId)
         {
-            var collectionUri = _documentDbHelper.CreateCustomerDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateCustomerDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
                 return false;
@@ -36,9 +27,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesCustomerHaveATerminationDate(Guid customerId)
         {
-            var collectionUri = _documentDbHelper.CreateCustomerDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateCustomerDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             var customerByIdQuery = client
                 ?.CreateDocumentQuery<Document>(collectionUri, new FeedOptions { MaxItemCount = 1 })
@@ -62,9 +53,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public bool DoesContactDetailsExistForCustomer(Guid customerId)
         {
-            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
                 return false;
@@ -75,9 +66,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
         {
-            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             var contactDetailsForCustomerQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
@@ -94,9 +85,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId)
         {
-            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             var contactDetailsForCustomerQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
@@ -114,9 +105,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         public async Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails)
         {
 
-            var collectionUri = _documentDbHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
                 return null;
@@ -129,9 +120,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails)
         {
-            var documentUri = _documentDbHelper.CreateDocumentUri(contactDetails.ContactId.GetValueOrDefault());
+            var documentUri = DocumentDBHelper.CreateDocumentUri(contactDetails.ContactId.GetValueOrDefault());
 
-            var client = _databaseClient.CreateDocumentClient();
+            var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
                 return null;
