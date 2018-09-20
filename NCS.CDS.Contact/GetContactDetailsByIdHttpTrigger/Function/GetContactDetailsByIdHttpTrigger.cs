@@ -43,7 +43,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (!Guid.TryParse(contactid, out var contactGuid))
                 return HttpResponseMessageHelper.BadRequest(contactGuid);
 
-            var doesCustomerExist = resourceHelper.DoesCustomerExist(customerGuid);
+            var doesCustomerExist = await resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
                 return HttpResponseMessageHelper.NoContent(customerGuid);

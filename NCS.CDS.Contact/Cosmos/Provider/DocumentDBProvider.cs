@@ -12,43 +12,50 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
-        public bool DoesCustomerResourceExist(Guid customerId)
+        public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {
-            var collectionUri = DocumentDBHelper.CreateCustomerDocumentCollectionUri();
+            var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
                 return false;
 
-            var customerQuery = client.CreateDocumentQuery<Document>(collectionUri, new FeedOptions { MaxItemCount = 1 });
-            return customerQuery.Where(x => x.Id == customerId.ToString()).AsEnumerable().Any();
+            try
+            {
+                var response = await client.ReadDocumentAsync(documentUri);
+                if (response.Resource != null)
+                    return true;
+            }
+            catch (DocumentClientException)
+            {
+                return false;
+            }
+
+            return false;
         }
 
         public async Task<bool> DoesCustomerHaveATerminationDate(Guid customerId)
         {
-            var collectionUri = DocumentDBHelper.CreateCustomerDocumentCollectionUri();
+            var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
-            var customerByIdQuery = client
-                ?.CreateDocumentQuery<Document>(collectionUri, new FeedOptions { MaxItemCount = 1 })
-                .Where(x => x.Id == customerId.ToString())
-                .AsDocumentQuery();
-
-            if (customerByIdQuery == null)
+            if (client == null)
                 return false;
 
-            var customerQuery = await customerByIdQuery.ExecuteNextAsync<Document>();
+            try
+            {
+                var response = await client.ReadDocumentAsync(documentUri);
 
-            var customer = customerQuery?.FirstOrDefault();
+                var dateOfTermination = response.Resource?.GetPropertyValue<DateTime?>("DateOfTermination");
 
-            if (customer == null)
+                return dateOfTermination.HasValue;
+            }
+            catch (DocumentClientException)
+            {
                 return false;
-
-            var dateOfTermination = customer.GetPropertyValue<DateTime?>("DateOfTermination");
-
-            return dateOfTermination.HasValue;
+            }
         }
 
         public bool DoesContactDetailsExistForCustomer(Guid customerId)
@@ -131,7 +138,5 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             return response;
         }
-
-       
     }
 }
