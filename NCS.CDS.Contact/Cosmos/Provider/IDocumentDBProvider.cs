@@ -8,7 +8,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public interface IDocumentDBProvider
     {
-        bool DoesCustomerResourceExist(Guid customerId);
+        Task<bool> DoesCustomerResourceExist(Guid customerId);
         Task<bool> DoesCustomerHaveATerminationDate(Guid customerId);
         bool DoesContactDetailsExistForCustomer(Guid customerId);
         Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId);

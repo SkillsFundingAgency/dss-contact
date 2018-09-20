@@ -5,52 +5,49 @@ using Microsoft.Azure.Documents.Client;
 
 namespace NCS.DSS.Contact.Cosmos.Helper
 {
-    public class DocumentDBHelper : IDocumentDBHelper
+    public static class DocumentDBHelper
     {
-        private Uri _documentCollectionUri;
-        private Uri _documentUri;
-        private readonly string _databaseId = ConfigurationManager.AppSettings["DatabaseId"];
-        private readonly string _collectionId = ConfigurationManager.AppSettings["CollectionId"];
+        private static Uri _documentCollectionUri;
+        private static readonly string DatabaseId = ConfigurationManager.AppSettings["DatabaseId"];
+        private static readonly string CollectionId = ConfigurationManager.AppSettings["CollectionId"];
 
-        private Uri _customerDocumentCollectionUri;
-        private readonly string _customerDatabaseId = ConfigurationManager.AppSettings["CustomerDatabaseId"];
-        private readonly string _customerCollectionId = ConfigurationManager.AppSettings["CustomerCollectionId"];
+        private static Uri _customerDocumentCollectionUri;
+        private static readonly string CustomerDatabaseId = ConfigurationManager.AppSettings["CustomerDatabaseId"];
+        private static readonly string CustomerCollectionId = ConfigurationManager.AppSettings["CustomerCollectionId"];
 
-        public Uri CreateDocumentCollectionUri()
+        public static Uri CreateDocumentCollectionUri()
         {
             if (_documentCollectionUri != null)
                 return _documentCollectionUri;
 
             _documentCollectionUri = UriFactory.CreateDocumentCollectionUri(
-                _databaseId,
-                _collectionId);
+                DatabaseId,
+                CollectionId);
 
             return _documentCollectionUri;
         }
 
-
-        public Uri CreateDocumentUri(Guid contactDetailsId)
+        public static Uri CreateDocumentUri(Guid contactDetailsId)
         {
-            if (_documentUri != null)
-                return _documentUri;
-
-            _documentUri = UriFactory.CreateDocumentUri(_databaseId, _collectionId, contactDetailsId.ToString());
-
-            return _documentUri;
-
+            return UriFactory.CreateDocumentUri(DatabaseId, CollectionId, contactDetailsId.ToString());
         }
 
         #region CustomerDB
 
-        public Uri CreateCustomerDocumentCollectionUri()
+        public static Uri CreateCustomerDocumentCollectionUri()
         {
             if (_customerDocumentCollectionUri != null)
                 return _customerDocumentCollectionUri;
 
             _customerDocumentCollectionUri = UriFactory.CreateDocumentCollectionUri(
-                _customerDatabaseId, _customerCollectionId);
+                CustomerDatabaseId, CustomerCollectionId);
 
             return _customerDocumentCollectionUri;
+        }
+
+        public static Uri CreateCustomerDocumentUri(Guid customerId)
+        {
+            return UriFactory.CreateDocumentUri(CustomerDatabaseId, CustomerCollectionId, customerId.ToString());
         }
 
         #endregion   
