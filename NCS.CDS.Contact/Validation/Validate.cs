@@ -34,7 +34,7 @@ namespace NCS.DSS.Contact.Validation
                         break;
 
                     case PreferredContactMethod.Mobile:
-                        if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber))
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
                             results.Add(new ValidationResult("Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
                         break;
 
