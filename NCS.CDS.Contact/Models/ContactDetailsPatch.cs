@@ -19,7 +19,7 @@ namespace NCS.DSS.Contact.Models
 
         [StringLength(20)]
         [Example(Description = "UK mobile phone number with optional +44 national code, also allows optional brackets and spaces at appropriate positions e.g.   07222 555555   or   (07222) 555555   or   +44 7222 555 555")]
-        [RegularExpression(@"^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$)")]
+        [RegularExpression(@"^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$")]
         public string MobileNumber { get; set; }
 
         [StringLength(20)]
