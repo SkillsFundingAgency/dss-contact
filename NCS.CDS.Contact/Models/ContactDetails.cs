@@ -22,7 +22,6 @@ namespace NCS.DSS.Contact.Models
                                 "2 - Mobile,   " +
                                 "3 - Telephone,   " +
                                 "4 - SMS,   " +
-                                "5 - Post,   " +
                                 "99 - Not known")]
         [Example(Description = "3")]
         public PreferredContactMethod? PreferredContactMethod { get; set; }
