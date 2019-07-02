@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http.Description;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -14,6 +13,8 @@ using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
+using DFC.Functions.DI.Standard.Attributes;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -27,7 +28,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
-        [ResponseType(typeof(Contact.Models.ContactDetails))]
+        [ProducesResponseType(typeof(Models.ContactDetails), (int)HttpStatusCode.OK)]
         public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, ILogger log, 
             string customerId,
             [Inject]IResourceHelper resourceHelper,

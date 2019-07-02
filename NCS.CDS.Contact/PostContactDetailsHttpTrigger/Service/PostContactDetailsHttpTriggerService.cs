@@ -9,11 +9,16 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
+        private IDocumentDBProvider _documentDbProvider;
+
+        public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        {
+            _documentDbProvider = documentDbProvider;
+        }
+
         public bool DoesContactDetailsExistForCustomer(Guid customerId)
         {
-            var documentDbProvider = new DocumentDBProvider();
-
-            var doesContactDetailsExistForCustomer = documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
+            var doesContactDetailsExistForCustomer = _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
 
             return doesContactDetailsExistForCustomer;
         }
@@ -25,9 +30,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 
             contactdetails.SetDefaultValues();
 
-            var documentDbProvider = new DocumentDBProvider();
-
-            var response = await documentDbProvider.CreateContactDetailsAsync(contactdetails);
+            var response = await _documentDbProvider.CreateContactDetailsAsync(contactdetails);
 
             return response.StatusCode == HttpStatusCode.Created ? (dynamic)response.Resource : (Guid?)null;
         }

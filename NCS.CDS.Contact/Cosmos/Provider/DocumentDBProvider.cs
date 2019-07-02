@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using DFC.Common.Standard.Logging;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
-using NCS.DSS.Contact.Cosmos.Client;
+using NCS.DSS.ActionPlan.Cosmos.Client;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Models;
 
@@ -12,6 +13,13 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
+        private readonly ILoggerHelper _loggerHelper;
+
+        public DocumentDBProvider(ILoggerHelper loggerHelper)
+        {
+            _loggerHelper = loggerHelper;
+        }
+
         public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {
             var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);

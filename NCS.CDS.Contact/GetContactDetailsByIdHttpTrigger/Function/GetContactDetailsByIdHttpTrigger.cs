@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http.Description;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -11,6 +10,8 @@ using NCS.DSS.Contact.Ioc;
 using NCS.DSS.Contact.Annotations;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using DFC.Functions.DI.Standard.Attributes;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 {
@@ -22,7 +23,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Get request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
-        [ResponseType(typeof(Models.ContactDetails))]
+        [ProducesResponseType(typeof(Models.ContactDetails), (int)HttpStatusCode.OK)]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, string customerId, string contactid,
             [Inject]IResourceHelper resourceHelper,
             [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,

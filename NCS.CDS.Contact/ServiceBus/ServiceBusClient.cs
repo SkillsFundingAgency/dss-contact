@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,10 +10,10 @@ namespace NCS.DSS.Contact.ServiceBus
 {
     public static class ServiceBusClient
     {
-        public static readonly string KeyName = ConfigurationManager.AppSettings["KeyName"];
-        public static readonly string AccessKey = ConfigurationManager.AppSettings["AccessKey"];
-        public static readonly string BaseAddress = ConfigurationManager.AppSettings["BaseAddress"];
-        public static readonly string QueueName = ConfigurationManager.AppSettings["QueueName"];
+        public static readonly string KeyName = Environment.GetEnvironmentVariable("KeyName");
+        public static readonly string AccessKey = Environment.GetEnvironmentVariable("AccessKey");
+        public static readonly string BaseAddress = Environment.GetEnvironmentVariable("BaseAddress");
+        public static readonly string QueueName = Environment.GetEnvironmentVariable("QueueName");
 
         public static async Task SendPostMessageAsync(Models.ContactDetails contactDetails, string reqUrl)
         {

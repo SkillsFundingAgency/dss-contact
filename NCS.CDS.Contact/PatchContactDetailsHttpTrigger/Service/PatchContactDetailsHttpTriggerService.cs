@@ -9,6 +9,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
+        private readonly IDocumentDBProvider _documentDbProvider;
+
+        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        {
+            _documentDbProvider = documentDbProvider;
+        }
+
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
@@ -17,8 +24,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
             contactdetailsPatch.SetDefaultValues();
             contactdetails.Patch(contactdetailsPatch);
 
-            var documentDbProvider = new DocumentDBProvider();
-            var response = await documentDbProvider.UpdateContactDetailsAsync(contactdetails);
+            var response = await _documentDbProvider.UpdateContactDetailsAsync(contactdetails);
 
             var responseStatusCode = response.StatusCode;
 
@@ -27,8 +33,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 
         public async Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
         {
-            var documentDbProvider = new DocumentDBProvider();
-            var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
+            var contactdetails = await _documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;
         }
