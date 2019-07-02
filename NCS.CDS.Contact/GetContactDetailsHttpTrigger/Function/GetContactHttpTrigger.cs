@@ -6,12 +6,15 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
-using NCS.DSS.Contact.Ioc;
-using NCS.DSS.Contact.Annotations;
 using NCS.DSS.Contact.Cosmos.Helper;
-using NCS.DSS.Contact.Helpers;
+
 using Microsoft.AspNetCore.Mvc;
 using DFC.Functions.DI.Standard.Attributes;
+using DFC.Swagger.Standard.Annotations;
+using DFC.JSON.Standard;
+using DFC.HTTP.Standard;
+using DFC.Common.Standard.Logging;
+using NCS.DSS.Contact.Validation;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 {
@@ -24,33 +27,37 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), (int)HttpStatusCode.OK)]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequestMessage req, ILogger log, string customerId,
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]Microsoft.AspNetCore.Http.HttpRequest req, ILogger log, string customerId,
             [Inject]IResourceHelper resourceHelper,
-            [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
+            [Inject]ILoggerHelper loggerHelper,
+            [Inject]IHttpRequestHelper httpRequestHelper,
+            [Inject]IHttpResponseMessageHelper httpResponseMessageHelper,
+            [Inject]IJsonHelper jsonHelper,
+            [Inject]IValidate validate,
             [Inject]IGetContactHttpTriggerService getContactsService)
         {
-            var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
+            var touchpointId = httpRequestHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
                 log.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return HttpResponseMessageHelper.BadRequest();
+                return httpResponseMessageHelper.BadRequest();
             }
 
             log.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
-                return HttpResponseMessageHelper.BadRequest(customerGuid);
+                return httpResponseMessageHelper.BadRequest(customerGuid);
 
             var doesCustomerExist = await resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
-                return HttpResponseMessageHelper.NoContent(customerGuid);
+                return httpResponseMessageHelper.NoContent(customerGuid);
 
             var contact = await getContactsService.GetContactDetailsForCustomerAsync(customerGuid);
 
             return contact == null ?
-                HttpResponseMessageHelper.NoContent(customerGuid) :
-                HttpResponseMessageHelper.Ok(JsonHelper.SerializeObject(contact));
+                httpResponseMessageHelper.NoContent(customerGuid) :
+                httpResponseMessageHelper.Ok(jsonHelper.SerializeObjectAndRenameIdProperty(contact, "id", "CustomerId"));
         }
     }
 }
