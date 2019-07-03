@@ -101,7 +101,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             return contactDetails == null
                 ? httpResponseMessageHelper.BadRequest(customerGuid)
-                : httpResponseMessageHelper.Created(jsonHelper.SerializeObjectAndRenameIdProperty(contactDetails, "id", "CustomerId"));
+                : httpResponseMessageHelper.Created(jsonHelper.SerializeObjectAndRenameIdProperty(contactDetails, "id", "ContactId"));
         }
     }
 }

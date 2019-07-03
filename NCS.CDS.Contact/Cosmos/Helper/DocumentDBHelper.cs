@@ -13,7 +13,7 @@ namespace NCS.DSS.Contact.Cosmos.Helper
 
         private static Uri _customerDocumentCollectionUri;
         private static readonly string CustomerDatabaseId = Environment.GetEnvironmentVariable("CustomerDatabaseId");
-        private static readonly string CustomerCollectionId = ("CustomerCollectionId");
+        private static readonly string CustomerCollectionId = Environment.GetEnvironmentVariable("CustomerCollectionId");
 
         public static Uri CreateDocumentCollectionUri()
         {

@@ -57,7 +57,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 
             return contact == null ?
                 httpResponseMessageHelper.NoContent(customerGuid) :
-                httpResponseMessageHelper.Ok(jsonHelper.SerializeObjectAndRenameIdProperty(contact, "id", "CustomerId"));
+                httpResponseMessageHelper.Ok(jsonHelper.SerializeObjectAndRenameIdProperty(contact, "id", "ContactId"));
         }
     }
 }

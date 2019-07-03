@@ -100,12 +100,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
-            if (updatedContactDetails != null)
-                await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+            // todo - uncomment before checing in
+            //if (updatedContactDetails != null)
+            //    await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
 
             return updatedContactDetails == null ?
                 httpResponseMessageHelper.BadRequest(contactGuid) :
-                httpResponseMessageHelper.Ok(jsonHelper.SerializeObjectAndRenameIdProperty(updatedContactDetails, "id", "CustomerId"));
+                httpResponseMessageHelper.Ok(jsonHelper.SerializeObjectAndRenameIdProperty(updatedContactDetails, "id", "ContactId"));
         }
     }
 }
