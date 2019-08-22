@@ -109,6 +109,10 @@
                     {
                       "name": "QueueName",
                       "value": "[parameters('serviceBusQueueName')]"
+                    },
+                    {
+                      "name": "CustomerSearchIndexName",
+                      "value": "customer-search-index-v2"
                     }
                   ]
                 }
