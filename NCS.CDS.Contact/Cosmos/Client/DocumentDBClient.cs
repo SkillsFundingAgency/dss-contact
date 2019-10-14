@@ -14,11 +14,10 @@ namespace NCS.DSS.Contact.Cosmos.Client
                 return _documentClient;
 
             _documentClient = new DocumentClient(new Uri(
-                ConfigurationManager.AppSettings["Endpoint"]),
+                    ConfigurationManager.AppSettings["Endpoint"]),
                 ConfigurationManager.AppSettings["Key"]);
 
             return _documentClient;
         }
-        
     }
 }
