@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
@@ -26,6 +27,7 @@ namespace NCS.DSS.Contact.Tests
         private ILogger _log;
         private HttpRequestMessage _request;
         private IResourceHelper _resourceHelper;
+        private IDocumentDBProvider _documentDBProvider;
         private IValidate _validate;
         private IHttpRequestMessageHelper _httpRequestMessageHelper;
         private IPatchContactDetailsHttpTriggerService _patchContactHttpTriggerService;
@@ -47,7 +49,9 @@ namespace NCS.DSS.Contact.Tests
 
             _log = Substitute.For<ILogger>();
             _resourceHelper = Substitute.For<IResourceHelper>();
-            _validate = Substitute.For<IValidate>();
+
+            _documentDBProvider = Substitute.For<IDocumentDBProvider>();
+            _validate = new Validate(_documentDBProvider);
             _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _patchContactHttpTriggerService = Substitute.For<IPatchContactDetailsHttpTriggerService>();
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns("0000000001");
@@ -80,10 +84,11 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactHasFailedValidation()
         {
+            _contactDetailsPatch.EmailAddress = "testing";
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
 
-            var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
-            _validate.ValidateResource(Arg.Any<Models.ContactDetailsPatch>(), false).Returns(validationResults);
+            //var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
+            //_validate.ValidateResource(Arg.Any<Models.ContactDetailsPatch>(), false).Returns(validationResults);
 
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
@@ -116,6 +121,20 @@ namespace NCS.DSS.Contact.Tests
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
             Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenContactWithEmailExists()
+        {
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+
+            _documentDBProvider.DoesContactDetailsWithEmailExists(Arg.Any<string>()).ReturnsForAnyArgs(true);
+
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
         }
 
         [Test]
