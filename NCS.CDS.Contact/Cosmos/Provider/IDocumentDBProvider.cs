@@ -10,7 +10,8 @@ namespace NCS.DSS.Contact.Cosmos.Provider
     {
         Task<bool> DoesCustomerResourceExist(Guid customerId);
         Task<bool> DoesCustomerHaveATerminationDate(Guid customerId);
-        bool DoesContactDetailsExistForCustomer(Guid customerId);
+        Task<bool> DoesContactDetailsExistForCustomer(Guid customerId);
+        Task<bool> DoesContactDetailsWithEmailExists(string emailAddressToCheck);
         Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId);
         Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId);
         Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails);

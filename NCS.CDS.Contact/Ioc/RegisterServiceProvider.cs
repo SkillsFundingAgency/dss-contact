@@ -7,6 +7,7 @@ using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Validation;
+using NCS.DSS.Contact.Cosmos.Provider;
 
 namespace NCS.DSS.Contact.Ioc
 {
@@ -21,6 +22,7 @@ namespace NCS.DSS.Contact.Ioc
             services.AddTransient<IPatchContactDetailsHttpTriggerService, PatchContactDetailsHttpTriggerService>();
 
             services.AddTransient<IResourceHelper, ResourceHelper>();
+            services.AddTransient<IDocumentDBProvider, DocumentDBProvider>();
             services.AddTransient<IValidate, Validate>();
             services.AddTransient<IHttpRequestMessageHelper, HttpRequestMessageHelper>();
             return services.BuildServiceProvider(true);
