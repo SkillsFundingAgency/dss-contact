@@ -58,7 +58,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             }
         }
 
-        public bool DoesContactDetailsExistForCustomer(Guid customerId)
+        public async Task<bool> DoesContactDetailsExistForCustomer(Guid customerId)
         {
             var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
 
@@ -67,8 +67,13 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             if (client == null)
                 return false;
 
-            var contactDetailsForCustomerQuery = client.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 });
-            return contactDetailsForCustomerQuery.Where(x => x.CustomerId == customerId).AsEnumerable().Any();
+            var contactDetailsForCustomerQuery = client?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                                                        .Where(x => x.CustomerId == customerId)
+                                                        .AsDocumentQuery();
+
+            var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
+
+            return contactDetails.Any();
         }
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
@@ -86,8 +91,27 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 return null;
 
             var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
-
+             
             return contactDetails?.FirstOrDefault();
+        }
+
+        public async Task<bool> DoesContactDetailsWithEmailExists(string emailAddressToCheck)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+
+            var client = DocumentDBClient.CreateDocumentClient();
+
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.EmailAddress == emailAddressToCheck)
+                .AsDocumentQuery();
+
+            if (contactDetailsForEmailQuery == null)
+                return false;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+
+            return contactDetails.Any();
         }
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId)

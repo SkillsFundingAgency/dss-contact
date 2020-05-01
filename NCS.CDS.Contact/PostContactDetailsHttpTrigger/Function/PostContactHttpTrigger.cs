@@ -14,6 +14,7 @@ using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -69,7 +70,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             contactdetailsRequest.SetIds(customerGuid, touchpointId);
 
-            var errors = validate.ValidateResource(contactdetailsRequest, true);
+            var errors = await validate.ValidateResource(contactdetailsRequest, true);
 
             if (errors != null && errors.Any())
                 return HttpResponseMessageHelper.UnprocessableEntity(errors);
@@ -84,7 +85,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
                 return HttpResponseMessageHelper.Forbidden(customerGuid);
 
-            var doesContactDetailsExist = contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
+            var doesContactDetailsExist = await contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
             if (doesContactDetailsExist)
                 return HttpResponseMessageHelper.Conflict();
