@@ -74,7 +74,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
-            var errors = validate.ValidateResource(contactdetailsPatchRequest, false);
+            var errors = await validate.ValidateResource(contactdetailsPatchRequest, false);
 
             if (errors != null && errors.Any())
                 return HttpResponseMessageHelper.UnprocessableEntity(errors);
@@ -97,7 +97,17 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
             if (updatedContactDetails != null)
-                await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+            {
+                try
+                {
+                    await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+                }
+                catch(Exception ex)
+                {
+                    log.LogError($"Error while sending PATCH request to ServiceBut. {ex.Message}", ex);
+                    throw;
+                }
+            }
 
             return updatedContactDetails == null ?
                 HttpResponseMessageHelper.BadRequest(contactGuid) :
