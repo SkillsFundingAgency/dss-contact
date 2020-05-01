@@ -1,0 +1,186 @@
+{
+	"info": {
+		"_postman_id": "0e453fb7-8386-49fe-bdd6-7f3670abadf9",
+		"name": "DSS - Contacts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "API Definiation (Swagger Spec)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:7071/api/ContactDetails/API-Definition",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"ContactDetails",
+						"API-Definition"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - ContactDetails",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "touchpointId",
+						"value": "90000000",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:7071/api/customers/17fa74e4-1cb5-4372-b27b-32615d03c36c/ContactDetails/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"customers",
+						"17fa74e4-1cb5-4372-b27b-32615d03c36c",
+						"ContactDetails",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - ContactDetails by Customer & Contact Id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "touchpointId",
+						"value": "9000000",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"customers",
+						"16517aea-f994-4a72-ac4b-cb682ec21167",
+						"ContactDetails",
+						"bdb678d3-a518-433d-92f5-ef78332e111b"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "9000000",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH - ContactDetails",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "touchpointId",
+						"type": "text",
+						"value": "9999999999"
+					},
+					{
+						"key": "apimurl",
+						"value": "http://localhost:7071/",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"CustomerId\": \"16517aea-f994-4a72-ac4b-cb682ec21167\",\n    \"PreferredContactMethod\": 1,\n    \"MobileNumber\": null,\n    \"HomeNumber\": null,\n    \"AlternativeNumber\": null,\n    \"EmailAddress\": \"javeed3@customer.com\",\n}"
+				},
+				"url": {
+					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"customers",
+						"16517aea-f994-4a72-ac4b-cb682ec21167",
+						"ContactDetails",
+						"bdb678d3-a518-433d-92f5-ef78332e111b"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "9000000",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST - ContactDetails",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "touchpointId",
+						"type": "text",
+						"value": "9999999999"
+					},
+					{
+						"key": "apimurl",
+						"value": "http://localhost:7071/",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"CustomerId\": \"16517aea-f994-4a72-ac4b-cb682ec21167\",\n    \"PreferredContactMethod\": 1,\n    \"MobileNumber\": null,\n    \"HomeNumber\": null,\n    \"AlternativeNumber\": null,\n    \"EmailAddress\": \"javeed3@customer.com\",\n}"
+				},
+				"url": {
+					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"customers",
+						"16517aea-f994-4a72-ac4b-cb682ec21167",
+						"ContactDetails",
+						"bdb678d3-a518-433d-92f5-ef78332e111b"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "9000000",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
