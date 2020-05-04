@@ -67,7 +67,7 @@ namespace NCS.DSS.Contact.Validation
                 var doesContactWithEmailExists = await _documentDbProvider.DoesContactDetailsWithEmailExists(contactDetailsResource.EmailAddress);
 
                 if (doesContactWithEmailExists)
-                    results.Add(new ValidationResult("Contact with Email Address contactDetailsResource.EmailAddress already exists.", new[] { "EmailAddress" }));
+                    results.Add(new ValidationResult($"Contact with Email Address {contactDetailsResource.EmailAddress} already exists.", new[] { "EmailAddress" }));
             }
         }
     }
