@@ -42,13 +42,13 @@
       "type": "string"
     },
     "storageAccountKey": {
-      "type": "string"
+      "type": "securestring"
     },
     "storageAccountName": {
-      "type": "string"
+      "type": "securestring"
     },
     "templateBaseUrl": {
-      "type": "string"
+      "type": "securestring"
     }
   },
     "variables": {
