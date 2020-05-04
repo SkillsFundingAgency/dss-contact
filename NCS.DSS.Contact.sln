@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NCS.DSS.Contact.Tests", "NC
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postman-Tests", "Postman-Tests", "{DEB21000-B05F-483E-943A-D71511DCEDF1}"
 	ProjectSection(SolutionItems) = preProject
+		Postman-Tests\Contacts_AT.postman_environment.json = Postman-Tests\Contacts_AT.postman_environment.json
+		Postman-Tests\Contacts_Local.postman_environment.json = Postman-Tests\Contacts_Local.postman_environment.json
 		Postman-Tests\DSS - Contacts.postman_collection.json = Postman-Tests\DSS - Contacts.postman_collection.json
 	EndProjectSection
 EndProject

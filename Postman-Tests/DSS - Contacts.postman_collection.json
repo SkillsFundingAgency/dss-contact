@@ -11,12 +11,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:7071/api/ContactDetails/API-Definition",
-					"protocol": "http",
+					"raw": "{{endpoint}}/api/ContactDetails/API-Definition",
 					"host": [
-						"localhost"
+						"{{endpoint}}"
 					],
-					"port": "7071",
 					"path": [
 						"api",
 						"ContactDetails",
@@ -38,12 +36,10 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:7071/api/customers/17fa74e4-1cb5-4372-b27b-32615d03c36c/ContactDetails/",
-					"protocol": "http",
+					"raw": "{{endpoint}}/api/customers/17fa74e4-1cb5-4372-b27b-32615d03c36c/ContactDetails/",
 					"host": [
-						"localhost"
+						"{{endpoint}}"
 					],
-					"port": "7071",
 					"path": [
 						"api",
 						"customers",
@@ -67,12 +63,10 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
-					"protocol": "http",
+					"raw": "{{endpoint}}/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
 					"host": [
-						"localhost"
+						"{{endpoint}}"
 					],
-					"port": "7071",
 					"path": [
 						"api",
 						"customers",
@@ -112,14 +106,11 @@
 					"raw": "{\n    \"CustomerId\": \"16517aea-f994-4a72-ac4b-cb682ec21167\",\n    \"PreferredContactMethod\": 1,\n    \"MobileNumber\": null,\n    \"HomeNumber\": null,\n    \"AlternativeNumber\": null,\n    \"EmailAddress\": \"javeed3@customer.com\",\n}"
 				},
 				"url": {
-					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
-					"protocol": "http",
+					"raw": "{{endpoint}}api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
 					"host": [
-						"localhost"
+						"{{endpoint}}api"
 					],
-					"port": "7071",
 					"path": [
-						"api",
 						"customers",
 						"16517aea-f994-4a72-ac4b-cb682ec21167",
 						"ContactDetails",
@@ -154,21 +145,19 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"CustomerId\": \"16517aea-f994-4a72-ac4b-cb682ec21167\",\n    \"PreferredContactMethod\": 1,\n    \"MobileNumber\": null,\n    \"HomeNumber\": null,\n    \"AlternativeNumber\": null,\n    \"EmailAddress\": \"javeed3@customer.com\",\n}"
+					"raw": "{\n    \"CustomerId\": \"16517aea-f994-4a72-ac4b-cb682ec21167\",\n    \"PreferredContactMethod\": 1,\n    \"MobileNumber\": null,\n    \"HomeNumber\": null,\n    \"AlternativeNumber\": null,\n    \"EmailAddress\": \"newPost2@customer.com\",\n}"
 				},
 				"url": {
-					"raw": "http://localhost:7071/api/customers/16517aea-f994-4a72-ac4b-cb682ec21167/ContactDetails/bdb678d3-a518-433d-92f5-ef78332e111b",
-					"protocol": "http",
+					"raw": "{{endpoint}}/api/customers/b6f63501-6aaf-4335-8149-7ace63b894a3/ContactDetails/",
 					"host": [
-						"localhost"
+						"{{endpoint}}"
 					],
-					"port": "7071",
 					"path": [
 						"api",
 						"customers",
-						"16517aea-f994-4a72-ac4b-cb682ec21167",
+						"b6f63501-6aaf-4335-8149-7ace63b894a3",
 						"ContactDetails",
-						"bdb678d3-a518-433d-92f5-ef78332e111b"
+						""
 					],
 					"query": [
 						{
