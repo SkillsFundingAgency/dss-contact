@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
@@ -22,6 +23,7 @@ namespace NCS.DSS.Contact.Tests
     public class PatchContactHttpTriggerTests
     {
         private const string ValidCustomerId = "7E467BDB-213F-407A-B86A-1954053D3C24";
+        private Guid validCustomerGuid = new Guid(ValidCustomerId);
         private const string ValidContactId = "1e1a555c-9633-4e12-ab28-09ed60d51cb3";
         private const string InValidId = "1111111-2222-3333-4444-555555555555";
         private ILogger _log;
@@ -43,7 +45,7 @@ namespace NCS.DSS.Contact.Tests
             _request = new HttpRequestMessage()
             {
                 Content = new StringContent(string.Empty),
-                RequestUri = 
+                RequestUri =
                     new Uri($"http://localhost:7071/api/Customers/7E467BDB-213F-407A-B86A-1954053D3C24/ContactDetails/1e1a555c-9633-4e12-ab28-09ed60d51cb3")
             };
 
@@ -101,7 +103,7 @@ namespace NCS.DSS.Contact.Tests
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactRequestIsInvalid()
         {
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Throws(new JsonException());
-            
+
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -127,6 +129,11 @@ namespace NCS.DSS.Contact.Tests
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenContactWithEmailExists()
         {
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).Returns(Task.FromResult(true).Result);
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>())
+                .Returns(_contactDetails);
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<ContactDetails>(), Arg.Any<ContactDetailsPatch>())
+                .Returns(new ContactDetails());
 
             _documentDBProvider.DoesContactDetailsWithEmailExists(Arg.Any<string>()).ReturnsForAnyArgs(true);
 
@@ -134,7 +141,7 @@ namespace NCS.DSS.Contact.Tests
 
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
+            Assert.AreEqual((HttpStatusCode)200, result.StatusCode);
         }
 
         [Test]
