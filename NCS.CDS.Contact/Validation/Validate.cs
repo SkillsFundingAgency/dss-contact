@@ -63,11 +63,14 @@ namespace NCS.DSS.Contact.Validation
                 if (contactDetailsResource.PreferredContactMethod.HasValue && !Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value))
                     results.Add(new ValidationResult("Please supply a valid Preferred Contact Method", new[] { "PreferredContactMethod" }));
 
-                // TODO : Only do this if account has digital identity
-                var doesContactWithEmailExists = await _documentDbProvider.DoesContactDetailsWithEmailExists(contactDetailsResource.EmailAddress);
+                // TODO : Only do this if account has digital identity & email address supplied
+                if (!string.IsNullOrEmpty(contactDetailsResource.EmailAddress))
+                {
+                    var doesContactWithEmailExists = await _documentDbProvider.DoesContactDetailsWithEmailExists(contactDetailsResource.EmailAddress);
 
-                if (doesContactWithEmailExists)
-                    results.Add(new ValidationResult($"Contact with Email Address {contactDetailsResource.EmailAddress} already exists.", new[] { "EmailAddress" }));
+                    if (doesContactWithEmailExists)
+                        results.Add(new ValidationResult($"Contact with Email Address {contactDetailsResource.EmailAddress} already exists.", new[] { "EmailAddress" }));
+                }
             }
         }
     }
