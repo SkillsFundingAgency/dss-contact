@@ -40,6 +40,9 @@
     },
     "SearchServiceAdminApiKey": {
       "type": "string"
+    },
+    "CosmosDbConnectionString": {
+      "type": "string"
     }
   },
     "variables": {
@@ -127,6 +130,10 @@
                     {
                       "name": "SearchServiceAdminApiKey",
                       "value": "[parameters('SearchServiceAdminApiKey')]"
+                    },
+                    {
+                      "name": "ContactDetailsConnectionString",
+                      "value": "[parameters('CosmosDbConnectionString')]"
                     }
                   ]
                 }
