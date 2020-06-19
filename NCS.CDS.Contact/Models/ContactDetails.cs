@@ -82,16 +82,16 @@ namespace NCS.DSS.Contact.Models
             if(contactdetailsPatch.PreferredContactMethod.HasValue)
                 PreferredContactMethod = contactdetailsPatch.PreferredContactMethod;
 
-            if(!string.IsNullOrEmpty(contactdetailsPatch.AlternativeNumber))
+            if(contactdetailsPatch.AlternativeNumber != null)
                 AlternativeNumber = contactdetailsPatch.AlternativeNumber;
 
-            if(!string.IsNullOrEmpty(contactdetailsPatch.EmailAddress))
+            if(contactdetailsPatch.EmailAddress != null)
                 EmailAddress = contactdetailsPatch.EmailAddress;
 
-            if (!string.IsNullOrEmpty(contactdetailsPatch.HomeNumber))
+            if (contactdetailsPatch.HomeNumber != null)
                 HomeNumber = contactdetailsPatch.HomeNumber;
 
-            if (!string.IsNullOrEmpty(contactdetailsPatch.MobileNumber))
+            if (contactdetailsPatch.MobileNumber != null)
                 MobileNumber = contactdetailsPatch.MobileNumber;
 
             if(contactdetailsPatch.LastModifiedDate.HasValue)
