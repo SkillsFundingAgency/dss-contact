@@ -40,6 +40,15 @@
     },
     "templateBaseUrl": {
       "type": "string"
+    },
+    "SearchServiceName": {
+      "type": "string"
+    },
+    "SearchServiceAdminApiKey": {
+      "type": "string"
+    },
+    "CosmosDbConnectionString": {
+      "type": "string"
     }
   },
     "variables": {
@@ -90,6 +99,15 @@
                 },
                 "serviceBusQueueName": {
                   "value": "[parameters('serviceBusQueueName')]"
+                },
+                "SearchServiceName": {
+                  "value": "[parameters('SearchServiceName')]"
+                },
+                "SearchServiceAdminApiKey": {
+                  "value": "[parameters('SearchServiceAdminApiKey')]"
+                },
+                "CosmosDbConnectionString": {
+                  "value": "[parameters('CosmosDbConnectionString')]"
                 }
               }
             },
