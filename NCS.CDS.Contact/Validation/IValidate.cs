@@ -6,6 +6,6 @@ namespace NCS.DSS.Contact.Validation
 {
     public interface IValidate
     {
-        List<ValidationResult> ValidateResource(IContactDetails resource, bool validateModelForPost);
+        List<ValidationResult> ValidateResource(IContactDetails resource);
     }
 }
