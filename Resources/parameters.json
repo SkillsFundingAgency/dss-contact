@@ -3,19 +3,52 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "templateBaseUrl": {
-            "value": "https://raw.githubusercontent.com/SkillsFundingAgency/cdh-central/master/Resources/"
+            "value": "__NestedArmTemplateBaseUrl__"
         },
         "environmentName": {
-            "value": ""
+            "value": "__NotTokenised__"
         },
         "functionAppNames": {
-            "value": []
+            "value": "__NotTokenised__"
         },
         "sharedAppServicePlanName": {
-            "value": ""
+            "value": "__SharedAppServicePlanName__"
         },
         "sharedAppServicePlanResourceGroup": {
-            "value": ""
+            "value": "__SharedAppServicePlanResourceGroup__"
+        },
+        "cosmosDbCollectionId": {
+            "value": "__ApiResourceName__"
+        },
+        "cosmosDbDatabaseId": {
+            "value": "__ApiResourceName__"
+        },
+        "cosmosDbEndpoint": {
+            "value": "__CosmosDbEndpoint__"
+        },
+        "cosmosDbKey": {
+            "value": "__CosmosDbKey__"
+        },
+        "CosmosDbConnectionString": {
+            "value": "__CosmosDbConnectionString__"
+        },
+        "serviceBusAccessKey": {
+            "value": "__serviceBusAccessKey__"
+        },
+        "serviceBusAccessKeyName": {
+            "value": "__serviceBusAccessKeyName__"
+        },
+        "serviceBusBaseAddress": {
+            "value": "__serviceBusBaseAddress__"
+        },
+        "serviceBusQueueName": {
+            "value": "__serviceBusQueueName__"
+        },
+        "SearchServiceName": {
+            "value": "__SearchServiceName__"
+        },
+        "SearchServiceAdminApiKey": {
+            "value": "__SearchServiceAdminApiKey__"
         }
     }
 }
