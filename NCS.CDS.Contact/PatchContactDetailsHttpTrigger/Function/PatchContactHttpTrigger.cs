@@ -98,8 +98,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
-            //if (updatedContactDetails != null)
-            //    await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+            if (updatedContactDetails != null)
+                await contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
 
             return updatedContactDetails == null ?
                 HttpResponseMessageHelper.BadRequest(contactGuid) :
