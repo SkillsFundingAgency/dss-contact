@@ -69,7 +69,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             contactdetailsRequest.SetIds(customerGuid, touchpointId);
 
-            var errors = validate.ValidateResource(contactdetailsRequest);
+            var errors = validate.ValidateResource(contactdetailsRequest, null, true);
 
             if (errors != null && errors.Any())
                 return HttpResponseMessageHelper.UnprocessableEntity(errors);
