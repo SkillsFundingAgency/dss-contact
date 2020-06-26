@@ -18,10 +18,10 @@
             "value": "__SharedAppServicePlanResourceGroup__"
         },
         "cosmosDbCollectionId": {
-            "value": "__ApiResourceName__"
+            "value": "__DatabaseName__"
         },
         "cosmosDbDatabaseId": {
-            "value": "__ApiResourceName__"
+            "value": "__DatabaseName__"
         },
         "cosmosDbEndpoint": {
             "value": "__CosmosDbEndpoint__"
