@@ -23,7 +23,7 @@ namespace NCS.DSS.Contact.Validation
         {
             if (contactDetailsResource == null)
                 return;
-
+            //New validation for empty strings
             if (validateModelForPost)
             {
                 switch (contactDetailsResource.PreferredContactMethod)
