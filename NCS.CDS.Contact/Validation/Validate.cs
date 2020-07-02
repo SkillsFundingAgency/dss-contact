@@ -23,10 +23,30 @@ namespace NCS.DSS.Contact.Validation
         {
             if (contactDetailsResource == null)
                 return;
+            //Check PreferredContactMethod being patched
+            ValidatePreferredContact(contactDetailsResource, results, contactDetails,
+                validateModelForPost, contactDetailsResource.PreferredContactMethod);
+
+            //if PreferredContactMethod is empty in the request check against one already in record
+            if (!contactDetailsResource.PreferredContactMethod.HasValue)
+            {
+                ValidatePreferredContact(contactDetailsResource, results, contactDetails,
+                    validateModelForPost, contactDetails.PreferredContactMethod);
+            }
+
+            if (contactDetailsResource.LastModifiedDate.HasValue && contactDetailsResource.LastModifiedDate.Value > DateTime.UtcNow)
+                results.Add(new ValidationResult("Last Modified Date must be less the current date/time", new[] { "LastModifiedDate" }));
+
+            if (contactDetailsResource.PreferredContactMethod.HasValue && !Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value))
+                results.Add(new ValidationResult("Please supply a valid Preferred Contact Method", new[] { "PreferredContactMethod" }));
+        }
+
+        private void ValidatePreferredContact(IContactDetails contactDetailsResource, List<ValidationResult> results, ContactDetails contactDetails, bool validateModelForPost, PreferredContactMethod? preferredContactMethod)
+        {
             //New validation for empty strings
             if (validateModelForPost)
             {
-                switch (contactDetailsResource.PreferredContactMethod)
+                switch (preferredContactMethod)
                 {
                     case PreferredContactMethod.Email:
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress))
@@ -51,7 +71,7 @@ namespace NCS.DSS.Contact.Validation
             }
             else
             {
-                switch (contactDetailsResource.PreferredContactMethod)
+                switch (preferredContactMethod)
                 {
                     case PreferredContactMethod.Email:
                         if (contactDetailsResource.EmailAddress == "" ||
@@ -78,12 +98,6 @@ namespace NCS.DSS.Contact.Validation
                         break;
                 }
             }
-
-            if (contactDetailsResource.LastModifiedDate.HasValue && contactDetailsResource.LastModifiedDate.Value > DateTime.UtcNow)
-                results.Add(new ValidationResult("Last Modified Date must be less the current date/time", new[] { "LastModifiedDate" }));
-
-            if (contactDetailsResource.PreferredContactMethod.HasValue && !Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value))
-                results.Add(new ValidationResult("Please supply a valid Preferred Contact Method", new[] { "PreferredContactMethod" }));
         }
     }
 }
