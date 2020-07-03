@@ -101,9 +101,10 @@ namespace NCS.DSS.Contact.Helpers
 
         public static HttpResponseMessage UnprocessableEntity(HttpRequestMessage req)
         {
+            //Remove SerializeObject due to cyclic error. String representation looks fine
             return new HttpResponseMessage((HttpStatusCode)422)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(req),
+                Content = new StringContent(req.ToString(),
                     Encoding.UTF8, "application/json")
             };
         }
