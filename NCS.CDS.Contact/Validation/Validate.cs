@@ -28,7 +28,7 @@ namespace NCS.DSS.Contact.Validation
                 validateModelForPost, contactDetailsResource.PreferredContactMethod);
 
             //if PreferredContactMethod is empty in the request check against one already in record
-            if (!contactDetailsResource.PreferredContactMethod.HasValue)
+            if (!contactDetailsResource.PreferredContactMethod.HasValue && contactDetails != null)
             {
                 ValidatePreferredContact(contactDetailsResource, results, contactDetails,
                     validateModelForPost, contactDetails.PreferredContactMethod);
