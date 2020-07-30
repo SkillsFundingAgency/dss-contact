@@ -138,5 +138,20 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             return response;
         }
+
+        public async Task<bool> DoesContactDetailsWithEmailExists(string emailAddressToCheck)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.EmailAddress == emailAddressToCheck)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return false;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.Any();
+        }
     }
 }
