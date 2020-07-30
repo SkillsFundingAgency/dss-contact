@@ -180,7 +180,7 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenEmailAlreadyExists()
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAlreadyExists()
         {
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
 
@@ -193,7 +193,7 @@ namespace NCS.DSS.Contact.Tests
 
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
         }
 
 
