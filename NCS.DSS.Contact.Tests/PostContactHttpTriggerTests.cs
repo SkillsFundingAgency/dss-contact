@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
@@ -182,13 +183,14 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PostContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAlreadyExists()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
-
+            // Arrange
+            var contactDetails = new ContactDetails() { EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(contactDetails).Result);
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
             _provider.DoesContactDetailsWithEmailExists(Arg.Any<string>()).Returns(true);
+            _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
 
-            _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(_contactDetails).Result);
-
+            // Act
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
