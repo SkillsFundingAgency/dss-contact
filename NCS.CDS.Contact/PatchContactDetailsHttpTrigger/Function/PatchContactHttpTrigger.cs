@@ -1,21 +1,21 @@
-﻿using System;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Annotations;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Ioc;
+using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Validation;
+using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Ioc;
-using NCS.DSS.Contact.Models;
-using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
-using NCS.DSS.Contact.Annotations;
-using NCS.DSS.Contact.Cosmos.Helper;
-using NCS.DSS.Contact.Helpers;
-using NCS.DSS.Contact.Validation;
-using Newtonsoft.Json;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -34,7 +34,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             [Inject]IResourceHelper resourceHelper,
             [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
             [Inject]IValidate validate,
-            [Inject]IPatchContactDetailsHttpTriggerService contactdetailsPatchService)
+            [Inject]IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
+            [Inject]IDocumentDBProvider provider)
         {
             var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
@@ -93,6 +94,17 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             if (contactdetails == null)
                 return HttpResponseMessageHelper.NoContent(contactGuid);
+
+
+            // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
+            var diaccount = provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
+            if (diaccount != null)
+            {
+                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower())
+                {
+                    contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower());
+                }
+            }
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 

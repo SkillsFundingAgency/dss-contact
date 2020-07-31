@@ -14,6 +14,9 @@ namespace NCS.DSS.Contact.Cosmos.Helper
         private static Uri _customerDocumentCollectionUri;
         private static readonly string CustomerDatabaseId = ConfigurationManager.AppSettings["CustomerDatabaseId"];
         private static readonly string CustomerCollectionId = ConfigurationManager.AppSettings["CustomerCollectionId"];
+        private static readonly string DigitalIdentityDatabaseId = ConfigurationManager.AppSettings["DigitalIdentityDatabaseId"];
+        private static readonly string DigitalIdentityCollectionId = ConfigurationManager.AppSettings["DigitalIdentityCollectionId"];
+
 
         public static Uri CreateDocumentCollectionUri()
         {
@@ -48,6 +51,11 @@ namespace NCS.DSS.Contact.Cosmos.Helper
         public static Uri CreateCustomerDocumentUri(Guid customerId)
         {
             return UriFactory.CreateDocumentUri(CustomerDatabaseId, CustomerCollectionId, customerId.ToString());
+        }
+
+        public static Uri CreateDigitalIdentityDocumentUri()
+        {
+            return UriFactory.CreateDocumentCollectionUri(DigitalIdentityDatabaseId, DigitalIdentityCollectionId);
         }
 
         #endregion   

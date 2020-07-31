@@ -16,6 +16,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails);
         Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails);
         Task<bool> DoesContactDetailsWithEmailExists(string email);
+        Task<DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId);
 
     }
 }

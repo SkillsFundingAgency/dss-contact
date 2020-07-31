@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 using NCS.DSS.Contact.Annotations;
 using NCS.DSS.Contact.ReferenceData;
+using Newtonsoft.Json;
 
 namespace NCS.DSS.Contact.Models
 {
@@ -59,6 +61,27 @@ namespace NCS.DSS.Contact.Models
         [Example(Description = "0000000001")]
         public string LastModifiedTouchpointId { get; set; }
 
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public bool? IsDigitalAccount { get; set; }
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public string FirstName { get; private set; }
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public string LastName { get; private set; }
+
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public bool? ChangeEmailAddress { get; private set; }
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public string  CurrentEmail { get; private set; }
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public string NewEmail { get; private set; }
+
+
         public void SetDefaultValues()
         {
             ContactId = Guid.NewGuid();
@@ -100,6 +123,14 @@ namespace NCS.DSS.Contact.Models
             if (!string.IsNullOrEmpty(contactdetailsPatch.LastModifiedTouchpointId))
                 LastModifiedTouchpointId = contactdetailsPatch.LastModifiedTouchpointId;
 
+        }
+
+        public void SetDigitalAccountEmailChanged(string newEmail)
+        {
+            IsDigitalAccount = true;
+            ChangeEmailAddress = true;
+            NewEmail = newEmail;
+            CurrentEmail = EmailAddress;
         }
     }    
 }

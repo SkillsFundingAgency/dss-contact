@@ -153,5 +153,23 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
             return contactDetails.Any();
         }
+
+        public async Task<Models.DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
+        {
+            var collectionUri = DocumentDBHelper.CreateDigitalIdentityDocumentUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+
+            var identityForCustomerQuery = client
+                ?.CreateDocumentQuery<Models.DigitalIdentity>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.CustomerId == customerId)
+                .AsDocumentQuery();
+
+            if (identityForCustomerQuery == null)
+                return null;
+
+            var digitalIdentity = await identityForCustomerQuery.ExecuteNextAsync<Models.DigitalIdentity>();
+
+            return digitalIdentity?.FirstOrDefault();
+        }
     }
 }
