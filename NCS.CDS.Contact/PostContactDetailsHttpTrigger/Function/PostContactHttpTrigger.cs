@@ -91,9 +91,12 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (doesContactDetailsExist)
                 return HttpResponseMessageHelper.Conflict();
 
-            var emailExists = await provider.DoesContactDetailsWithEmailExists(contactdetailsRequest.EmailAddress);
-            if (emailExists)
-                return HttpResponseMessageHelper.Conflict();
+            if (!string.IsNullOrEmpty(contactdetailsRequest.EmailAddress))
+            {
+                var emailExists = await provider.DoesContactDetailsWithEmailExists(contactdetailsRequest.EmailAddress);
+                if (emailExists)
+                    return HttpResponseMessageHelper.Conflict();
+            }
 
             var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);
 
