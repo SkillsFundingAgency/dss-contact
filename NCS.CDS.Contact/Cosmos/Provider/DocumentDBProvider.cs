@@ -160,7 +160,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
             var contactDetailsForEmailQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery=true })
-                .Where(x => x.EmailAddress == email && x.CustomerId==CustomerId)
+                .Where(x => x.EmailAddress == email && x.CustomerId != CustomerId)
                 .AsDocumentQuery();
             if (contactDetailsForEmailQuery == null)
                 return false;
