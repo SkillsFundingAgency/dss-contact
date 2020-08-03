@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
@@ -188,6 +189,7 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
             _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(Arg.Any<string>(), Arg.Any<Guid>()).Returns(Task.FromResult(false));
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
             _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
 
@@ -198,6 +200,27 @@ namespace NCS.DSS.Contact.Tests
             Assert.IsInstanceOf<HttpResponseMessage>(result);
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
         }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAddressIsInUseByAnotherCustomer()
+        {
+            // Arrange
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress="test@test.com" }));
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
+            _provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(Arg.Any<string>(), Arg.Any<Guid>()).Returns(Task.FromResult(true));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+        }
+
+
 
         private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailId)
         {

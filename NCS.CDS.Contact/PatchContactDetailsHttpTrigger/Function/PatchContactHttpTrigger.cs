@@ -96,6 +96,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 return HttpResponseMessageHelper.NoContent(contactGuid);
 
 
+            var emailExistsForAnotherCustomer = await provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(contactdetailsPatchRequest.EmailAddress, contactdetails.CustomerId.Value);
+            if(emailExistsForAnotherCustomer)
+                return HttpResponseMessageHelper.Conflict();
+
             // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
             var diaccount = provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
             if (diaccount != null)

@@ -154,6 +154,21 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             return contactDetails.Any();
         }
 
+        public async Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid CustomerId)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery=true })
+                .Where(x => x.EmailAddress == email && x.CustomerId==CustomerId)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return false;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.Any();
+        }
+
         public async Task<Models.DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
         {
             var collectionUri = DocumentDBHelper.CreateDigitalIdentityDocumentUri();
