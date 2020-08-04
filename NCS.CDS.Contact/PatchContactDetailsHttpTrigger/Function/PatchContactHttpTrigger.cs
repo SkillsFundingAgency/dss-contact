@@ -29,13 +29,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ResponseType(typeof(ContactDetails))]
-        public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, 
+        public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequestMessage req, ILogger log,
             string customerId, string contactid,
-            [Inject]IResourceHelper resourceHelper,
-            [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
-            [Inject]IValidate validate,
-            [Inject]IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
-            [Inject]IDocumentDBProvider provider)
+            [Inject] IResourceHelper resourceHelper,
+            [Inject] IHttpRequestMessageHelper httpRequestMessageHelper,
+            [Inject] IValidate validate,
+            [Inject] IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
+            [Inject] IDocumentDBProvider provider)
         {
             var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
@@ -95,10 +95,12 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (contactdetails == null)
                 return HttpResponseMessageHelper.NoContent(contactGuid);
 
-
-            var emailExistsForAnotherCustomer = await provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(contactdetailsPatchRequest.EmailAddress, contactdetails.CustomerId.Value);
-            if(emailExistsForAnotherCustomer)
-                return HttpResponseMessageHelper.Conflict();
+            if (!string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
+            {
+                var emailExistsForAnotherCustomer = await provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(contactdetailsPatchRequest.EmailAddress, contactdetails.CustomerId.Value);
+                if (emailExistsForAnotherCustomer)
+                    return HttpResponseMessageHelper.Conflict();
+            }
 
             // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
             var diaccount = provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);

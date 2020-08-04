@@ -205,6 +205,7 @@ namespace NCS.DSS.Contact.Tests
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAddressIsInUseByAnotherCustomer()
         {
             // Arrange
+            _contactDetailsPatch.EmailAddress = "test@test.com";
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
             _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
