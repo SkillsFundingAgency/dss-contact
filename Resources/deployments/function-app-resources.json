@@ -136,6 +136,14 @@
                     {
                       "name": "ContactDetailsConnectionString",
                       "value": "[parameters('CosmosDbConnectionString')]"
+                    },
+                    {
+                      "name": "DigitalIdentityDatabaseId",
+                      "value": "digitalidentities"
+                    },
+                    {
+                      "name": "DigitalIdentityCollectionId",
+                      "value": "digitalidentities"
                     }
                   ]
                 }
