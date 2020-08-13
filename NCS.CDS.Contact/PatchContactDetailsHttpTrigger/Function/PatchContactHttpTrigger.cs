@@ -74,11 +74,6 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
-            var errors = validate.ValidateResource(contactdetailsPatchRequest, false);
-
-            if (errors != null && errors.Any())
-                return HttpResponseMessageHelper.UnprocessableEntity(errors);
-
             var doesCustomerExist = await resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
@@ -93,6 +88,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             if (contactdetails == null)
                 return HttpResponseMessageHelper.NoContent(contactGuid);
+
+            var errors = validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
+
+            if (errors != null && errors.Any())
+                return HttpResponseMessageHelper.UnprocessableEntity(errors);
+
+
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
