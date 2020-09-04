@@ -93,9 +93,20 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (!string.IsNullOrEmpty(contactdetailsRequest.EmailAddress))
             {
-                var emailExists = await provider.DoesContactDetailsWithEmailExists(contactdetailsRequest.EmailAddress);
-                if (emailExists)
-                    return HttpResponseMessageHelper.Conflict();
+                var contacts = await provider.GetContactsByEmail(contactdetailsRequest.EmailAddress);
+                if (contacts != null)
+                {
+                    foreach (var contact in contacts)
+                    {
+                        var isReadOnly = await resourceHelper.IsCustomerReadOnly(contact.CustomerId.GetValueOrDefault());
+                        if (!isReadOnly)
+                        {
+                            //if a customer that has the same email address is not readonly (has date of termination)
+                            //then email address on the request cannot be used.
+                            return HttpResponseMessageHelper.Conflict();
+                        }
+                    }
+                }
             }
 
             var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);

@@ -187,8 +187,10 @@ namespace NCS.DSS.Contact.Tests
             var contactDetails = new ContactDetails() { EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(contactDetails).Result);
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-            _provider.DoesContactDetailsWithEmailExists(Arg.Any<string>()).Returns(true);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
             _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
+
 
             // Act
             var result = await RunFunction(ValidCustomerId);

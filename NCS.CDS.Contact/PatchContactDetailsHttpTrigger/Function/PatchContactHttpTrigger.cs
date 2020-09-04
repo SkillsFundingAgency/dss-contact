@@ -97,9 +97,20 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             if (!string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
             {
-                var emailExistsForAnotherCustomer = await provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(contactdetailsPatchRequest.EmailAddress, contactdetails.CustomerId.Value);
-                if (emailExistsForAnotherCustomer)
-                    return HttpResponseMessageHelper.Conflict();
+                var contacts = await provider.GetContactsByEmail(contactdetailsPatchRequest.EmailAddress);
+                if (contacts != null)
+                {
+                    foreach (var contact in contacts)
+                    {
+                        var isReadOnly = await resourceHelper.IsCustomerReadOnly(contact.CustomerId.GetValueOrDefault());
+                        if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
+                        {
+                            //if a customer that has the same email address is not readonly (has date of termination)
+                            //then email address on the request cannot be used.
+                            return HttpResponseMessageHelper.Conflict();
+                        }
+                    }
+                }
             }
 
             // Set Digital account properties so that contentenhancer can queue change on digital identity topic.

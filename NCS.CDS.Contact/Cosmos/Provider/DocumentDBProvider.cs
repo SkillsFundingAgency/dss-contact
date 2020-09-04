@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
@@ -169,6 +170,21 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             return contactDetails.Any();
         }
 
+        public async Task<IList<ContactDetails>> GetContactsByEmail(string emailAddressToCheck)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.EmailAddress == emailAddressToCheck)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return null;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.ToList();
+        }
+        
         public async Task<Models.DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
         {
             var collectionUri = DocumentDBHelper.CreateDigitalIdentityDocumentUri();
