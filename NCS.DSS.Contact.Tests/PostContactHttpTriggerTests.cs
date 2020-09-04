@@ -191,7 +191,6 @@ namespace NCS.DSS.Contact.Tests
             _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
             _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
 
-
             // Act
             var result = await RunFunction(ValidCustomerId);
 
@@ -200,6 +199,26 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
         }
 
+        [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeCreated_WhenEmailAlreadyExistsThatIsTerminated()
+        {
+            // Arrange
+            var contactDetails = new ContactDetails() { EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(contactDetails).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
+            _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(true));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+        }
 
         private async Task<HttpResponseMessage> RunFunction(string customerId)
         {

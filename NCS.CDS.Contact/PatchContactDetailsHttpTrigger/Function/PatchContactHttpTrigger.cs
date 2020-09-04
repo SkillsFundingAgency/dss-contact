@@ -102,7 +102,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 {
                     foreach (var contact in contacts)
                     {
-                        var isReadOnly = await resourceHelper.IsCustomerReadOnly(contact.CustomerId.GetValueOrDefault());
+                        var isReadOnly = await provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
                         if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
                         {
                             //if a customer that has the same email address is not readonly (has date of termination)

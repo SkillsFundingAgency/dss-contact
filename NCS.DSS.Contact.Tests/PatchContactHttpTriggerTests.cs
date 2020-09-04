@@ -222,7 +222,26 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
         }
 
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeOk_WhenEmailAddressIsInUseByAnotherCustomerThatIsTerminated()
+        {
+            // Arrange
+            _contactDetailsPatch.EmailAddress = "test@test.com";
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(true));
 
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        }
 
         private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailId)
         {
