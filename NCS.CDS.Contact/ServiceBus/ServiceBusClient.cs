@@ -61,7 +61,8 @@ namespace NCS.DSS.Contact.ServiceBus
                 ChangeEmailAddress = contactDetails.ChangeEmailAddress ?? null,
                 IsDigitalAccount = contactDetails.IsDigitalAccount ?? null,
                 NewEmail = contactDetails.NewEmail,
-                CurrentEmail = contactDetails.CurrentEmail
+                CurrentEmail = contactDetails.CurrentEmail,
+                contactDetails.IdentityStoreId
 
             };
 

@@ -80,6 +80,9 @@ namespace NCS.DSS.Contact.Models
         [IgnoreDataMember]
         [JsonIgnore]
         public string NewEmail { get; private set; }
+        [IgnoreDataMember]
+        [JsonIgnore]
+        public Guid? IdentityStoreId { get; private set; }
 
 
         public void SetDefaultValues()
@@ -125,12 +128,13 @@ namespace NCS.DSS.Contact.Models
 
         }
 
-        public void SetDigitalAccountEmailChanged(string newEmail)
+        public void SetDigitalAccountEmailChanged(string newEmail, Guid storeId)
         {
             IsDigitalAccount = true;
             ChangeEmailAddress = true;
             NewEmail = newEmail;
             CurrentEmail = EmailAddress;
+            IdentityStoreId = storeId;
         }
     }    
 }

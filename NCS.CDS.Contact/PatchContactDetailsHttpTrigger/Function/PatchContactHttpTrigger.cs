@@ -114,12 +114,12 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
 
             // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
-            var diaccount = provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
+            var diaccount = await provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
             if (diaccount != null)
             {
-                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower())
+                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
                 {
-                    contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower());
+                    contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
                 }
             }
 
