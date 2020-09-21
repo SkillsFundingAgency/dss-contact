@@ -82,13 +82,13 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(_contactDetails).Result);
 
             var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
-            _validate.ValidateResource(Arg.Any<Models.ContactDetails>(), true).Returns(validationResults);
+            _validate.ValidateResource(Arg.Any<Models.ContactDetails>(), _contactDetails, true).Returns(validationResults);
 
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
+            Assert.AreEqual((HttpStatusCode)204, result.StatusCode);
         }
 
         [Test]
