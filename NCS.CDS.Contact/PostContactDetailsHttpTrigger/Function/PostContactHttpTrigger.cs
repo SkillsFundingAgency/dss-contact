@@ -14,6 +14,7 @@ using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
+using NCS.DSS.Contact.Cosmos.Provider;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -33,7 +34,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             [Inject]IResourceHelper resourceHelper,
             [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
             [Inject]IValidate validate,
-            [Inject]IPostContactDetailsHttpTriggerService contactdetailsPostService)
+            [Inject]IPostContactDetailsHttpTriggerService contactdetailsPostService,
+            [Inject]IDocumentDBProvider provider)
         {
             var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
@@ -88,6 +90,24 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (doesContactDetailsExist)
                 return HttpResponseMessageHelper.Conflict();
+
+            if (!string.IsNullOrEmpty(contactdetailsRequest.EmailAddress))
+            {
+                var contacts = await provider.GetContactsByEmail(contactdetailsRequest.EmailAddress);
+                if (contacts != null)
+                {
+                    foreach (var contact in contacts)
+                    {
+                        var isReadOnly = await provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
+                        if (!isReadOnly)
+                        {
+                            //if a customer that has the same email address is not readonly (has date of termination)
+                            //then email address on the request cannot be used.
+                            return HttpResponseMessageHelper.Conflict();
+                        }
+                    }
+                }
+            }
 
             var contactDetails = await contactdetailsPostService.CreateAsync(contactdetailsRequest);
 

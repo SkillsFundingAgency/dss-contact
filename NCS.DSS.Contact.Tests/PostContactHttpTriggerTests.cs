@@ -6,7 +6,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
@@ -28,6 +30,7 @@ namespace NCS.DSS.Contact.Tests
         private IHttpRequestMessageHelper _httpRequestMessageHelper;
         private IPostContactDetailsHttpTriggerService _postContactHttpTriggerService;
         private Models.ContactDetails _contactDetails;
+        private IDocumentDBProvider _provider;
 
         [SetUp]
         public void Setup()
@@ -48,6 +51,7 @@ namespace NCS.DSS.Contact.Tests
             _postContactHttpTriggerService = Substitute.For<IPostContactDetailsHttpTriggerService>();
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns("0000000001");
             _httpRequestMessageHelper.GetApimURL(_request).Returns("http://localhost:7071/");
+            _provider = Substitute.For<IDocumentDBProvider>();
         }
 
         [Test]
@@ -176,10 +180,50 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
         }
 
+        [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAlreadyExists()
+        {
+            // Arrange
+            var contactDetails = new ContactDetails() { EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(contactDetails).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
+            _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeCreated_WhenEmailAlreadyExistsThatIsTerminated()
+        {
+            // Arrange
+            var contactDetails = new ContactDetails() { EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetails>(_request).Returns(Task.FromResult(contactDetails).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
+            _postContactHttpTriggerService.CreateAsync(Arg.Any<Models.ContactDetails>()).Returns(Task.FromResult(contactDetails).Result);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(true));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+        }
+
         private async Task<HttpResponseMessage> RunFunction(string customerId)
         {
             return await PostContactDetailsHttpTrigger.Function.PostContactByIdHttpTrigger.RunAsync(
-                _request, _log, customerId, _resourceHelper, _httpRequestMessageHelper, _validate, _postContactHttpTriggerService).ConfigureAwait(false);
+                _request, _log, customerId, _resourceHelper, _httpRequestMessageHelper, _validate, _postContactHttpTriggerService, _provider).ConfigureAwait(false);
         }
 
     }

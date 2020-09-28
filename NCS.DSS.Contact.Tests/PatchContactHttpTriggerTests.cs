@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
@@ -14,6 +10,13 @@ using Newtonsoft.Json;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
 {
@@ -31,6 +34,7 @@ namespace NCS.DSS.Contact.Tests
         private IPatchContactDetailsHttpTriggerService _patchContactHttpTriggerService;
         private Models.ContactDetails _contactDetails;
         private Models.ContactDetailsPatch _contactDetailsPatch;
+        private IDocumentDBProvider _provider;
 
         [SetUp]
         public void Setup()
@@ -50,6 +54,7 @@ namespace NCS.DSS.Contact.Tests
             _validate = Substitute.For<IValidate>();
             _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _patchContactHttpTriggerService = Substitute.For<IPatchContactDetailsHttpTriggerService>();
+            _provider = Substitute.For<IDocumentDBProvider>();
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns("0000000001");
             _httpRequestMessageHelper.GetApimURL(_request).Returns("http://localhost:7071/");
         }
@@ -57,6 +62,7 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
         {
+            // Arrange
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns((string)null);
 
             // Act
@@ -70,6 +76,10 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenCustomerIdIsInvalid()
         {
+            // Arrange
+
+
+            // Act
             var result = await RunFunction(InValidId, ValidContactId);
 
             // Assert
@@ -80,11 +90,12 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactHasFailedValidation()
         {
+            // Arrange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
             _validate.ValidateResource(Arg.Any<Models.ContactDetailsPatch>(), _contactDetails, false).Returns(validationResults);
 
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -95,8 +106,10 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactRequestIsInvalid()
         {
+            // Arrange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Throws(new JsonException());
             
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -107,10 +120,11 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeNoContent_WhenCustomerDoesNotExist()
         {
+            // Arrange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).Returns(false);
 
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -121,10 +135,9 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeNoContent_WhenContactDoesNotExist()
         {
+            // Arrange 
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
 
             // Act
@@ -138,14 +151,13 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenUnableToUpdateContactRecord()
         {
+            // Arrange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-
-            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult<Models.ContactDetails>(_contactDetails).Result);
-
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
             _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
 
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -154,16 +166,15 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsNotValid()
+        public async Task PatchContactHttpTrigger_ReturnsStatusBadRequest_WhenRequestIsNotValid()
         {
+            // Arange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-
-            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(_contactDetails).Result);
-
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
             _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
 
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -174,14 +185,57 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
         {
+            // Arrange
             _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-
-            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(_contactDetails).Result);
-
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _provider.DoesContactDetailsWithEmailExistsForAnotherCustomer(Arg.Any<string>(), Arg.Any<Guid>()).Returns(Task.FromResult(false));
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
             _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
 
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeConflict_WhenEmailAddressIsInUseByAnotherCustomer()
+        {
+            // Arrange
+            _contactDetailsPatch.EmailAddress = "test@test.com";
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress="test@test.com" }));
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeOk_WhenEmailAddressIsInUseByAnotherCustomerThatIsTerminated()
+        {
+            // Arrange
+            _contactDetailsPatch.EmailAddress = "test@test.com";
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult<DigitalIdentity>(null));
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
+            _provider.GetContactsByEmail(Arg.Any<string>()).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.DoesCustomerHaveATerminationDate(Arg.Any<Guid>()).Returns(Task.FromResult(true));
+
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -192,7 +246,7 @@ namespace NCS.DSS.Contact.Tests
         private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailId)
         {
             return await PatchContactHttpTrigger.RunAsync(
-                _request, _log, customerId, contactDetailId, _resourceHelper, _httpRequestMessageHelper, _validate, _patchContactHttpTriggerService).ConfigureAwait(false);
+                _request, _log, customerId, contactDetailId, _resourceHelper, _httpRequestMessageHelper, _validate, _patchContactHttpTriggerService, _provider).ConfigureAwait(false);
         }
 
     }

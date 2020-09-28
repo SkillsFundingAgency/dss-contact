@@ -1,21 +1,21 @@
-﻿using System;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Annotations;
+using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Ioc;
+using NCS.DSS.Contact.Models;
+using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Validation;
+using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Ioc;
-using NCS.DSS.Contact.Models;
-using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
-using NCS.DSS.Contact.Annotations;
-using NCS.DSS.Contact.Cosmos.Helper;
-using NCS.DSS.Contact.Helpers;
-using NCS.DSS.Contact.Validation;
-using Newtonsoft.Json;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -29,12 +29,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ResponseType(typeof(ContactDetails))]
-        public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, 
+        public static async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequestMessage req, ILogger log,
             string customerId, string contactid,
-            [Inject]IResourceHelper resourceHelper,
-            [Inject]IHttpRequestMessageHelper httpRequestMessageHelper,
-            [Inject]IValidate validate,
-            [Inject]IPatchContactDetailsHttpTriggerService contactdetailsPatchService)
+            [Inject] IResourceHelper resourceHelper,
+            [Inject] IHttpRequestMessageHelper httpRequestMessageHelper,
+            [Inject] IValidate validate,
+            [Inject] IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
+            [Inject] IDocumentDBProvider provider)
         {
             var touchpointId = httpRequestMessageHelper.GetTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
@@ -94,7 +95,33 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (errors != null && errors.Any())
                 return HttpResponseMessageHelper.UnprocessableEntity(errors);
 
+            if (!string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
+            {
+                var contacts = await provider.GetContactsByEmail(contactdetailsPatchRequest.EmailAddress);
+                if (contacts != null)
+                {
+                    foreach (var contact in contacts)
+                    {
+                        var isReadOnly = await provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
+                        if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
+                        {
+                            //if a customer that has the same email address is not readonly (has date of termination)
+                            //then email address on the request cannot be used.
+                            return HttpResponseMessageHelper.Conflict();
+                        }
+                    }
+                }
+            }
 
+            // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
+            var diaccount = await provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
+            if (diaccount != null)
+            {
+                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
+                {
+                    contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
+                }
+            }
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 

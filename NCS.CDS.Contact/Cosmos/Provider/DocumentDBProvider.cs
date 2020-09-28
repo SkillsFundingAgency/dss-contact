@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
@@ -137,6 +138,69 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var response = await client.ReplaceDocumentAsync(documentUri, contactDetails);
 
             return response;
+        }
+
+        public async Task<bool> DoesContactDetailsWithEmailExists(string emailAddressToCheck)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.EmailAddress == emailAddressToCheck)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return false;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.Any();
+        }
+
+        public async Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid CustomerId)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery=true })
+                .Where(x => x.EmailAddress == email && x.CustomerId != CustomerId)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return false;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.Any();
+        }
+
+        public async Task<IList<ContactDetails>> GetContactsByEmail(string emailAddressToCheck)
+        {
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+            var contactDetailsForEmailQuery = client
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.EmailAddress == emailAddressToCheck)
+                .AsDocumentQuery();
+            if (contactDetailsForEmailQuery == null)
+                return null;
+
+            var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
+            return contactDetails.ToList();
+        }
+        
+        public async Task<Models.DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
+        {
+            var collectionUri = DocumentDBHelper.CreateDigitalIdentityDocumentUri();
+            var client = DocumentDBClient.CreateDocumentClient();
+
+            var identityForCustomerQuery = client
+                ?.CreateDocumentQuery<Models.DigitalIdentity>(collectionUri, new FeedOptions { MaxItemCount = 1 })
+                .Where(x => x.CustomerId == customerId)
+                .AsDocumentQuery();
+
+            if (identityForCustomerQuery == null)
+                return null;
+
+            var digitalIdentity = await identityForCustomerQuery.ExecuteNextAsync<Models.DigitalIdentity>();
+
+            return digitalIdentity?.FirstOrDefault();
         }
     }
 }

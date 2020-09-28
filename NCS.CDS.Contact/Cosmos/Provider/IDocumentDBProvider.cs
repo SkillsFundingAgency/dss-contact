@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -15,6 +16,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId);
         Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails);
         Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails);
+        Task<bool> DoesContactDetailsWithEmailExists(string email);
+        Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid CustomerId);
+        Task<DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId);
+        Task<IList<ContactDetails>> GetContactsByEmail(string email);
 
     }
 }

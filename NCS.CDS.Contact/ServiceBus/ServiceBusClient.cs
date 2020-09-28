@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.ServiceBus;
+using Microsoft.ServiceBus.Messaging;
+using Newtonsoft.Json;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using Newtonsoft.Json;
 
 namespace NCS.DSS.Contact.ServiceBus
 {
@@ -22,14 +22,15 @@ namespace NCS.DSS.Contact.ServiceBus
             var messagingFactory = MessagingFactory.Create(BaseAddress, tokenProvider);
             var sender = messagingFactory.CreateMessageSender(QueueName);
 
-            var messageModel = new MessageModel()
+            var messageModel = new
             {
                 TitleMessage = "New Contact Details record {" + contactDetails.ContactId + "} added at " + DateTime.UtcNow,
                 CustomerGuid = contactDetails.CustomerId,
                 LastModifiedDate = contactDetails.LastModifiedDate,
                 URL = reqUrl + "/" + contactDetails.ContactId,
                 IsNewCustomer = false,
-                TouchpointId = contactDetails.LastModifiedTouchpointId
+                TouchpointId = contactDetails.LastModifiedTouchpointId,
+                IsDigitalAccount = contactDetails.IsDigitalAccount ?? null
             };
 
             var msg = new BrokeredMessage(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel))))
@@ -47,14 +48,22 @@ namespace NCS.DSS.Contact.ServiceBus
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(KeyName, AccessKey);
             var messagingFactory = MessagingFactory.Create(BaseAddress, tokenProvider);
             var sender = messagingFactory.CreateMessageSender(QueueName);
-            var messageModel = new MessageModel
+            var messageModel = new
             {
                 TitleMessage = "Contact Details record modification for {" + customerId + "} at " + DateTime.UtcNow,
                 CustomerGuid = customerId,
                 LastModifiedDate = contactDetails.LastModifiedDate,
                 URL = reqUrl,
                 IsNewCustomer = false,
-                TouchpointId = contactDetails.LastModifiedTouchpointId
+                TouchpointId = contactDetails.LastModifiedTouchpointId,
+                FirstName = contactDetails.FirstName,
+                LastName = contactDetails.LastName,
+                ChangeEmailAddress = contactDetails.ChangeEmailAddress ?? null,
+                IsDigitalAccount = contactDetails.IsDigitalAccount ?? null,
+                NewEmail = contactDetails.NewEmail,
+                CurrentEmail = contactDetails.CurrentEmail,
+                contactDetails.IdentityStoreId
+
             };
 
             var msg = new BrokeredMessage(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel))))
@@ -77,6 +86,9 @@ namespace NCS.DSS.Contact.ServiceBus
         public string URL { get; set; }
         public bool IsNewCustomer { get; set; }
         public string TouchpointId { get; set; }
+        public bool? IsDigitalAccount { get; set; }
+        public string NewEmail { get; set; }
+        public string CurrentEmail { get; set; }
     }
 
 }
