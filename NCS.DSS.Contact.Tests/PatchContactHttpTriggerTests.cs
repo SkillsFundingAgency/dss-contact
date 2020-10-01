@@ -196,7 +196,7 @@ namespace NCS.DSS.Contact.Tests
 
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, (int)result.StatusCode);
+            Assert.AreEqual(422, (int)result.StatusCode);
         }
 
 
