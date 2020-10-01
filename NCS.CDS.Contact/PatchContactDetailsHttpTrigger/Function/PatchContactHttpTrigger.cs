@@ -11,6 +11,7 @@ using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -92,9 +93,6 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             var errors = validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
 
-            if (errors != null && errors.Any())
-                return HttpResponseMessageHelper.UnprocessableEntity(errors);
-
             if (!string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
             {
                 var contacts = await provider.GetContactsByEmail(contactdetailsPatchRequest.EmailAddress);
@@ -117,11 +115,22 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var diaccount = await provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
             if (diaccount != null)
             {
+                if(string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
+                {
+                    if (errors == null)
+                        errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+                    errors.Add(new System.ComponentModel.DataAnnotations.ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string>() { "EmailAddress" }));
+                    return HttpResponseMessageHelper.UnprocessableEntity(errors);
+                }
+
                 if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
                 {
                     contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
                 }
             }
+
+            if (errors != null && errors.Any())
+                return HttpResponseMessageHelper.UnprocessableEntity(errors);
 
             var updatedContactDetails = await contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
