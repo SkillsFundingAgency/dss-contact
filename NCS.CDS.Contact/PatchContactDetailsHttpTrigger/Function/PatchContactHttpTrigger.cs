@@ -115,7 +115,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var diaccount = await provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
             if (diaccount != null)
             {
-                if(string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
+                if(contactdetailsPatchRequest.EmailAddress == string.Empty)
                 {
                     if (errors == null)
                         errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
