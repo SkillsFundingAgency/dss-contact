@@ -182,14 +182,15 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PatchContactHttpTrigger_ReturnsUnprocessableEntity_WhenEmptyPatchingWithAnAssociatedDigitalEntity()
+        public async Task PatchContactHttpTrigger_ReturnsUnprocessableEntity_WhenEmptyPatchingEmailWithAnAssociatedDigitalEntity()
         {
             // Arange
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            var patch = new ContactDetailsPatch() { EmailAddress="" };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(patch).Result);
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
             _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult(new DigitalIdentity() { CustomerId = new Guid(ValidCustomerId) }));
-            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(new ContactDetails()).Result);
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
