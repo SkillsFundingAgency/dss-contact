@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
@@ -181,6 +180,26 @@ namespace NCS.DSS.Contact.Tests
             Assert.IsInstanceOf<HttpResponseMessage>(result);
             Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsUnprocessableEntity_WhenEmptyPatchingEmailWithAnAssociatedDigitalEntity()
+        {
+            // Arange
+            var patch = new ContactDetailsPatch() { EmailAddress="" };
+            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(patch).Result);
+            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
+            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(new ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
+            _provider.GetIdentityForCustomerAsync(Arg.Any<Guid>()).Returns(Task.FromResult(new DigitalIdentity() { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(new ContactDetails()).Result);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(422, (int)result.StatusCode);
+        }
+
 
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
