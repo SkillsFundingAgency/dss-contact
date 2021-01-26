@@ -1,9 +1,9 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
-using NCS.DSS.Contact.Annotations;
+﻿using DFC.Swagger.Standard.Annotations;
 using NCS.DSS.Contact.ReferenceData;
 using Newtonsoft.Json;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace NCS.DSS.Contact.Models
 {

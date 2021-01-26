@@ -1,9 +1,6 @@
-﻿using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
+﻿using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 using System;
-using System.Configuration;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,16 +8,15 @@ namespace NCS.DSS.Contact.ServiceBus
 {
     public static class ServiceBusClient
     {
-        public static readonly string KeyName = ConfigurationManager.AppSettings["KeyName"];
-        public static readonly string AccessKey = ConfigurationManager.AppSettings["AccessKey"];
-        public static readonly string BaseAddress = ConfigurationManager.AppSettings["BaseAddress"];
-        public static readonly string QueueName = ConfigurationManager.AppSettings["QueueName"];
+        public static readonly string KeyName = Environment.GetEnvironmentVariable("KeyName");
+        public static readonly string AccessKey = Environment.GetEnvironmentVariable("AccessKey");
+        public static readonly string BaseAddress = Environment.GetEnvironmentVariable("BaseAddress");
+        public static readonly string QueueName = Environment.GetEnvironmentVariable("QueueName");
 
         public static async Task SendPostMessageAsync(Models.ContactDetails contactDetails, string reqUrl)
         {
-            var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(KeyName, AccessKey);
-            var messagingFactory = MessagingFactory.Create(BaseAddress, tokenProvider);
-            var sender = messagingFactory.CreateMessageSender(QueueName);
+            var sbcsb = new ServiceBusConnectionStringBuilder(BaseAddress, QueueName, AccessKey);
+            var sender = new QueueClient(sbcsb.GetEntityConnectionString(), QueueName);
 
             var messageModel = new
             {
@@ -33,7 +29,8 @@ namespace NCS.DSS.Contact.ServiceBus
                 IsDigitalAccount = contactDetails.IsDigitalAccount ?? null
             };
 
-            var msg = new BrokeredMessage(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel))))
+
+            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
             {
                 ContentType = "application/json",
                 MessageId = contactDetails.CustomerId + " " + DateTime.UtcNow
@@ -45,9 +42,8 @@ namespace NCS.DSS.Contact.ServiceBus
 
         public static async Task SendPatchMessageAsync(Models.ContactDetails contactDetails, Guid customerId, string reqUrl)
         {
-            var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(KeyName, AccessKey);
-            var messagingFactory = MessagingFactory.Create(BaseAddress, tokenProvider);
-            var sender = messagingFactory.CreateMessageSender(QueueName);
+            var sbcsb = new ServiceBusConnectionStringBuilder(BaseAddress, QueueName, AccessKey);
+            var sender = new QueueClient(sbcsb.GetEntityConnectionString(), QueueName);
             var messageModel = new
             {
                 TitleMessage = "Contact Details record modification for {" + customerId + "} at " + DateTime.UtcNow,
@@ -66,7 +62,7 @@ namespace NCS.DSS.Contact.ServiceBus
 
             };
 
-            var msg = new BrokeredMessage(new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel))))
+            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
             {
                 ContentType = "application/json",
                 MessageId = customerId + " " + DateTime.UtcNow
