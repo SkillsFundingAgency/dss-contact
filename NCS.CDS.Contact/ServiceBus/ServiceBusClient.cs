@@ -16,8 +16,7 @@ namespace NCS.DSS.Contact.ServiceBus
 
         public static async Task SendPostMessageAsync(Models.ContactDetails contactDetails, string reqUrl)
         {
-            var sbcsb = new ServiceBusConnectionStringBuilder(BaseAddress, QueueName, AccessKey);
-            var sender = new QueueClient(sbcsb.GetEntityConnectionString(), QueueName);
+            var sender = new QueueClient(Connectionstring, QueueName);
 
             var messageModel = new
             {
@@ -43,8 +42,7 @@ namespace NCS.DSS.Contact.ServiceBus
 
         public static async Task SendPatchMessageAsync(Models.ContactDetails contactDetails, Guid customerId, string reqUrl)
         {
-            var sbcsb = new ServiceBusConnectionStringBuilder(BaseAddress, QueueName, AccessKey);
-            var sender = new QueueClient(sbcsb.GetEntityConnectionString(), QueueName);
+            var sender = new QueueClient(Connectionstring, QueueName);
             var messageModel = new
             {
                 TitleMessage = "Contact Details record modification for {" + customerId + "} at " + DateTime.UtcNow,
