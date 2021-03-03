@@ -136,5 +136,10 @@ namespace NCS.DSS.Contact.Models
             CurrentEmail = EmailAddress;
             IdentityStoreId = storeId;
         }
+
+        public void SetDigitalAccount()
+        {
+            IsDigitalAccount = true;
+        }
     }    
 }
