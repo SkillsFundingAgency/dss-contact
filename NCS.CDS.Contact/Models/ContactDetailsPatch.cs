@@ -1,7 +1,7 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using NCS.DSS.Contact.Annotations;
+﻿using DFC.Swagger.Standard.Annotations;
 using NCS.DSS.Contact.ReferenceData;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace NCS.DSS.Contact.Models
 {

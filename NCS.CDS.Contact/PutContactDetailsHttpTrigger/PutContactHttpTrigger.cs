@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http.Description;
+using DFC.Swagger.Standard.Annotations;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Annotations;
 using Newtonsoft.Json;
 
 namespace NCS.DSS.Contact.PutContactDetailsHttpTrigger
@@ -19,7 +19,7 @@ namespace NCS.DSS.Contact.PutContactDetailsHttpTrigger
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "Unauthorised", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
-        [ResponseType(typeof(Contact.Models.ContactDetails))]
+        [ProducesResponseType(typeof(Contact.Models.ContactDetails), 200)]
         public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "customers/{customerId}/ContactDetails/{contactid}")]HttpRequestMessage req, ILogger log, string customerId, string contactid)
         {
             log.LogInformation("PutContactHttpTrigger method was executed at " + DateTime.Now);

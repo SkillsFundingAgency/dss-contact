@@ -8,14 +8,14 @@ namespace NCS.DSS.Contact.Cosmos.Helper
     public static class DocumentDBHelper
     {
         private static Uri _documentCollectionUri;
-        private static readonly string DatabaseId = ConfigurationManager.AppSettings["DatabaseId"];
-        private static readonly string CollectionId = ConfigurationManager.AppSettings["CollectionId"];
+        private static readonly string DatabaseId = Environment.GetEnvironmentVariable("DatabaseId");
+        private static readonly string CollectionId = Environment.GetEnvironmentVariable("CollectionId");
 
         private static Uri _customerDocumentCollectionUri;
-        private static readonly string CustomerDatabaseId = ConfigurationManager.AppSettings["CustomerDatabaseId"];
-        private static readonly string CustomerCollectionId = ConfigurationManager.AppSettings["CustomerCollectionId"];
-        private static readonly string DigitalIdentityDatabaseId = ConfigurationManager.AppSettings["DigitalIdentityDatabaseId"];
-        private static readonly string DigitalIdentityCollectionId = ConfigurationManager.AppSettings["DigitalIdentityCollectionId"];
+        private static readonly string CustomerDatabaseId = Environment.GetEnvironmentVariable("CustomerDatabaseId");
+        private static readonly string CustomerCollectionId = Environment.GetEnvironmentVariable("CustomerCollectionId");
+        private static readonly string DigitalIdentityDatabaseId = Environment.GetEnvironmentVariable("DigitalIdentityDatabaseId");
+        private static readonly string DigitalIdentityCollectionId = Environment.GetEnvironmentVariable("DigitalIdentityCollectionId");
 
 
         public static Uri CreateDocumentCollectionUri()
