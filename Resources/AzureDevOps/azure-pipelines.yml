@@ -22,8 +22,6 @@ jobs:
 # Build the app with the dfc-dotnetcore-build template. 
 - job: BuildDotNetStandard
   displayName: Build-DotNetStandard
-  dependsOn: TestBranchName
-  condition: and(succeeded(), eq(dependencies.TestBranchName.outputs['ExecuteTestBranchNameScript.FunctionAppVersion'], 'Version2+'))
 
   steps:
   - template: AzureDevOpsTemplates\Build\StepTemplates\dfc-dotnetcorefunctionapp-build-notests.yml@dfc-devops
