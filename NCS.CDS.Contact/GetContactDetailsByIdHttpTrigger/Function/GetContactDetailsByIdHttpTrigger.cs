@@ -41,6 +41,13 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
                 return httpResponseMessageHelper.BadRequest();
             }
 
+            var subcontractorId = _httpRequestMessageHelper.GetDssSubcontractorId(req);
+            if (string.IsNullOrEmpty(subcontractorId))
+            {
+                log.LogInformation("Unable to locate 'subcontractorId' in request header.");
+                return _httpResponseMessageHelper.BadRequest();
+            }
+
             log.LogInformation("C# HTTP trigger function GetContactByIdHttpTrigger processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))

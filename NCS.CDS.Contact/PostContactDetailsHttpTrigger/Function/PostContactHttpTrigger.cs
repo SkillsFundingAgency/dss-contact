@@ -47,7 +47,14 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return httpResponseMessageHelper.BadRequest();
             }
 
-            var ApimURL = httpRequestHelper.GetDssApimUrl(req);
+            var subcontractorId = _httpRequestMessageHelper.GetDssSubcontractorId(req);
+            if (string.IsNullOrEmpty(subcontractorId))
+            {
+                log.LogInformation("Unable to locate 'SubcontractorId' in request header.");
+                return _responseHelper.BadRequest();
+            }
+
+            var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 log.LogInformation("Unable to locate 'apimurl' in request header");
