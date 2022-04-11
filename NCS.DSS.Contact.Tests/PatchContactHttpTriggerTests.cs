@@ -57,7 +57,24 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
         {
-            _httpRequestMessageHelper.GetTouchpointId(_request).Returns((string)null);
+            // Arrange
+            _httpRequestMessageHelper.Setup(x=>x.GetDssTouchpointId(_request)).Returns((string)null);
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenSubcontractorIdIsNotProvided()
+        {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns((string)null);
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
@@ -70,6 +87,12 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenCustomerIdIsInvalid()
         {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x=>x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+
+            // Act
             var result = await RunFunction(InValidId, ValidContactId);
 
             // Assert
@@ -80,8 +103,12 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactHasFailedValidation()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            var val = new Mock<IValidate>();
             var validationResults = new List<ValidationResult> { new ValidationResult("contactDetail Id is Required") };
             _validate.ValidateResource(Arg.Any<Models.ContactDetailsPatch>(), false).Returns(validationResults);
 
@@ -95,8 +122,13 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactRequestIsInvalid()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Throws(new JsonException());
-            
+            // Arrange
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Throws(new JsonException());
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+
+            // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
@@ -107,7 +139,12 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeNoContent_WhenCustomerDoesNotExist()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(false));
 
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).Returns(false);
 
@@ -121,11 +158,13 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeNoContent_WhenContactDoesNotExist()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
-
-            _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
-
-            _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
+            // Arrange 
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult<Models.ContactDetails>(null));
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
@@ -138,13 +177,30 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenUnableToUpdateContactRecord()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.Setup(x=> x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult<Models.ContactDetails>(null));
 
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
 
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult<Models.ContactDetails>(_contactDetails).Result);
 
-            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusBadRequest_WhenRequestIsNotValid()
+        {
+            // Arange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.Setup(x=>x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult<Models.ContactDetails>(null));
 
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
@@ -156,13 +212,36 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsNotValid()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            // Arange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            var patch = new Models.ContactDetailsPatch() { EmailAddress = "" };
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(patch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
+            _provider.Setup(x=>x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult(new Models.DigitalIdentity() { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.Setup(x=>x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult<Models.ContactDetails>(new Models.ContactDetails()));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
 
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(_contactDetails).Result);
 
-            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult<Models.ContactDetails>(null).Result);
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
+        {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x=>x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult<Models.DigitalIdentity>(null));
+            _provider.Setup(x=>x.DoesContactDetailsWithEmailExistsForAnotherCustomer(It.IsAny<string>(), It.IsAny<Guid>())).Returns(Task.FromResult(false));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.Setup(x=>x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult(_contactDetails));
 
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
@@ -174,13 +253,38 @@ namespace NCS.DSS.Contact.Tests
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
         {
-            _httpRequestMessageHelper.GetContactDetailsFromRequest<Models.ContactDetailsPatch>(_request).Returns(Task.FromResult(_contactDetailsPatch).Result);
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _contactDetailsPatch.EmailAddress = "test@test.com";
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x=>x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult<Models.DigitalIdentity>(null));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
+            _patchContactHttpTriggerService.Setup(x=>x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult(_contactDetails));
+            _provider.Setup(x=>x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<Models.ContactDetails>>(new List<Models.ContactDetails>() { new Models.ContactDetails() }));
+            _provider.Setup(x=> x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
 
             _resourceHelper.DoesCustomerExist(Arg.Any<Guid>()).ReturnsForAnyArgs(true);
 
             _patchContactHttpTriggerService.GetContactDetailsForCustomerAsync(Arg.Any<Guid>(), Arg.Any<Guid>()).Returns(Task.FromResult(_contactDetails).Result);
 
-            _patchContactHttpTriggerService.UpdateAsync(Arg.Any<Models.ContactDetails>(), Arg.Any<Models.ContactDetailsPatch>()).Returns(Task.FromResult(_contactDetails).Result);
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeOk_WhenEmailAddressIsInUseByAnotherCustomerThatIsTerminated()
+        {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssSubcontractorId(_request)).Returns("9999999999");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _contactDetailsPatch.EmailAddress = "test@test.com";
+            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x=>x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult<Models.DigitalIdentity>(null));
+            _patchContactHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
+            _patchContactHttpTriggerService.Setup(x=>x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>())).Returns(Task.FromResult(_contactDetails));
+            _provider.Setup(x=>x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<Models.ContactDetails>>(new List<Models.ContactDetails>() { new Models.ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.Setup(x=>x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(true));
 
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
