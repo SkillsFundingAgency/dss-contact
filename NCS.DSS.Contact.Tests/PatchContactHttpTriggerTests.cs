@@ -51,6 +51,7 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _patchContactHttpTriggerService = Substitute.For<IPatchContactDetailsHttpTriggerService>();
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns("0000000001");
+            _httpRequestMessageHelper.GetSubcontractorId(_request).Returns("9999999999");
             _httpRequestMessageHelper.GetApimURL(_request).Returns("http://localhost:7071/");
         }
 
@@ -58,6 +59,19 @@ namespace NCS.DSS.Contact.Tests
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenTouchpointIdIsNotProvided()
         {
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns((string)null);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenSubcontractorIdIsNotProvided()
+        {
+            _httpRequestMessageHelper.GetSubcontractorId(_request).Returns((string)null);
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);

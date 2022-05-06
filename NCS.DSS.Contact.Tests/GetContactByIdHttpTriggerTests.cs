@@ -42,6 +42,8 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper = Substitute.For<IHttpRequestMessageHelper>();
             _getContactByIdHttpTriggerService = Substitute.For<IGetContactDetailsByIdHttpTriggerService>();
             _httpRequestMessageHelper.GetTouchpointId(_request).Returns("0000000001");
+            _httpRequestMessageHelper.GetSubcontractorId(_request).Returns("9999999999");
+
         }
 
         [Test]
@@ -56,7 +58,20 @@ namespace NCS.DSS.Contact.Tests
             Assert.IsInstanceOf<HttpResponseMessage>(result);
             Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         }
-        
+
+        [Test]
+        public async Task GetContacByIdHttpTrigger_ReturnsStatusCodeBadRequest_WhenSubcontractorIdIsNotProvided()
+        {
+            _httpRequestMessageHelper.GetSubcontractorId(_request).Returns((string)null);
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
         [Test]
         public async Task GetContactByIdHttpTrigger_ReturnsStatusCodeBadRequest_WhenCustomerIdIsInvalid()
         {
