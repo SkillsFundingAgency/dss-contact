@@ -48,6 +48,11 @@ pool:
   displayName: Build-DotNetFramework
   dependsOn: TestBranchName
   condition: and(succeeded(), eq(dependencies.TestBranchName.outputs['ExecuteTestBranchNameScript.FunctionAppVersion'], 'Version1'))
+  pool:
+    name: NCS - CI and CD
+    demands:
+        - msbuild
+        - visualstudio
 
   steps:
   - template: AzureDevOpsTemplates/Build/dfc-dotnetframework-build.yml@dfc-devops
