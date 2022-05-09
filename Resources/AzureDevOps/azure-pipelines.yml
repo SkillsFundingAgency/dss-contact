@@ -22,11 +22,7 @@ pool:
   demands:
     - msbuild
     - visualstudio
-    
-"properties": {
-    "httpsOnly": true,
-    "mintlsVersion": "1.2"
-    }
+
 
   variables:
     TestBranchNameScriptUrl: https://raw.githubusercontent.com/SkillsFundingAgency/dss-devops/master/Scripts/Test-BranchName.ps1
