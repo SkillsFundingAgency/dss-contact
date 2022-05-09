@@ -16,13 +16,7 @@ jobs:
 # Test the branch name, the output of this job will satisfy the condition of one or neither of the subsequent jobs
 - job: TestBranchName
   displayName: TestBranchName
-  
-pool:
-  name: NCS - CI and CD
-  demands:
-    - msbuild
-    - visualstudio
-
+  pool: NCS - CI and CD
 
   variables:
     TestBranchNameScriptUrl: https://raw.githubusercontent.com/SkillsFundingAgency/dss-devops/master/Scripts/Test-BranchName.ps1
@@ -51,8 +45,8 @@ pool:
   pool:
     name: NCS - CI and CD
     demands:
-        - msbuild
-        - visualstudio
+    - msbuild
+    - visualstudio
 
   steps:
   - template: AzureDevOpsTemplates/Build/dfc-dotnetframework-build.yml@dfc-devops
@@ -66,6 +60,11 @@ pool:
   displayName: Build-DotNetStandard
   dependsOn: TestBranchName
   condition: and(succeeded(), eq(dependencies.TestBranchName.outputs['ExecuteTestBranchNameScript.FunctionAppVersion'], 'Version2+'))
+  pool:
+    name: NCS - CI and CD
+    demands:
+    - msbuild
+    - visualstudio
 
   steps:
   - template: AzureDevOpsTemplates/Build/dfc-dotnetcorefunctionapp-build-notests.yml@dfc-devops
@@ -73,7 +72,6 @@ pool:
       SolutionBaseName: $(SolutionBaseName)
       BuildPlatform: $(BuildPlatform)
       BuildConfiguration: $(BuildConfiguration)
-
 
 
 
