@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Models;
-using Document = Microsoft.Azure.Documents.Document;
+using Azure.Search;
+using Azure.Search.Documents.Models;
+using Microsoft.Azure.Documents;
+using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
@@ -19,19 +20,19 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
             [CosmosDBTrigger("contacts", "contacts", ConnectionStringSetting = "ContactDetailsConnectionString",
                 LeaseCollectionName = "contacts-leases", CreateLeaseCollectionIfNotExists = true)]
             IReadOnlyList<Document> documents,
-            TraceWriter log)
+            ILogger log)
         {
-            log.Info("Entered SyncDataForContactDetailsSearchTrigger");
+            log.LogInformation("Entered SyncDataForContactDetailsSearchTrigger");
 
             SearchHelper.GetSearchServiceClient();
 
-            log.Info("get search service client");
+            log.LogInformation("get search service client");
 
             var indexClient = SearchHelper.GetIndexClient();
 
-            log.Info("get index client");
+            log.LogInformation("get index client");
             
-            log.Info("Documents modified " + documents.Count);
+            log.LogInformation("Documents modified " + documents.Count);
 
             if (documents.Count > 0)
             {
@@ -45,23 +46,21 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                     })
                     .ToList();
 
-                var batch = IndexBatch.MergeOrUpload(contactDetails);
+                var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
                 
                 try
                 {
-                    log.Info("attempting to merge docs to azure search");
+                    log.LogInformation("attempting to merge docs to azure search");
 
-                    await indexClient.Documents.IndexAsync(batch);
+                    await indexClient.IndexDocumentsAsync(batch);
 
-                    log.Info("successfully merged docs to azure search");
+                    log.LogInformation("successfully merged docs to azure search");
 
                 }
-                catch (IndexBatchException e)
+                catch (Exception e)
                 {
-                    log.Error(string.Format("Failed to index some of the documents: {0}", 
-                        string.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key))));
-
-                    log.Error(e.ToString());
+                    log.LogError("Failed to index some of the documents: {0}");
+                    log.LogError(e.ToString());
                 }
             }
         }
