@@ -30,7 +30,6 @@ namespace NCS.DSS.Contact.Helpers
             if (_indexClient != null)
                 return _indexClient;
 
-            /*            _indexClient = _serviceClient?.Indexes?.GetClient(SearchServiceIndexName);*/
             _indexClient = new SearchClient(new Uri($"https://{SearchServiceName}.search.windows.net"), SearchServiceIndexName, new AzureKeyCredential(SearchServiceKey));
 
             return _indexClient;
