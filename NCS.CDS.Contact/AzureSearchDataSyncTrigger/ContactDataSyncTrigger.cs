@@ -36,7 +36,7 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 
             if (documents.Count > 0)
             {
-                var contactDetails = documents.Select(doc => new ContactDetails
+                var contactDetails = documents.Select(doc => new
                     {
                         CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
                         MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
