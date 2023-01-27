@@ -7,3 +7,5 @@
 /packages
 /NCS.DSS.Contact.Tests/bin/Debug
 /NCS.DSS.Contact.Tests/obj/Release/NCS.DSS.Contact.Tests.csproj.CoreCompileInputs.cache
+/*.nuget.dgspec.json
+/NCS.DSS.Contact.Tests/obj/*
