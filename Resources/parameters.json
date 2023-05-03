@@ -49,6 +49,9 @@
         },
         "SearchServiceAdminApiKey": {
             "value": "__SearchServiceAdminApiKey__"
+        },
+        "appInsightsInstrumentationKey": {
+            "value": "__appInsightsInstrumentationKey__" 
         }
     }
 }
