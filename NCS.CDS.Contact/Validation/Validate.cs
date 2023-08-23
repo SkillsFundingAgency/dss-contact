@@ -37,7 +37,7 @@ namespace NCS.DSS.Contact.Validation
             if (contactDetailsResource.LastModifiedDate.HasValue && contactDetailsResource.LastModifiedDate.Value > DateTime.UtcNow)
                 results.Add(new ValidationResult("Last Modified Date must be less the current date/time", new[] { "LastModifiedDate" }));
 
-            if (contactDetailsResource.PreferredContactMethod.HasValue && !Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value))
+            if (contactDetailsResource.PreferredContactMethod.HasValue && (!Enum.IsDefined(typeof(PreferredContactMethod), contactDetailsResource.PreferredContactMethod.Value) || contactDetailsResource.PreferredContactMethod.Value.Equals(PreferredContactMethod.Unknown)))
                 results.Add(new ValidationResult("Please supply a valid Preferred Contact Method", new[] { "PreferredContactMethod" }));
         }
 

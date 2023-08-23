@@ -1,5 +1,7 @@
 ﻿using DFC.Swagger.Standard.Annotations;
+using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.ReferenceData;
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -15,6 +17,7 @@ namespace NCS.DSS.Contact.Models
                                 "4 - SMS,   " +
                                 "5 - Post,   " +
                                 "99 - Not known")]
+        [JsonConverter(typeof(PermissiveEnumConverter))]
         public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
