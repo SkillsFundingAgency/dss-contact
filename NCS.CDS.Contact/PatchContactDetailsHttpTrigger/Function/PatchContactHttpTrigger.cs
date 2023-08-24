@@ -55,30 +55,36 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
-        public async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger log,
+        public async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger logger,
             string customerId, string contactid)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                log.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return _httpResponseMessageHelper.BadRequest();
             }
 
             var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
-                log.LogInformation("Unable to locate 'apimurl' in request header");
+                logger.LogInformation("Unable to locate 'apimurl' in request header");
                 return _httpResponseMessageHelper.BadRequest();
             }
 
-            log.LogInformation("C# HTTP trigger function Patch Contact processed a request. " + touchpointId);
+            logger.LogInformation("C# HTTP trigger function Patch Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
+            {
+                logger.LogInformation($"No customer with ID [{customerGuid}]");
                 return _httpResponseMessageHelper.BadRequest(customerGuid);
+            }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
+            {
+                logger.LogInformation($"No contact with ID [{contactGuid}]");
                 return _httpResponseMessageHelper.BadRequest(contactGuid);
+            }
 
             ContactDetailsPatch contactdetailsPatchRequest;
 
@@ -88,6 +94,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
+                logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
                 return _httpResponseMessageHelper.UnprocessableEntity(ex);
             }
 
@@ -99,17 +106,26 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
+            {
+                logger.LogInformation($"No customer with ID [{customerGuid}]");
                 return _httpResponseMessageHelper.NoContent(customerGuid);
+            }
 
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
+            {
+                logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
                 return _httpResponseMessageHelper.Forbidden(customerGuid);
+            }
 
             var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
 
             if (contactdetails == null)
+            {
+                logger.LogInformation($"No contact with ID [{contactGuid}]");
                 return _httpResponseMessageHelper.NoContent(contactGuid);
+            }
 
             var errors = _validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
 

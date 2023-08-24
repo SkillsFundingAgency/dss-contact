@@ -8,11 +8,19 @@ using Microsoft.Azure.Documents.Linq;
 using NCS.DSS.Contact.Cosmos.Client;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Models;
+using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
+        private readonly ILogger logger;
+
+        public DocumentDBProvider(ILogger logger)
+        {
+            this.logger = logger;
+        }
+
         public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {
             var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);
@@ -20,7 +28,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
+            {
+                logger.LogInformation($"No client exists.");
                 return false;
+            }
 
             try
             {
@@ -30,6 +41,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             }
             catch (DocumentClientException)
             {
+                logger.LogError($"Error: DocumentClientException caught.");
                 return false;
             }
 
@@ -43,7 +55,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
+            {
+                logger.LogInformation($"No client exists.");
                 return false;
+            }
 
             try
             {
@@ -55,6 +70,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             }
             catch (DocumentClientException)
             {
+                logger.LogError($"Error: DocumentClientException caught.");
                 return false;
             }
         }
@@ -66,7 +82,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
+            {
+                logger.LogInformation($"No client exists.");
                 return false;
+            }
 
             var contactDetailsForCustomerQuery = client.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 });
             return contactDetailsForCustomerQuery.Where(x => x.CustomerId == customerId).AsEnumerable().Any();
@@ -84,7 +103,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .AsDocumentQuery();
 
             if (contactDetailsForCustomerQuery == null)
+            {
+                logger.LogInformation($"No contact exists with CustomerId [{customerId}]");
                 return null;
+            }
 
             var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
 
@@ -103,7 +125,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .AsDocumentQuery();
 
             if (contactDetailsForCustomerQuery == null)
+            {
+                logger.LogInformation($"No contact exists with both CustomerId [{customerId}] and ContactDetailsId [{contactDetailsId}]");
                 return null;
+            }
 
             var contactDetails = await contactDetailsForCustomerQuery.ExecuteNextAsync<ContactDetails>();
 
@@ -118,7 +143,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
+            {
+                logger.LogInformation($"No client exists.");
                 return null;
+            }
 
             var response = await client.CreateDocumentAsync(collectionUri, contactDetails);
 
@@ -133,7 +161,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var client = DocumentDBClient.CreateDocumentClient();
 
             if (client == null)
+            {
+                logger.LogInformation($"No client exists.");
                 return null;
+            }
 
             var response = await client.ReplaceDocumentAsync(documentUri, contactDetails);
 
@@ -149,7 +180,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .Where(x => x.EmailAddress == emailAddressToCheck)
                 .AsDocumentQuery();
             if (contactDetailsForEmailQuery == null)
+            {
+                logger.LogInformation($"No contact exists with email address [{emailAddressToCheck}]");
                 return false;
+            }
 
             var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
             return contactDetails.Any();
@@ -164,7 +198,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .Where(x => x.EmailAddress == email && x.CustomerId != CustomerId)
                 .AsDocumentQuery();
             if (contactDetailsForEmailQuery == null)
+            {
+                logger.LogInformation($"No contact exists with both CustomerId [{CustomerId}] and email address [{email}]");
                 return false;
+            }
 
             var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
             return contactDetails.Any();
@@ -179,7 +216,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .Where(x => x.EmailAddress == emailAddressToCheck)
                 .AsDocumentQuery();
             if (contactDetailsForEmailQuery == null)
+            {
+                logger.LogInformation($"No contact exists with email address [{emailAddressToCheck}]");
                 return null;
+            }
 
             var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
             return contactDetails.ToList();
@@ -196,7 +236,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 .AsDocumentQuery();
 
             if (identityForCustomerQuery == null)
+            {
+                logger.LogInformation($"No contact exists with CustomerId [{customerId}]");
                 return null;
+            }
 
             var digitalIdentity = await identityForCustomerQuery.ExecuteNextAsync<Models.DigitalIdentity>();
 
