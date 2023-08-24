@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NCS.DSS.Contact.Cosmos.Provider;
 using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 {
@@ -14,6 +15,11 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
             var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;
+        }
+
+        public Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
     {
         private readonly ILogger logger;
 
-        public DocumentDBProvider(ILogger logger)
+        public PatchContactDetailsHttpTriggerService(ILogger logger)
         {
             this.logger = logger;
         }

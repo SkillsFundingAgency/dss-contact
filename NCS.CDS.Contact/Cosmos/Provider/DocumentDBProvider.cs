@@ -21,6 +21,10 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             this.logger = logger;
         }
 
+        public DocumentDBProvider()
+        {
+        }
+
         public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {
             var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);
@@ -77,7 +81,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public bool DoesContactDetailsExistForCustomer(Guid customerId)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
@@ -93,7 +97,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
@@ -115,7 +119,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
@@ -138,7 +142,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         public async Task<ResourceResponse<Document>> CreateContactDetailsAsync(ContactDetails contactDetails)
         {
 
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
@@ -156,7 +160,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ResourceResponse<Document>> UpdateContactDetailsAsync(ContactDetails contactDetails)
         {
-            var documentUri = DocumentDBHelper.CreateDocumentUri(contactDetails.ContactId.GetValueOrDefault());
+            var documentUri = DocumentDBHelper.CreateDocumentUri(contactDetails.ContactId.GetValueOrDefault(), logger);
 
             var client = DocumentDBClient.CreateDocumentClient();
 
@@ -173,7 +177,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesContactDetailsWithEmailExists(string emailAddressToCheck)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
             var client = DocumentDBClient.CreateDocumentClient();
             var contactDetailsForEmailQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })
@@ -191,7 +195,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid CustomerId)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
             var client = DocumentDBClient.CreateDocumentClient();
             var contactDetailsForEmailQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery=true })
@@ -209,7 +213,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<IList<ContactDetails>> GetContactsByEmail(string emailAddressToCheck)
         {
-            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri();
+            var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
             var client = DocumentDBClient.CreateDocumentClient();
             var contactDetailsForEmailQuery = client
                 ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1 })

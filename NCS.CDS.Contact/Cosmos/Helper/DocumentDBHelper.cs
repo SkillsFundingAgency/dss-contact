@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Configuration;
+using Microsoft.Azure.Documents.ChangeFeedProcessor.Logging;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,6 @@ namespace NCS.DSS.Contact.Cosmos.Helper
         private static readonly string CustomerCollectionId = Environment.GetEnvironmentVariable("CustomerCollectionId");
         private static readonly string DigitalIdentityDatabaseId = Environment.GetEnvironmentVariable("DigitalIdentityDatabaseId");
         private static readonly string DigitalIdentityCollectionId = Environment.GetEnvironmentVariable("DigitalIdentityCollectionId");
-
 
         public static Uri CreateDocumentCollectionUri(ILogger logger)
         {
