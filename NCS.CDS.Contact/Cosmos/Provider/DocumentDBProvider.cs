@@ -21,10 +21,6 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             this.logger = logger;
         }
 
-        public DocumentDBProvider()
-        {
-        }
-
         public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {
             var documentUri = DocumentDBHelper.CreateCustomerDocumentUri(customerId);

@@ -12,7 +12,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 {
