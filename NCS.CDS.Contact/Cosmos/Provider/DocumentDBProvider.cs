@@ -14,9 +14,9 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 {
     public class DocumentDBProvider : IDocumentDBProvider
     {
-        private readonly ILogger logger;
+        private readonly ILogger<DocumentDBProvider> logger;
 
-        public DocumentDBProvider(ILogger logger)
+        public DocumentDBProvider(ILogger<DocumentDBProvider> logger)
         {
             this.logger = logger;
         }

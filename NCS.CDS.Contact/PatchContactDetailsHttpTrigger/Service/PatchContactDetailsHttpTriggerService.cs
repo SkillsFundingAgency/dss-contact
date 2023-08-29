@@ -10,7 +10,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
-        private readonly ILogger logger;
+        private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
         public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
@@ -18,7 +18,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
             _documentDbProvider = documentDbProvider;
         }
 
-        public PatchContactDetailsHttpTriggerService(ILogger logger)
+        public PatchContactDetailsHttpTriggerService(ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             this.logger = logger;
         }

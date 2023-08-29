@@ -11,7 +11,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
 
-        private readonly ILogger logger;
+        private readonly ILogger<PostContactDetailsHttpTriggerService> logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
         public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
@@ -19,7 +19,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
             _documentDbProvider = documentDbProvider;
         }
 
-        public PostContactDetailsHttpTriggerService(ILogger logger)
+        public PostContactDetailsHttpTriggerService(ILogger<PostContactDetailsHttpTriggerService> logger)
         {
             this.logger = logger;
         }

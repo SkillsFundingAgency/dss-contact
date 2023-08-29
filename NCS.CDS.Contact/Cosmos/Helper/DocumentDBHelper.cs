@@ -24,7 +24,7 @@ namespace NCS.DSS.Contact.Cosmos.Helper
             logger.LogInformation($"Starting to create Document Collection URI.");
             if (_documentCollectionUri != null)
             {
-                logger.LogInformation($"Not required. Document Collection URI already exists as [{_documentCollectionUri.AbsoluteUri}].");
+                logger.LogInformation($"Not required. Document Collection URI already exists as [{_documentCollectionUri}].");
                 return _documentCollectionUri;
             }
 
@@ -32,7 +32,7 @@ namespace NCS.DSS.Contact.Cosmos.Helper
                 DatabaseId,
                 CollectionId);
 
-            logger.LogInformation($"Created Document Collection URI as [{_documentCollectionUri.AbsoluteUri}]");
+            logger.LogInformation($"Created Document Collection URI as [{_documentCollectionUri}]");
             return _documentCollectionUri;
         }
 
