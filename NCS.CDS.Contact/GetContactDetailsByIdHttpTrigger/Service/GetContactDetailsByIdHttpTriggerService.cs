@@ -22,10 +22,5 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 
             return contactdetails;
         }
-
-        public Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -71,7 +71,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
                 return _httpResponseMessageHelper.NoContent(customerGuid);
             }
 
-            var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
+            var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, logger);
 
             return contact == null ?
                 _httpResponseMessageHelper.NoContent(contactGuid) :
