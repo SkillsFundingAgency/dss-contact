@@ -40,24 +40,30 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), 200)]
-        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger log, string customerId)
+        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger logger, string customerId)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                log.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return _httpResponseMessageHelper.BadRequest();
             }
 
-            log.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
+            logger.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
+            {
+                logger.LogInformation($"No customer with ID [{customerGuid}]");
                 return _httpResponseMessageHelper.BadRequest(customerGuid);
+            }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
+            {
+                logger.LogInformation($"Customer does not exist.");
                 return _httpResponseMessageHelper.NoContent(customerGuid);
+            }
 
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 

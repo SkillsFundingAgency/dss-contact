@@ -40,29 +40,38 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), 200)]
-        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger log, string customerId, string contactid)
+        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger logger, string customerId, string contactid)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                log.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return _httpResponseMessageHelper.BadRequest();
             }
 
-            log.LogInformation("C# HTTP trigger function GetContactByIdHttpTrigger processed a request. " + touchpointId);
+            logger.LogInformation("C# HTTP trigger function GetContactByIdHttpTrigger processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
+            {
+                logger.LogInformation($"No customer with ID [{customerGuid}]");
                 return _httpResponseMessageHelper.BadRequest(customerGuid);
+            }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
+            {
+                logger.LogInformation($"No contact with ID [{contactGuid}]");
                 return _httpResponseMessageHelper.BadRequest(contactGuid);
+            }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
+            { 
+                logger.LogInformation($"Customer does not exist.");
                 return _httpResponseMessageHelper.NoContent(customerGuid);
+            }
 
-            var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
+            var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, logger);
 
             return contact == null ?
                 _httpResponseMessageHelper.NoContent(contactGuid) :
