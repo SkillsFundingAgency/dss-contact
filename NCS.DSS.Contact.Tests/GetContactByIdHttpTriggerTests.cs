@@ -106,7 +106,7 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult<Models.ContactDetails>(null));
+            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _log.Object)).Returns(Task.FromResult<Models.ContactDetails>(null));
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
@@ -122,7 +122,7 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult<Models.ContactDetails>(_contact));
+            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _log.Object)).Returns(Task.FromResult<Models.ContactDetails>(_contact));
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);

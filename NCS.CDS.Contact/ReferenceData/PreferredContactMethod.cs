@@ -20,6 +20,9 @@ namespace NCS.DSS.Contact.ReferenceData
         Post = 5,
 
         [Description("Not Known")]
-        NotKnown = 99
+        NotKnown = 99,
+
+        [Description("Unknown")]
+        Unknown = -1
     }
 }

@@ -4,6 +4,9 @@
 # Azure Functions localsettings file
 local.settings.json
 
+# Tests project app.config
+app.config
+
 # User-specific files
 *.suo
 *.user

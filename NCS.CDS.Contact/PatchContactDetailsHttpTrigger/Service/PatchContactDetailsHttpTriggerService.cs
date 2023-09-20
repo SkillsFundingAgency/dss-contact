@@ -4,21 +4,36 @@ using System.Threading.Tasks;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
+using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
+        private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
+        private readonly IDocumentDBProvider _documentDbProvider;
+
+        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        {
+            _documentDbProvider = documentDbProvider;
+        }
+
+        public PatchContactDetailsHttpTriggerService(ILogger<PatchContactDetailsHttpTriggerService> logger)
+        {
+            this.logger = logger;
+        }
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
+            {
+                logger.LogInformation($"Contact details do not exist.");
                 return null;
+            }
 
             contactdetailsPatch.SetDefaultValues();
             contactdetails.Patch(contactdetailsPatch);
 
-            var documentDbProvider = new DocumentDBProvider();
-            var response = await documentDbProvider.UpdateContactDetailsAsync(contactdetails);
+            var response = await _documentDbProvider.UpdateContactDetailsAsync(contactdetails);
 
             var responseStatusCode = response.StatusCode;
 
@@ -27,8 +42,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 
         public async Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId)
         {
-            var documentDbProvider = new DocumentDBProvider();
-            var contactdetails = await documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
+            var contactdetails = await _documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;
         }
