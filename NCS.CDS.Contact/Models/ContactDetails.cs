@@ -28,7 +28,7 @@ namespace NCS.DSS.Contact.Models
                                 "5 - Post,   " +
                                 "99 - Not known")]
         [Example(Description = "3")]
-        [JsonConverter(typeof(PermissiveEnumConverter))]
+        //[JsonConverter(typeof(PermissiveEnumConverter))] breaks enum functionality for some primes
         public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
