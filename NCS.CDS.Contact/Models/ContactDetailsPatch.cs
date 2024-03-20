@@ -17,7 +17,7 @@ namespace NCS.DSS.Contact.Models
                                 "4 - SMS,   " +
                                 "5 - Post,   " +
                                 "99 - Not known")]
-        //[JsonConverter(typeof(PermissiveEnumConverter))] breaks enum functionality for some primes
+        [JsonConverter(typeof(PermissiveEnumConverter))]
         public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
