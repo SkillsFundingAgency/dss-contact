@@ -28,13 +28,13 @@ jobs:
     TestBranchNameScriptFilePath: $(System.DefaultWorkingDirectory)\Test-BranchName.ps1
 
   steps:
-  - task: PowerShell@2
+  - task: PowerShell@5
     name: DownloadTestBranchNameScript
     displayName: 'Download Test-BranchName script'
     inputs:
      targetType: 'inline'
      script: Invoke-WebRequest -Uri $(TestBranchNameScriptUrl) -OutFile $(TestBranchNameScriptFilePath)
-  - task: PowerShell@2
+  - task: PowerShell@5
     name: ExecuteTestBranchNameScript
     displayName: Test-BranchName
     inputs:
