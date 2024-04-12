@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace NCS.DSS.Contact.Helpers
 {
@@ -20,43 +18,32 @@ namespace NCS.DSS.Contact.Helpers
             Type enumType = isNullable ? Nullable.GetUnderlyingType(objectType) : objectType;
 
             string[] names = Enum.GetNames(enumType);
+            string enumText = reader.Value?.ToString();
 
-            if (reader.TokenType == JsonToken.String)
+            if (string.IsNullOrEmpty(enumText))
             {
-                string enumText = reader.Value.ToString();
-
-                if (!string.IsNullOrEmpty(enumText))
-                {
-                    string match = names
-                        .Where(n => string.Equals(n, enumText, StringComparison.OrdinalIgnoreCase))
-                        .FirstOrDefault();
-
-                    if (match != null)
-                    {
-                        return Enum.Parse(enumType, match);
-                    }
-                }
+                return GetDefaultValue(enumType, names);
             }
-            else if (reader.TokenType == JsonToken.Integer)
+
+            if (int.TryParse(enumText, out int enumValue))
             {
-                int enumVal = Convert.ToInt32(reader.Value);
                 int[] values = (int[])Enum.GetValues(enumType);
-                if (values.Contains(enumVal))
+                if (values.Contains(enumValue))
                 {
-                    return Enum.Parse(enumType, enumVal.ToString());
+                    return Enum.Parse(enumType, enumValue.ToString());
                 }
             }
 
-            string defaultName = names
-                .Where(n => string.Equals(n, "Unknown", StringComparison.OrdinalIgnoreCase))
+            string matchedName = names
+                .Where(n => string.Equals(n, enumText, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
 
-            if (defaultName == null)
+            if (matchedName != null)
             {
-                return new JsonException();
+                return Enum.Parse(enumType, matchedName);
             }
 
-            return Enum.Parse(enumType, defaultName);
+            return GetDefaultValue(enumType, names);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -67,6 +54,20 @@ namespace NCS.DSS.Contact.Helpers
         private bool IsNullableType(Type t)
         {
             return (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>));
+        }
+
+        private static object GetDefaultValue(Type enumType, string[] names)
+        {
+            string defaultName = names
+                            .Where(n => string.Equals(n, "Unknown", StringComparison.OrdinalIgnoreCase))
+                            .FirstOrDefault();
+
+            if (defaultName == null)
+            {
+                return new JsonException();
+            }
+
+            return Enum.Parse(enumType, defaultName);
         }
     }
 }
