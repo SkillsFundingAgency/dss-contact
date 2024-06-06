@@ -67,6 +67,11 @@ namespace NCS.DSS.Contact.Validation
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
                             results.Add(new ValidationResult("Preferred Contact Method is SMS so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
                         break;
+
+                    case PreferredContactMethod.WhatsApp:
+                        if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
+                            results.Add(new ValidationResult("Preferred Contact Method is WhatsApp so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+                        break;
                 }
             }
             else
@@ -95,6 +100,11 @@ namespace NCS.DSS.Contact.Validation
                         if (contactDetailsResource.MobileNumber == "" ||
                             (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) && string.IsNullOrWhiteSpace(contactDetails.MobileNumber)))
                             results.Add(new ValidationResult("Preferred Contact Method is SMS so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+                        break;
+                    case PreferredContactMethod.WhatsApp:
+                        if (contactDetailsResource.MobileNumber == "" ||
+                            (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) && string.IsNullOrWhiteSpace(contactDetails.MobileNumber)))
+                            results.Add(new ValidationResult("Preferred Contact Method is WhatsApp so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
                         break;
                 }
             }
