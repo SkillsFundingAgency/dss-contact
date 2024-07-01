@@ -19,6 +19,9 @@ namespace NCS.DSS.Contact.ReferenceData
         [Description("Post")]
         Post = 5,
 
+        [Description("WhatsApp")]
+        WhatsApp = 6,
+
         [Description("Not Known")]
         NotKnown = 99,
 
