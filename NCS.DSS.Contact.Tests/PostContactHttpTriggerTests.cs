@@ -166,7 +166,7 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PostContactHttpTrigger_ReturnsStatusCodeCreated_WhenRequestNotIsValid()
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenRequestNotIsValid()
         {
             // Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
