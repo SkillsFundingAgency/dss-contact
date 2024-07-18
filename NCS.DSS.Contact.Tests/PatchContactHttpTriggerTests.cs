@@ -282,6 +282,42 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
         }
 
+        [Test]
+        public async Task PatchContactContactPrefHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
+        {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _contactDetailsPatch.PreferredContactMethod = ReferenceData.PreferredContactMethod.Email;
+            _contactDetailsPatch.MobileNumber = "07553788901";
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult<Models.DigitalIdentity>(null));
+            _patchContactHttpTriggerService.Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult(new Models.ContactDetails() { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
+
+            // Capture the updated contact details
+            Models.ContactDetails updatedContactDetails = null;
+            _patchContactHttpTriggerService.Setup(x => x.UpdateAsync(It.IsAny<Models.ContactDetails>(), It.IsAny<Models.ContactDetailsPatch>()))
+                                           .Callback<Models.ContactDetails, Models.ContactDetailsPatch>((contact, patch) =>
+                                           {
+                                               contact.PreferredContactMethod = patch.PreferredContactMethod; // Ensure the patch is applied
+                                               updatedContactDetails = contact;
+                                           })
+                                           .Returns(Task.FromResult(_contactDetails));
+
+            _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<Models.ContactDetails>>(new List<Models.ContactDetails>() { new Models.ContactDetails() }));
+            _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+            Assert.IsNotNull(updatedContactDetails, "The updatedContactDetails is null.");
+            Assert.AreEqual(ReferenceData.PreferredContactMethod.Email, updatedContactDetails.PreferredContactMethod, $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {updatedContactDetails?.PreferredContactMethod}");
+        }
+
         private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailId)
         {
             return await _function.RunAsync(
