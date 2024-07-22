@@ -2,8 +2,6 @@
 using DFC.Swagger.Standard.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
@@ -16,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Azure.Functions.Worker;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -43,7 +42,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _responseHelper = responseHelper;
         }
 
-        [FunctionName("POST")]
+        [Function("POST")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Added", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Post request is malformed", ShowSchema = false)]
@@ -52,7 +51,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(Contact.Models.ContactDetails), 200)]
-        public async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger log, 
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger log, 
             string customerId)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);

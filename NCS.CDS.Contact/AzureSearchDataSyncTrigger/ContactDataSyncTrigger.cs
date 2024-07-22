@@ -2,20 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Models;
 using Azure.Search;
 using Azure.Search.Documents.Models;
 using Microsoft.Azure.Documents;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
     public static class ContactDataSyncTrigger
     {
-        [FunctionName("SyncDataForContactDetailsSearchTrigger")]
+        [Function("SyncDataForContactDetailsSearchTrigger")]
         public static async Task Run(
             [CosmosDBTrigger("contacts", "contacts", ConnectionStringSetting = "ContactDetailsConnectionString",
                 LeaseCollectionName = "contacts-leases", CreateLeaseCollectionIfNotExists = true)]
