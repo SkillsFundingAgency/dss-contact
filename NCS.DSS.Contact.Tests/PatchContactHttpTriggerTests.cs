@@ -105,6 +105,25 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
+        public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenNoMobileNumberSuppliedForWhatsappPreferredContactMethod()
+        {
+            //Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            _contactDetailsPatch.PreferredContactMethod = ReferenceData.PreferredContactMethod.WhatsApp;
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetailsPatch>(_request)).Returns(Task.FromResult(_contactDetailsPatch));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService.Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult<Models.ContactDetails>(_contactDetails));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(422, (int)result.StatusCode);
+        }
+
+        [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenContactRequestIsInvalid()
         {
             // Arrange
