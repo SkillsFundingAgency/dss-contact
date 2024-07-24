@@ -14,15 +14,12 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
         private readonly ILogger<PostContactDetailsHttpTriggerService> logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
-        public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PostContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-        }
-
-        public PostContactDetailsHttpTriggerService(ILogger<PostContactDetailsHttpTriggerService> logger)
-        {
             this.logger = logger;
         }
+
         public bool DoesContactDetailsExistForCustomer(Guid customerId)
         {
             var doesContactDetailsExistForCustomer = _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);

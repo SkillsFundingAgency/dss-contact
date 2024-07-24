@@ -28,7 +28,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         private IValidate _validate;
         private IPatchContactDetailsHttpTriggerService _contactdetailsPatchService;
         private IDocumentDBProvider _provider;
-        private readonly IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private ILogger logger;
 
 
         public PatchContactHttpTrigger(IResourceHelper resourceHelper,
@@ -36,14 +36,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
              IValidate validate,
              IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
              IDocumentDBProvider provider,
-             IHttpResponseMessageHelper httpResponseMessageHelper)
+             ILogger<PatchContactHttpTrigger> logger)
         {
             _resourceHelper = resourceHelper;
             _httpRequestMessageHelper = httpRequestMessageHelper;
             _validate = validate;
             _contactdetailsPatchService = contactdetailsPatchService;
             _provider = provider;
-            _httpResponseMessageHelper = httpResponseMessageHelper;
+            this.logger = logger;
         }
 
 
@@ -55,7 +55,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger logger,
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, 
             string customerId, string contactid)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);

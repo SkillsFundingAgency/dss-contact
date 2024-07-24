@@ -21,17 +21,17 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
         private readonly IResourceHelper _resourceHelper;
         private readonly IHttpRequestHelper _httpRequestMessageHelper;
         private readonly IGetContactDetailsByIdHttpTriggerService _getContactDetailsByIdService;
-        private readonly IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private readonly ILogger logger;
 
         public GetContactByIdHttpTrigger(IResourceHelper resourceHelper,
             IHttpRequestHelper httpRequestMessageHelper,
             IGetContactDetailsByIdHttpTriggerService getContactDetailsByIdService,
-            IHttpResponseMessageHelper httpResponseMessageHelper)
+            ILogger<GetContactByIdHttpTrigger> logger)
         {
             _resourceHelper = resourceHelper;
             _httpRequestMessageHelper = httpRequestMessageHelper;
             _getContactDetailsByIdService = getContactDetailsByIdService;
-            _httpResponseMessageHelper = httpResponseMessageHelper;
+            this.logger = logger;
         }
 
         [Function("GETByID")]
@@ -41,7 +41,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), 200)]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger logger, string customerId, string contactid)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, string customerId, string contactid)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))

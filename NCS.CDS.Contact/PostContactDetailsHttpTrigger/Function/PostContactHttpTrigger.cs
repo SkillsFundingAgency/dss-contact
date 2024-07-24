@@ -22,25 +22,25 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
     public class PostContactByIdHttpTrigger
     {
         private readonly IResourceHelper _resourceHelper;
-        private readonly IHttpRequestHelper _httpRequestMessageHelper;
+        private readonly IHttpRequestHelper _responseHelper;
         private readonly IValidate _validate;
         private readonly IPostContactDetailsHttpTriggerService _contactdetailsPostService;
         private readonly IDocumentDBProvider _provider;
-        private readonly IHttpResponseMessageHelper _responseHelper;
+        private readonly ILogger log;
 
         public PostContactByIdHttpTrigger( IResourceHelper resourceHelper,
-            IHttpRequestHelper httpRequestMessageHelper,
+            IHttpRequestHelper responseHelper,
             IValidate validate,
             IPostContactDetailsHttpTriggerService contactdetailsPostService,
             IDocumentDBProvider provider,
-            IHttpResponseMessageHelper responseHelper)
+            ILogger<PostContactByIdHttpTrigger> logger)
         {
             _resourceHelper = resourceHelper;
-            _httpRequestMessageHelper = httpRequestMessageHelper;
             _validate = validate;
             _contactdetailsPostService = contactdetailsPostService;
             _provider = provider;
             _responseHelper = responseHelper;
+            log = logger;
         }
 
         [Function("POST")]
@@ -52,17 +52,17 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(Contact.Models.ContactDetails), 200)]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger log, 
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, 
             string customerId)
         {
-            var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
+            var touchpointId = _responseHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
                 log.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
-            var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
+            var ApimURL = _responseHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 log.LogInformation("Unable to locate 'apimurl' in request header");
@@ -77,7 +77,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             Models.ContactDetails contactdetailsRequest;
             try
             {
-                contactdetailsRequest = await _httpRequestMessageHelper.GetResourceFromRequest<Contact.Models.ContactDetails>(req);
+                contactdetailsRequest = await _responseHelper.GetResourceFromRequest<Contact.Models.ContactDetails>(req);
             }
             catch (JsonException ex)
             {

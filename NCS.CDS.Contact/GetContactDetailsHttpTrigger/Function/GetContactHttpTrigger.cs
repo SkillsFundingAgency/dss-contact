@@ -19,19 +19,19 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
     public class GetContactHttpTrigger
     {
         private readonly IResourceHelper _resourceHelper;
-        private readonly IHttpResponseMessageHelper _httpResponseMessageHelper;
         private readonly IHttpRequestHelper _httpRequestMessageHelper;
         private readonly IGetContactHttpTriggerService _getContactDetailsByIdService;
+        private readonly ILogger logger;
 
         public GetContactHttpTrigger(IResourceHelper resourceHelper,
             IHttpRequestHelper httpRequestMessageHelper,
             IGetContactHttpTriggerService getContactsService,
-            IHttpResponseMessageHelper httpResponseMessageHelper)
+            ILogger<GetContactHttpTrigger> logger)
         {
             _resourceHelper = resourceHelper;
             _httpRequestMessageHelper = httpRequestMessageHelper;
             _getContactDetailsByIdService = getContactsService;
-            _httpResponseMessageHelper = httpResponseMessageHelper;
+            this.logger = logger;
         }
 
         [Function("GET")]
@@ -41,7 +41,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), 200)]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger logger, string customerId)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, string customerId)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
