@@ -1,6 +1,7 @@
 ﻿using DFC.HTTP.Standard;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Documents.SystemFunctions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NCS.DSS.Contact.Cosmos.Helper;
@@ -20,7 +21,6 @@ namespace NCS.DSS.Contact.Tests
         private const string ValidCustomerId = "7E467BDB-213F-407A-B86A-1954053D3C24";
         private const string ValidContactId = "1e1a555c-9633-4e12-ab28-09ed60d51cb3";
         private const string InValidId = "1111111-2222-3333-4444-555555555555";
-        private Mock<ILogger> _log;
         private HttpRequest _request;
         private Mock<IResourceHelper> _resourceHelper;
         private Mock<IHttpRequestHelper> _httpRequestHelper;
@@ -28,6 +28,7 @@ namespace NCS.DSS.Contact.Tests
         private Models.ContactDetails _contact;
         private GetContactByIdHttpTrigger _function;
         private IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private Mock<ILogger<GetContactByIdHttpTrigger>> _logger;
 
 
         [SetUp]
@@ -35,12 +36,12 @@ namespace NCS.DSS.Contact.Tests
         {
             _contact = new Models.ContactDetails();
             _request = new DefaultHttpContext().Request;
-            _log = new Mock<ILogger>();
             _resourceHelper = new Mock<IResourceHelper>();
             _httpRequestHelper = new Mock<IHttpRequestHelper>();
             _getContactByIdHttpTriggerService = new Mock<IGetContactDetailsByIdHttpTriggerService>();
             _httpResponseMessageHelper = new HttpResponseMessageHelper();
-            _function = new GetContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestHelper.Object, _getContactByIdHttpTriggerService.Object, _httpResponseMessageHelper);
+            _logger = new Mock<ILogger<GetContactByIdHttpTrigger>>();
+            _function = new GetContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestHelper.Object, _getContactByIdHttpTriggerService.Object, _logger.Object);
         }
 
         [Test]
@@ -102,7 +103,7 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _log.Object)).Returns(Task.FromResult<Models.ContactDetails>(null));
+            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _logger.Object)).Returns(Task.FromResult<Models.ContactDetails>(null));
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
@@ -117,7 +118,7 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _log.Object)).Returns(Task.FromResult<Models.ContactDetails>(_contact));
+            _getContactByIdHttpTriggerService.Setup(x=>x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), _logger.Object)).Returns(Task.FromResult<Models.ContactDetails>(_contact));
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
@@ -128,7 +129,7 @@ namespace NCS.DSS.Contact.Tests
 
         private async Task<IActionResult> RunFunction(string customerId, string contactDetailsId)
         {
-            return await _function.Run(_request, _log.Object, customerId, contactDetailsId).ConfigureAwait(false);
+            return await _function.Run(_request, customerId, contactDetailsId).ConfigureAwait(false);
         }
     }
 }

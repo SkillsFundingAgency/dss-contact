@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NCS.DSS.Contact.Cosmos.Helper;
+using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
 using NUnit.Framework;
@@ -27,18 +28,19 @@ namespace NCS.DSS.Contact.Tests
         private Models.ContactDetails _contact;
         private GetContactHttpTrigger _function;
         private IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private Mock<ILogger<GetContactHttpTrigger>> _logger;
 
         [SetUp]
         public void Setup()
         {
             _contact = new Models.ContactDetails();
             _request = new DefaultHttpContext().Request;
-            _log = new Mock<ILogger>();
+            _logger = new Mock<ILogger<GetContactHttpTrigger>>();
             _resourceHelper = new Mock<IResourceHelper>();
             _httpRequestHelper = new Mock<IHttpRequestHelper>();
             _getContactHttpTriggerService = new Mock<IGetContactHttpTriggerService>();
             _httpResponseMessageHelper = new HttpResponseMessageHelper();
-            _function = new GetContactHttpTrigger(_resourceHelper.Object, _httpRequestHelper.Object, _getContactHttpTriggerService.Object, _httpResponseMessageHelper);
+            _function = new GetContactHttpTrigger(_resourceHelper.Object, _httpRequestHelper.Object, _getContactHttpTriggerService.Object, _logger.Object);
         }
 
         [Test]
@@ -114,7 +116,7 @@ namespace NCS.DSS.Contact.Tests
 
         private async Task<IActionResult> RunFunction(string customerId)
         {
-            return await _function.Run(_request, _log.Object, customerId).ConfigureAwait(false);
+            return await _function.Run(_request, customerId).ConfigureAwait(false);
         }
     }
 }
