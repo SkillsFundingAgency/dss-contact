@@ -138,9 +138,11 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             return contactDetails == null
                 ? new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON)) :
-               new OkObjectResult(new StringContent(JsonHelper.SerializeObject(contactDetails), Encoding.UTF8,
-                    ContentApplicationType.ApplicationJSON));
+               new ObjectResult(new StringContent(JsonHelper.SerializeObject(contactDetails), Encoding.UTF8,
+                    ContentApplicationType.ApplicationJSON))
+               {
+                   StatusCode = StatusCodes.Status201Created
+               };
         }
-
-    }
+    };
 }

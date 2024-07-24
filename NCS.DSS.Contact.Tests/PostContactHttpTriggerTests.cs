@@ -1,6 +1,6 @@
 ﻿using DFC.HTTP.Standard;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NCS.DSS.Contact.Cosmos.Helper;
@@ -38,7 +38,7 @@ namespace NCS.DSS.Contact.Tests
         public void Setup()
         {
             _contactDetails = new Models.ContactDetails() { PreferredContactMethod = ReferenceData.PreferredContactMethod.Email, EmailAddress = "some@test.com" };
-            _request = new DefaultHttpRequest(new DefaultHttpContext());
+            _request = new DefaultHttpContext().Request;
             _log = new Mock<ILogger>();
             _resourceHelper = new Mock<IResourceHelper>();
             _httpRequestMessageHelper = new Mock<IHttpRequestHelper>();
@@ -59,8 +59,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -74,8 +73,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(InValidId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -92,8 +90,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
         [Test]
@@ -108,8 +105,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
         [Test]
@@ -125,8 +121,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
         [Test]
@@ -143,8 +138,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
         }
 
         [Test]
@@ -161,8 +155,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -179,8 +172,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -197,8 +189,10 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+
+            Assert.That(objectResult.StatusCode, Is.EqualTo(201));
         }
 
         [Test]
@@ -218,8 +212,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
         }
 
         [Test]
@@ -241,11 +234,13 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+
+            Assert.That(objectResult.StatusCode, Is.EqualTo(201));
         }
 
-        private async Task<HttpResponseMessage> RunFunction(string customerId)
+        private async Task<IActionResult> RunFunction(string customerId)
         {
             return await _function.RunAsync(
                 _request, _log.Object, customerId).ConfigureAwait(false);
