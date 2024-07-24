@@ -77,13 +77,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new BadRequestObjectResult(customerGuid);
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new BadRequestObjectResult(contactGuid);
             }
 
             ContactDetailsPatch contactdetailsPatchRequest;
@@ -95,13 +95,11 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             catch (JsonException ex)
             {
                 logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(ex), Encoding.UTF8,
-                    ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(ex);
             }
 
             if (contactdetailsPatchRequest == null)
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(req),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(req);
 
             contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
@@ -118,8 +116,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
-                return new ForbidResult(new StringContent(JsonConvert.SerializeObject(customerGuid),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON).ToString());
+                return new ForbidResult(customerGuid.ToString());
             }
 
             var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
@@ -159,8 +156,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     if (errors == null)
                         errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
                     errors.Add(new System.ComponentModel.DataAnnotations.ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string>() { "EmailAddress" }));
-                    return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                    return new UnprocessableEntityObjectResult(errors);
                 }
 
                 if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
@@ -170,8 +166,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
 
             if (errors != null && errors.Any())
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(errors);
 
             var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
@@ -179,9 +174,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
 
             return updatedContactDetails == null ?
-                new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON)) :
-               new OkObjectResult(new StringContent(JsonHelper.SerializeObject(updatedContactDetails), Encoding.UTF8,
-                    ContentApplicationType.ApplicationJSON));
+                new BadRequestObjectResult(contactGuid) :
+               new OkObjectResult(JsonHelper.SerializeObject(updatedContactDetails));
         }
 
     }

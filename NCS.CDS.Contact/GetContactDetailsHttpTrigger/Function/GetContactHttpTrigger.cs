@@ -55,7 +55,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new BadRequestObjectResult(customerGuid);
             }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
@@ -70,8 +70,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 
             return contact == null ?
                 new NoContentResult() :
-                new OkObjectResult(new StringContent(JsonHelper.SerializeObject(contact),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                new OkObjectResult(JsonHelper.SerializeObject(contact));
         }
     }
 }

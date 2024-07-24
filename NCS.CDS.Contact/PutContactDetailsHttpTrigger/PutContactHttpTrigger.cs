@@ -27,14 +27,12 @@ namespace NCS.DSS.Contact.PutContactDetailsHttpTrigger
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
-                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactid),
-                        System.Text.Encoding.UTF8, "application/json"));
+                return new BadRequestObjectResult(contactid);
             }
 
             var values = "Sucessfully Replaced ContactDetails record with id : " + contactid;
 
-            return new OkObjectResult(new StringContent(JsonConvert.SerializeObject(values),
-                    System.Text.Encoding.UTF8, "application/json"));
+            return new OkObjectResult(JsonConvert.SerializeObject(values));
         }
 
     }

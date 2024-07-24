@@ -72,7 +72,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             log.LogInformation("C# HTTP trigger function Post Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
-                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new BadRequestObjectResult(customerGuid);
 
             Models.ContactDetails contactdetailsRequest;
             try
@@ -81,21 +81,18 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(ex), Encoding.UTF8,
-                    ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(ex);
             }
 
             if (contactdetailsRequest == null)
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(req),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(req);
 
             contactdetailsRequest.SetIds(customerGuid, touchpointId);
 
             var errors = _validate.ValidateResource(contactdetailsRequest, null, true);
 
             if (errors != null && errors.Any())
-                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
+                return new UnprocessableEntityObjectResult(errors);
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
@@ -105,8 +102,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
-                return new ForbidResult(new StringContent(JsonConvert.SerializeObject(customerGuid),
-                    Encoding.UTF8, ContentApplicationType.ApplicationJSON).ToString());
+                return new ForbidResult(customerGuid.ToString());
 
             var doesContactDetailsExist = _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
@@ -137,9 +133,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
 
             return contactDetails == null
-                ? new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON)) :
-               new ObjectResult(new StringContent(JsonHelper.SerializeObject(contactDetails), Encoding.UTF8,
-                    ContentApplicationType.ApplicationJSON))
+                ? new BadRequestObjectResult(customerGuid) :
+               new ObjectResult(JsonHelper.SerializeObject(contactDetails))
                {
                    StatusCode = StatusCodes.Status201Created
                };
