@@ -11,6 +11,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 {
@@ -45,7 +47,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _httpResponseMessageHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             logger.LogInformation("C# HTTP trigger function GetContactByIdHttpTrigger processed a request. " + touchpointId);
@@ -53,28 +55,29 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.BadRequest(customerGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return _httpResponseMessageHelper.BadRequest(contactGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
             }
 
-            var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
+                var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
             { 
                 logger.LogInformation($"Customer does not exist.");
-                return _httpResponseMessageHelper.NoContent(customerGuid);
+                    return new NoContentResult();
             }
 
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, logger);
 
             return contact == null ?
-                _httpResponseMessageHelper.NoContent(contactGuid) :
-                _httpResponseMessageHelper.Ok(JsonHelper.SerializeObject(contact));
+                new NoContentResult() :
+                new OkObjectResult(new StringContent(JsonHelper.SerializeObject(contact),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
         }
     }
 }

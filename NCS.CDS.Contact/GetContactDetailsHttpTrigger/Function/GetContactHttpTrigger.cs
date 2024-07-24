@@ -11,6 +11,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 {
@@ -45,7 +47,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _httpResponseMessageHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             logger.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
@@ -53,7 +55,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.BadRequest(customerGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
             }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
@@ -61,14 +63,15 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 logger.LogInformation($"Customer does not exist.");
-                return _httpResponseMessageHelper.NoContent(customerGuid);
+                return new NoContentResult();
             }
 
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
             return contact == null ?
-                _httpResponseMessageHelper.NoContent(customerGuid) :
-                _httpResponseMessageHelper.Ok(JsonHelper.SerializeObject(contact));
+                new NoContentResult() :
+                new OkObjectResult(new StringContent(JsonHelper.SerializeObject(contact),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
         }
     }
 }

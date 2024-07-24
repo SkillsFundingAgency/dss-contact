@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
+using System.Text;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -61,14 +62,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _httpResponseMessageHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 logger.LogInformation("Unable to locate 'apimurl' in request header");
-                return _httpResponseMessageHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             logger.LogInformation("C# HTTP trigger function Patch Contact processed a request. " + touchpointId);
@@ -76,13 +77,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.BadRequest(customerGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return _httpResponseMessageHelper.BadRequest(contactGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
             }
 
             ContactDetailsPatch contactdetailsPatchRequest;
@@ -94,11 +95,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             catch (JsonException ex)
             {
                 logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
-                return _httpResponseMessageHelper.UnprocessableEntity(ex);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(ex), Encoding.UTF8,
+                    ContentApplicationType.ApplicationJSON));
             }
 
             if (contactdetailsPatchRequest == null)
-                return _httpResponseMessageHelper.UnprocessableEntity(req);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(req),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
 
             contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
@@ -107,7 +110,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.NoContent(customerGuid);
+                return new NoContentResult();
             }
 
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
@@ -115,7 +118,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
-                return _httpResponseMessageHelper.Forbidden(customerGuid);
+                return new ForbidResult(new StringContent(JsonConvert.SerializeObject(customerGuid),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON).ToString());
             }
 
             var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
@@ -123,7 +127,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (contactdetails == null)
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return _httpResponseMessageHelper.NoContent(contactGuid);
+                return new NoContentResult();
             }
 
             var errors = _validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
@@ -140,7 +144,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                         {
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return _httpResponseMessageHelper.Conflict();
+                            return new ConflictObjectResult(HttpStatusCode.Conflict);
                         }
                     }
                 }
@@ -155,7 +159,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     if (errors == null)
                         errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
                     errors.Add(new System.ComponentModel.DataAnnotations.ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string>() { "EmailAddress" }));
-                    return _httpResponseMessageHelper.UnprocessableEntity(errors);
+                    return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
                 }
 
                 if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
@@ -165,7 +170,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
 
             if (errors != null && errors.Any())
-                return _httpResponseMessageHelper.UnprocessableEntity(errors);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
 
             var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
@@ -173,8 +179,9 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
 
             return updatedContactDetails == null ?
-                _httpResponseMessageHelper.BadRequest(contactGuid) :
-                _httpResponseMessageHelper.Ok(JsonHelper.SerializeObject(updatedContactDetails));
+                new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(contactGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON)) :
+               new OkObjectResult(new StringContent(JsonHelper.SerializeObject(updatedContactDetails), Encoding.UTF8,
+                    ContentApplicationType.ApplicationJSON));
         }
 
     }

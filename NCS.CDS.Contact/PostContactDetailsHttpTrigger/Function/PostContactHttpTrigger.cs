@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
+using System.Text;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -58,20 +59,20 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 log.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _responseHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 log.LogInformation("Unable to locate 'apimurl' in request header");
-                return _responseHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             log.LogInformation("C# HTTP trigger function Post Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
-                return _responseHelper.BadRequest(customerGuid);
+                return new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON));
 
             Models.ContactDetails contactdetailsRequest;
             try
@@ -80,33 +81,37 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                return _responseHelper.UnprocessableEntity(ex);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(ex), Encoding.UTF8,
+                    ContentApplicationType.ApplicationJSON));
             }
 
             if (contactdetailsRequest == null)
-                return _responseHelper.UnprocessableEntity(req);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(req),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
 
             contactdetailsRequest.SetIds(customerGuid, touchpointId);
 
             var errors = _validate.ValidateResource(contactdetailsRequest, null, true);
 
             if (errors != null && errors.Any())
-                return _responseHelper.UnprocessableEntity(errors);
+                return new UnprocessableEntityObjectResult(new StringContent(JsonConvert.SerializeObject(errors),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON));
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
-                return _responseHelper.NoContent(customerGuid);
+                return new NoContentResult();
 
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
-                return _responseHelper.Forbidden(customerGuid);
+                return new ForbidResult(new StringContent(JsonConvert.SerializeObject(customerGuid),
+                    Encoding.UTF8, ContentApplicationType.ApplicationJSON).ToString());
 
             var doesContactDetailsExist = _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
             if (doesContactDetailsExist)
-                return _responseHelper.Conflict();
+                return new ConflictObjectResult(HttpStatusCode.Conflict);
 
             if (!string.IsNullOrEmpty(contactdetailsRequest.EmailAddress))
             {
@@ -120,7 +125,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                         {
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return _responseHelper.Conflict();
+                            return new ConflictObjectResult(HttpStatusCode.Conflict);
                         }
                     }
                 }
@@ -132,8 +137,9 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
 
             return contactDetails == null
-                ? _responseHelper.BadRequest(customerGuid)
-                : _responseHelper.Created(JsonHelper.SerializeObject(contactDetails));
+                ? new BadRequestObjectResult(new StringContent(JsonConvert.SerializeObject(customerGuid), Encoding.UTF8, ContentApplicationType.ApplicationJSON)) :
+               new OkObjectResult(new StringContent(JsonHelper.SerializeObject(contactDetails), Encoding.UTF8,
+                    ContentApplicationType.ApplicationJSON));
         }
 
     }
