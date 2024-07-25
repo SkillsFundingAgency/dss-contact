@@ -50,22 +50,23 @@ namespace NCS.DSS.Contact.Validation
                 {
                     case PreferredContactMethod.Email:
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress))
-                            results.Add(new ValidationResult("Preferred Contact Method is Email so Email Address must be supplied.", new[] { "EmailAddress" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Email so an Email Address must be supplied.", new[] { "EmailAddress" }));
                         break;
 
                     case PreferredContactMethod.Mobile:
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
-                            results.Add(new ValidationResult("Preferred Contact Method is Mobile so Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Mobile so a Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.Telephone:
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber))
-                            results.Add(new ValidationResult("Preferred Contact Method is Telephone so Home Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Telephone so a Home Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.SMS:
+                    case PreferredContactMethod.WhatsApp:
                         if (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber))
-                            results.Add(new ValidationResult("Preferred Contact Method is SMS so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+                            results.Add(new ValidationResult($"Preferred Contact Method is {preferredContactMethod.Value.ToString()} so a Mobile Number must be supplied.", new[] { "MobileNumbers" }));
                         break;
                 }
             }
@@ -76,25 +77,26 @@ namespace NCS.DSS.Contact.Validation
                     case PreferredContactMethod.Email:
                         if (contactDetailsResource.EmailAddress == "" ||
                             (string.IsNullOrWhiteSpace(contactDetailsResource.EmailAddress) && string.IsNullOrWhiteSpace(contactDetails.EmailAddress)))
-                            results.Add(new ValidationResult("Preferred Contact Method is Email so Email Address must be supplied.", new[] { "EmailAddress" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Email so an Email Address must be supplied.", new[] { "EmailAddress" }));
                         break;
 
                     case PreferredContactMethod.Mobile:
                         if (contactDetailsResource.MobileNumber == "" ||
                             (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) && string.IsNullOrWhiteSpace(contactDetails.MobileNumber)))
-                            results.Add(new ValidationResult("Preferred Contact Method is Mobile so Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Mobile so a Mobile Number must be supplied.", new[] { "MobileNumbers", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.Telephone:
                         if (contactDetailsResource.HomeNumber == "" ||
                             (string.IsNullOrWhiteSpace(contactDetailsResource.HomeNumber) && string.IsNullOrWhiteSpace(contactDetails.HomeNumber)))
-                            results.Add(new ValidationResult("Preferred Contact Method is Telephone so Home Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
+                            results.Add(new ValidationResult("Preferred Contact Method is Telephone so a Home Number must be supplied.", new[] { "HomeNumber", "AlternativeNumber" }));
                         break;
 
                     case PreferredContactMethod.SMS:
+                    case PreferredContactMethod.WhatsApp:
                         if (contactDetailsResource.MobileNumber == "" ||
                             (string.IsNullOrWhiteSpace(contactDetailsResource.MobileNumber) && string.IsNullOrWhiteSpace(contactDetails.MobileNumber)))
-                            results.Add(new ValidationResult("Preferred Contact Method is SMS so Mobile Number must be supplied.", new[] { "MobileNumbers" }));
+                            results.Add(new ValidationResult($"Preferred Contact Method is {preferredContactMethod.Value.ToString()} so a Mobile Number must be supplied.", new[] { "MobileNumbers" }));
                         break;
                 }
             }

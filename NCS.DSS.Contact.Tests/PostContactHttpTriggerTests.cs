@@ -269,7 +269,6 @@ namespace NCS.DSS.Contact.Tests
                                            })
                                            .Returns(Task.FromResult(contactDetails));
 
-
             // Act
             var result = await RunFunction(ValidCustomerId);
 
@@ -278,6 +277,23 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
             Assert.IsNotNull(uploadedContactDetails, "The updatedContactDetails is null.");
             Assert.AreEqual(ReferenceData.PreferredContactMethod.Email, uploadedContactDetails.PreferredContactMethod, $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {uploadedContactDetails?.PreferredContactMethod}");
+        }
+
+        [Test]
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeUnprocessableEntity_WhenNoMobileNumberSuppliedForWhatsappPreferredContactMethod()
+        {
+            //Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            var contactDetails = new ContactDetails() { PreferredContactMethod = ReferenceData.PreferredContactMethod.WhatsApp, CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(422, (int)result.StatusCode);
         }
 
         private async Task<HttpResponseMessage> RunFunction(string customerId)

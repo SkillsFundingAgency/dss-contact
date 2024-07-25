@@ -26,6 +26,7 @@ namespace NCS.DSS.Contact.Models
                                 "3 - Telephone,   " +
                                 "4 - SMS,   " +
                                 "5 - Post,   " +
+                                "6 - WhatsApp,   " +
                                 "99 - Not known")]
         [Example(Description = "3")]
         [JsonConverter(typeof(PermissiveEnumConverter))]
