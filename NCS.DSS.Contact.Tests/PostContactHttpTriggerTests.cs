@@ -166,7 +166,7 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PostContactHttpTrigger_ReturnsStatusCodeCreated_WhenRequestNotIsValid()
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeBadRequest_WhenRequestNotIsValid()
         {
             // Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
@@ -243,6 +243,40 @@ namespace NCS.DSS.Contact.Tests
             // Assert
             Assert.IsInstanceOf<HttpResponseMessage>(result);
             Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+        }
+
+        [Test]
+        public async Task PostContactContactPrefHttpTrigger_ReturnsStatusCodeCreated_WhenRequestIsValid()
+        {
+            // Arrange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            var contactDetails = new ContactDetails() { PreferredContactMethod = ReferenceData.PreferredContactMethod.Email, EmailAddress = "sillyemail@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>())).Returns(Task.FromResult<Models.DigitalIdentity>(null));
+            _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<Models.ContactDetails>>(new List<Models.ContactDetails>() { new Models.ContactDetails() }));
+            _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _postContactHttpTriggerService.Setup(x => x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(contactDetails));
+
+            // Capture the uploaded contact details
+            Models.ContactDetails uploadedContactDetails = null;
+            _postContactHttpTriggerService.Setup(x => x.CreateAsync(It.IsAny<Models.ContactDetails>()))
+                                           .Callback<Models.ContactDetails>((contact) =>
+                                           {
+                                               contact.PreferredContactMethod = contact.PreferredContactMethod; // Ensure the post is applied
+                                               uploadedContactDetails = contact;
+                                           })
+                                           .Returns(Task.FromResult(contactDetails));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId);
+
+            // Assert
+            Assert.IsInstanceOf<HttpResponseMessage>(result);
+            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+            Assert.IsNotNull(uploadedContactDetails, "The updatedContactDetails is null.");
+            Assert.AreEqual(ReferenceData.PreferredContactMethod.Email, uploadedContactDetails.PreferredContactMethod, $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {uploadedContactDetails?.PreferredContactMethod}");
         }
 
         [Test]
