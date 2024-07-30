@@ -122,9 +122,11 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
         }
 
         private async Task<IActionResult> RunFunction(string customerId, string contactDetailsId)

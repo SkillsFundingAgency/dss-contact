@@ -190,12 +190,11 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-
-            Assert.That(objectResult.StatusCode, Is.EqualTo(201));
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
         }
 
         [Test]
@@ -235,12 +234,11 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-
-            Assert.That(objectResult.StatusCode, Is.EqualTo(201));
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
         }
 
         private async Task<IActionResult> RunFunction(string customerId)

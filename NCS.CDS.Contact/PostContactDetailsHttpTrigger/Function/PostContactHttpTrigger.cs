@@ -2,20 +2,18 @@
 using DFC.Swagger.Standard.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
-using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
-using System.Text;
+using JsonException = Newtonsoft.Json.JsonException;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 {
@@ -133,11 +131,11 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
 
             return contactDetails == null
-                ? new BadRequestObjectResult(customerGuid) :
-               new ObjectResult(JsonHelper.SerializeObject(contactDetails))
-               {
-                   StatusCode = StatusCodes.Status201Created
-               };
+                ? new BadRequestObjectResult(customerGuid)
+                : new JsonResult(contactDetails, new JsonSerializerOptions())
+                {
+                    StatusCode = (int)HttpStatusCode.Created
+                };
         }
     };
 }

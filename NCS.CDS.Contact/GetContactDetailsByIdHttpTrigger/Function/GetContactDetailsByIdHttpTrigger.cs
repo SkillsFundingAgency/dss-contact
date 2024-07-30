@@ -2,17 +2,14 @@
 using DFC.Swagger.Standard.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service;
-using NCS.DSS.Contact.Helpers;
 using System;
 using System.Net;
-using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 {
@@ -64,19 +61,22 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
                 return new BadRequestObjectResult(contactGuid);
             }
 
-                var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
+            var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
-            { 
+            {
                 logger.LogInformation($"Customer does not exist.");
-                    return new NoContentResult();
+                return new NoContentResult();
             }
 
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, logger);
 
-            return contact == null ?
-                new NoContentResult() :
-                new OkObjectResult(JsonHelper.SerializeObject(contact));
+            return contact == null
+                ? new NoContentResult()
+                : new JsonResult(contact, new JsonSerializerOptions())
+                {
+                    StatusCode = (int)HttpStatusCode.OK
+                };
         }
     }
 }
