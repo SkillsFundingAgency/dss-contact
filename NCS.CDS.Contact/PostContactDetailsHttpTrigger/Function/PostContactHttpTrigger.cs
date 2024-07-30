@@ -128,7 +128,9 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var contactDetails = await _contactdetailsPostService.CreateAsync(contactdetailsRequest);
 
             if (contactDetails != null)
+            {
                 await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
+            }
 
             return contactDetails == null
                 ? new BadRequestObjectResult(customerGuid)

@@ -169,11 +169,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
             if (updatedContactDetails != null)
+            {
                 await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+            }
 
             return updatedContactDetails == null
                 ? new BadRequestObjectResult(contactGuid)
-                : new JsonResult(contactGuid, new JsonSerializerOptions())
+                : new JsonResult(updatedContactDetails, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.OK
                 };

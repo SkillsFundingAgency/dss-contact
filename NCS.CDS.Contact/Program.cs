@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Hosting;
 using DFC.HTTP.Standard;
 using DFC.Swagger.Standard;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using NCS.DSS.Contact;
+using Microsoft.Extensions.Hosting;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service;

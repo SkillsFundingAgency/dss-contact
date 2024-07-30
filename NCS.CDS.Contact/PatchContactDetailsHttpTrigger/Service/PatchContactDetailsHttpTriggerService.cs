@@ -13,15 +13,12 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
         private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
-        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-        }
-
-        public PatchContactDetailsHttpTriggerService(ILogger<PatchContactDetailsHttpTriggerService> logger)
-        {
             this.logger = logger;
         }
+
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
