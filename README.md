@@ -1,8 +1,11 @@
-# dss-contact
+# DSS Contact
+
+> [!NOTE]  
+> The latest version of this API is `v1`
 
 [![Build Status](https://sfa-gov-uk.visualstudio.com/CDS%202.0/_apis/build/status/Yaml/dss-contact?repoName=SkillsFundingAgency%2Fdss-contact&branchName=master)](https://sfa-gov-uk.visualstudio.com/CDS%202.0/_build/latest?definitionId=1457&repoName=SkillsFundingAgency%2Fdss-contact&branchName=master)
 
-Function app to provide api for maintaining a contact.
+Function App to provide an API for maintaining a contact.
 
 ## Developer Setup
 
