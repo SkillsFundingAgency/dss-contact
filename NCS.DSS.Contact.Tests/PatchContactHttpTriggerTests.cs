@@ -8,6 +8,7 @@ using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.ReferenceData;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -15,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
@@ -117,8 +117,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(422, (int)result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
         [Test]
@@ -322,12 +321,12 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-            Assert.IsNotNull(updatedContactDetails, "The updatedContactDetails is null.");
-            Assert.AreEqual(ReferenceData.PreferredContactMethod.Email, updatedContactDetails.PreferredContactMethod, $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {updatedContactDetails?.PreferredContactMethod}");
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(updatedContactDetails.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Email), $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {updatedContactDetails?.PreferredContactMethod}");
         }
 
         private async Task<IActionResult> RunFunction(string customerId, string contactDetailId)
