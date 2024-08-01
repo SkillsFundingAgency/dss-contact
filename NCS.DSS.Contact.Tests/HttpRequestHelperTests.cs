@@ -116,7 +116,7 @@ namespace NCS.DSS.Contact.Tests
         public async Task GetResourceFromRequest_SetsPreferredContactMethodAsUnknown_WhenPreferredContactMethodValueIs8AsInteger()
         {
             // Arrange
-            var json = "{\"PreferredContactMethod\": 6}";
+            var json = "{\"PreferredContactMethod\": 8}";
             var request = GetHttpRequest(json);
 
             // Act

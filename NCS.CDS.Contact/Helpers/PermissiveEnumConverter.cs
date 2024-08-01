@@ -48,7 +48,7 @@ namespace NCS.DSS.Contact.Helpers
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(value.ToString());
+            writer.WriteValue(value);
         }
 
         private bool IsNullableType(Type t)
