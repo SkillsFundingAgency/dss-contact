@@ -1,10 +1,11 @@
 ﻿using DFC.HTTP.Standard;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
@@ -25,7 +26,6 @@ namespace NCS.DSS.Contact.Tests
         private const string ValidCustomerId = "7E467BDB-213F-407A-B86A-1954053D3C24";
         private const string ValidContactId = "1e1a555c-9633-4e12-ab28-09ed60d51cb3";
         private const string InValidId = "1111111-2222-3333-4444-555555555555";
-        private Mock<ILogger> _log;
         private HttpRequest _request;
         private Mock<IResourceHelper> _resourceHelper;
         private IValidate _validate;
@@ -36,21 +36,22 @@ namespace NCS.DSS.Contact.Tests
         private Mock<IDocumentDBProvider> _provider;
         private PatchContactHttpTrigger _function;
         private IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private Mock<ILogger<PatchContactHttpTrigger>> _logger;
 
         [SetUp]
         public void Setup()
         {
             _contactDetails = new Models.ContactDetails() { CustomerId = Guid.Parse(ValidCustomerId) };
             _contactDetailsPatch = new Models.ContactDetailsPatch();
-            _request = new DefaultHttpRequest(new DefaultHttpContext());
-            _log = new Mock<ILogger>();
+            _request = new DefaultHttpContext().Request;
+            _logger = new Mock<ILogger<PatchContactHttpTrigger>>();
             _resourceHelper = new Mock<IResourceHelper>();
             _validate = new Validate();
             _httpRequestMessageHelper = new Mock<IHttpRequestHelper>();
             _patchContactHttpTriggerService = new Mock<IPatchContactDetailsHttpTriggerService>();
             _provider = new Mock<IDocumentDBProvider>();
             _httpResponseMessageHelper = new HttpResponseMessageHelper();
-            _function = new PatchContactHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _patchContactHttpTriggerService.Object, _provider.Object, _httpResponseMessageHelper);
+            _function = new PatchContactHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _patchContactHttpTriggerService.Object, _provider.Object, _logger.Object);
         }
 
         [Test]
@@ -63,8 +64,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -78,8 +78,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(InValidId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -94,14 +93,13 @@ namespace NCS.DSS.Contact.Tests
             val.Setup(x => x.ValidateResource(It.IsAny<Models.ContactDetailsPatch>(), _contactDetails, false)).Returns(validationResults);
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
             _patchContactHttpTriggerService.Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.FromResult<Models.ContactDetails>(_contactDetails));
-            _function = new PatchContactHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, val.Object, _patchContactHttpTriggerService.Object, _provider.Object, _httpResponseMessageHelper);
+            _function = new PatchContactHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, val.Object, _patchContactHttpTriggerService.Object, _provider.Object, _logger.Object);
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(422, (int)result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
         [Test]
@@ -135,8 +133,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual((HttpStatusCode)422, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
         [Test]
@@ -152,8 +149,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
         [Test]
@@ -170,8 +166,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
 
         [Test]
@@ -189,8 +184,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -208,8 +202,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
         [Test]
@@ -229,8 +222,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(422, (int)result.StatusCode);
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
         }
 
 
@@ -249,10 +241,11 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
         }
 
         [Test]
@@ -274,8 +267,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId, ValidContactId);
 
             // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
         }
 
         [Test]
@@ -295,10 +287,11 @@ namespace NCS.DSS.Contact.Tests
 
             // Act
             var result = await RunFunction(ValidCustomerId, ValidContactId);
+            var responseResult = result as JsonResult;
 
-            // Assert
-            Assert.IsInstanceOf<HttpResponseMessage>(result);
-            Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+            //Assert
+            Assert.That(responseResult, Is.InstanceOf<JsonResult>());
+            Assert.That(responseResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
         }
 
         [Test]
@@ -337,11 +330,10 @@ namespace NCS.DSS.Contact.Tests
             Assert.AreEqual(ReferenceData.PreferredContactMethod.Email, updatedContactDetails.PreferredContactMethod, $"Expected: {ReferenceData.PreferredContactMethod.Email}, But was: {updatedContactDetails?.PreferredContactMethod}");
         }
 
-        private async Task<HttpResponseMessage> RunFunction(string customerId, string contactDetailId)
+        private async Task<IActionResult> RunFunction(string customerId, string contactDetailId)
         {
             return await _function.RunAsync(
-                _request, _log.Object, customerId, contactDetailId).ConfigureAwait(false);
+                _request, customerId, contactDetailId).ConfigureAwait(false);
         }
-
     }
 }

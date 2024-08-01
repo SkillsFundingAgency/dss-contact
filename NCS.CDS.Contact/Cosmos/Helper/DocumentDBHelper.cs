@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Configuration;
-using Microsoft.Azure.Documents.ChangeFeedProcessor.Logging;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Logging;
 
