@@ -15,7 +15,6 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using JsonException = Newtonsoft.Json.JsonException;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -27,14 +26,15 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         private IPatchContactDetailsHttpTriggerService _contactdetailsPatchService;
         private IDocumentDBProvider _provider;
         private ILogger logger;
-
+        private readonly IConvertToDynamic _convertToDynamic;
 
         public PatchContactHttpTrigger(IResourceHelper resourceHelper,
              IHttpRequestHelper httpRequestMessageHelper,
              IValidate validate,
              IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
              IDocumentDBProvider provider,
-             ILogger<PatchContactHttpTrigger> logger)
+             ILogger<PatchContactHttpTrigger> logger,
+             IConvertToDynamic convertToDynamic)
         {
             _resourceHelper = resourceHelper;
             _httpRequestMessageHelper = httpRequestMessageHelper;
@@ -42,6 +42,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             _contactdetailsPatchService = contactdetailsPatchService;
             _provider = provider;
             this.logger = logger;
+            _convertToDynamic = convertToDynamic;   
         }
 
 
@@ -90,10 +91,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             {
                 contactdetailsPatchRequest = await _httpRequestMessageHelper.GetResourceFromRequest<ContactDetailsPatch>(req);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
                 logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
-                return new UnprocessableEntityObjectResult(ex);
+                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
             }
 
             if (contactdetailsPatchRequest == null)
@@ -114,7 +115,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
-                return new ForbidResult(customerGuid.ToString());
+                return new ObjectResult(customerGuid.ToString())
+                {
+                    StatusCode = (int)HttpStatusCode.Forbidden
+                };
             }
 
             var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);

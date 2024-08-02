@@ -1,10 +1,10 @@
 ﻿using DFC.Swagger.Standard.Annotations;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.ReferenceData;
-using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace NCS.DSS.Contact.Models
 {
@@ -65,26 +65,26 @@ namespace NCS.DSS.Contact.Models
         public string LastModifiedTouchpointId { get; set; }
 
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public bool? IsDigitalAccount { get; set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string FirstName { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string LastName { get; private set; }
 
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public bool? ChangeEmailAddress { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string  CurrentEmail { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string NewEmail { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Guid? IdentityStoreId { get; private set; }
 
 

@@ -6,6 +6,7 @@ using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
@@ -24,6 +25,7 @@ var host = new HostBuilder()
         services.AddTransient<IValidate, Validate>();
         services.AddTransient<IHttpRequestHelper, HttpRequestHelper>();
         services.AddSingleton<ISwaggerDocumentGenerator, SwaggerDocumentGenerator>();
+        services.AddSingleton<IConvertToDynamic, ConvertToDynamic>();
     })
     .Build();
 

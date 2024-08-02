@@ -36,6 +36,7 @@ namespace NCS.DSS.Contact.Tests
         private IHttpResponseMessageHelper _httpResponseMessageHelper;
         private PostContactByIdHttpTrigger _function;
         private Mock<ILogger<PostContactByIdHttpTrigger>> _logger;
+        private Mock<IConvertToDynamic> _convertToDynamic;
 
         [SetUp]
         public void Setup()
@@ -46,10 +47,11 @@ namespace NCS.DSS.Contact.Tests
             _resourceHelper = new Mock<IResourceHelper>();
             _httpRequestMessageHelper = new Mock<IHttpRequestHelper>();
             _validate = new Validate();
+            _convertToDynamic = new Mock<IConvertToDynamic>();
             _postContactHttpTriggerService = new Mock<IPostContactDetailsHttpTriggerService>();
             _provider = new Mock<IDocumentDBProvider>();
             _httpResponseMessageHelper = new HttpResponseMessageHelper();
-            _function = new PostContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _postContactHttpTriggerService.Object, _provider.Object, _logger.Object);
+            _function = new PostContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _postContactHttpTriggerService.Object, _provider.Object, _logger.Object,_convertToDynamic.Object);
         }
 
         [Test]

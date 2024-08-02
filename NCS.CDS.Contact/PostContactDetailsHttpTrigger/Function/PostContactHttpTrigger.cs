@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using System;
@@ -25,13 +26,14 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         private readonly IPostContactDetailsHttpTriggerService _contactdetailsPostService;
         private readonly IDocumentDBProvider _provider;
         private readonly ILogger log;
-
+        private readonly IConvertToDynamic _convertToDynamic;
         public PostContactByIdHttpTrigger( IResourceHelper resourceHelper,
             IHttpRequestHelper responseHelper,
             IValidate validate,
             IPostContactDetailsHttpTriggerService contactdetailsPostService,
             IDocumentDBProvider provider,
-            ILogger<PostContactByIdHttpTrigger> logger)
+            ILogger<PostContactByIdHttpTrigger> logger,
+            IConvertToDynamic convertToDynamic)
         {
             _resourceHelper = resourceHelper;
             _validate = validate;
@@ -39,6 +41,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _provider = provider;
             _responseHelper = responseHelper;
             log = logger;
+            _convertToDynamic = convertToDynamic;
         }
 
         [Function("POST")]
@@ -72,14 +75,14 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
                 return new BadRequestObjectResult(customerGuid);
 
-            Models.ContactDetails contactdetailsRequest;
+            ContactDetails contactdetailsRequest;
             try
             {
-                contactdetailsRequest = await _responseHelper.GetResourceFromRequest<Contact.Models.ContactDetails>(req);
+                contactdetailsRequest = await _responseHelper.GetResourceFromRequest<ContactDetails>(req);
             }
             catch (JsonException ex)
             {
-                return new UnprocessableEntityObjectResult(ex);
+                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
             }
 
             if (contactdetailsRequest == null)
@@ -100,7 +103,10 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
-                return new ForbidResult(customerGuid.ToString());
+                return new ObjectResult(customerGuid.ToString())
+                {
+                    StatusCode = (int)HttpStatusCode.Forbidden
+                };
 
             var doesContactDetailsExist = _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
