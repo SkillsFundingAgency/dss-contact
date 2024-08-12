@@ -29,7 +29,7 @@ namespace NCS.DSS.Contact.Models
                                 "6 - WhatsApp,   " +
                                 "99 - Not known")]
         [Example(Description = "3")]
-        [JsonConverter(typeof(PermissiveEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(PermissiveEnumConverter))]
         public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
