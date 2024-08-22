@@ -15,7 +15,7 @@ namespace NCS.DSS.Contact.APIDefinition
         public const string APIDescription = "Basic details of a National Careers Service " + APITitle + " Resource";
         public const string ApiDefRoute = APITitle + "/" + APIDefinitionName;
         private readonly ISwaggerDocumentGenerator _swaggerDocumentGenerator;
-        public const string ApiVersion = "3.0.0";
+        public const string ApiVersion = "2.0.0";
 
         public GenerateCustomerSwaggerDoc(ISwaggerDocumentGenerator swaggerDocumentGenerator)
         {
