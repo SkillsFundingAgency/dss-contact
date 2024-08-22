@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
-using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
@@ -51,7 +50,7 @@ namespace NCS.DSS.Contact.Tests
             _postContactHttpTriggerService = new Mock<IPostContactDetailsHttpTriggerService>();
             _provider = new Mock<IDocumentDBProvider>();
             _httpResponseMessageHelper = new HttpResponseMessageHelper();
-            _function = new PostContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _postContactHttpTriggerService.Object, _provider.Object, _logger.Object,_convertToDynamic.Object);
+            _function = new PostContactByIdHttpTrigger(_resourceHelper.Object, _httpRequestMessageHelper.Object, _validate, _postContactHttpTriggerService.Object, _provider.Object, _logger.Object, _convertToDynamic.Object);
         }
 
         [Test]
@@ -104,7 +103,7 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
-            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetails>(_request)).Throws(new JsonException());
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Throws(new JsonException());
 
             // Act
             var result = await RunFunction(ValidCustomerId);
@@ -188,7 +187,7 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(_contactDetails));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _postContactHttpTriggerService.Setup(x=>x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(_contactDetails));
+            _postContactHttpTriggerService.Setup(x => x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(_contactDetails));
 
             // Act
             var result = await RunFunction(ValidCustomerId);
@@ -205,12 +204,12 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
-            var contactDetails = new ContactDetails() { PreferredContactMethod= ReferenceData.PreferredContactMethod.Email, EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
-            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
-            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _provider.Setup(x=>x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
-            _provider.Setup(x=>x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
-            _postContactHttpTriggerService.Setup(x=>x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(contactDetails));
+            var contactDetails = new ContactDetails() { PreferredContactMethod = ReferenceData.PreferredContactMethod.Email, EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
+            _postContactHttpTriggerService.Setup(x => x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(contactDetails));
 
             // Act
             var result = await RunFunction(ValidCustomerId);
@@ -225,14 +224,14 @@ namespace NCS.DSS.Contact.Tests
             // Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
             _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
-            var contactDetails = new ContactDetails() {  PreferredContactMethod= ReferenceData.PreferredContactMethod.Email, EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
-            _httpRequestMessageHelper.Setup(x=>x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
-            _resourceHelper.Setup(x=>x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _provider.Setup(x=>x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
-            _provider.Setup(x=>x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
-            _postContactHttpTriggerService.Setup(x=>x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(contactDetails));
-            _provider.Setup(x=>x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
-            _provider.Setup(x=>x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            var contactDetails = new ContactDetails() { PreferredContactMethod = ReferenceData.PreferredContactMethod.Email, EmailAddress = "test@test.com", CustomerId = new Guid(ValidCustomerId) };
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<Models.ContactDetails>(_request)).Returns(Task.FromResult(contactDetails));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() }));
+            _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(false));
+            _postContactHttpTriggerService.Setup(x => x.CreateAsync(It.IsAny<Models.ContactDetails>())).Returns(Task.FromResult(contactDetails));
+            _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(Task.FromResult<IList<ContactDetails>>(new List<ContactDetails>() { new ContactDetails() { CustomerId = Guid.NewGuid() } }));
+            _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(true));
 
             // Act
             var result = await RunFunction(ValidCustomerId);

@@ -3,10 +3,6 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
@@ -34,23 +30,23 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
             var indexClient = SearchHelper.GetIndexClient();
 
             _log.LogInformation("get index client");
-            
+
             _log.LogInformation("Documents modified " + documents.Count);
 
             if (documents.Count > 0)
             {
                 var contactDetails = documents.Select(doc => new
-                    {
-                        CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
-                        MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
-                        HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
-                        AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
-                        EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
-                    })
+                {
+                    CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
+                    MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
+                    HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
+                    AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
+                    EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
+                })
                     .ToList();
 
                 var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
-                
+
                 try
                 {
                     _log.LogInformation("attempting to merge docs to azure search");

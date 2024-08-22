@@ -1,7 +1,6 @@
 ﻿using DFC.Swagger.Standard.Annotations;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.ReferenceData;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -14,7 +13,7 @@ namespace NCS.DSS.Contact.Models
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
         [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
         public Guid? ContactId { get; set; }
-     
+
         [Display(Description = "Unique identifier of a customer")]
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid? CustomerId { get; set; }
@@ -79,7 +78,7 @@ namespace NCS.DSS.Contact.Models
         public bool? ChangeEmailAddress { get; private set; }
         [IgnoreDataMember]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public string  CurrentEmail { get; private set; }
+        public string CurrentEmail { get; private set; }
         [IgnoreDataMember]
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string NewEmail { get; private set; }
@@ -108,13 +107,13 @@ namespace NCS.DSS.Contact.Models
             if (contactdetailsPatch == null)
                 return;
 
-            if(contactdetailsPatch.PreferredContactMethod.HasValue)
+            if (contactdetailsPatch.PreferredContactMethod.HasValue)
                 PreferredContactMethod = contactdetailsPatch.PreferredContactMethod;
 
-            if(contactdetailsPatch.AlternativeNumber != null)
+            if (contactdetailsPatch.AlternativeNumber != null)
                 AlternativeNumber = contactdetailsPatch.AlternativeNumber;
 
-            if(contactdetailsPatch.EmailAddress != null)
+            if (contactdetailsPatch.EmailAddress != null)
                 EmailAddress = contactdetailsPatch.EmailAddress;
 
             if (contactdetailsPatch.HomeNumber != null)
@@ -123,7 +122,7 @@ namespace NCS.DSS.Contact.Models
             if (contactdetailsPatch.MobileNumber != null)
                 MobileNumber = contactdetailsPatch.MobileNumber;
 
-            if(contactdetailsPatch.LastModifiedDate.HasValue)
+            if (contactdetailsPatch.LastModifiedDate.HasValue)
                 LastModifiedDate = contactdetailsPatch.LastModifiedDate;
 
             if (!string.IsNullOrEmpty(contactdetailsPatch.LastModifiedTouchpointId))
@@ -139,5 +138,5 @@ namespace NCS.DSS.Contact.Models
             CurrentEmail = EmailAddress;
             IdentityStoreId = storeId;
         }
-    }    
+    }
 }

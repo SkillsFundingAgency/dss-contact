@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using NCS.DSS.Contact.Models;
+﻿using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {

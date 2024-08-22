@@ -1,7 +1,4 @@
-﻿using System;
-using System.Configuration;
-using Azure;
-using Azure.Search;
+﻿using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 

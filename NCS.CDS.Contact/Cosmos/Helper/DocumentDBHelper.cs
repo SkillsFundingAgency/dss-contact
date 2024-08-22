@@ -1,7 +1,4 @@
-﻿
-using System;
-using System.Configuration;
-using Microsoft.Azure.Documents.Client;
+﻿using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.Cosmos.Helper

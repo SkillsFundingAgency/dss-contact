@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Azure.Documents;
+﻿using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Client;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Models;
-using Microsoft.Extensions.Logging;
 
 namespace NCS.DSS.Contact.Cosmos.Provider
 {
@@ -194,7 +190,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var collectionUri = DocumentDBHelper.CreateDocumentCollectionUri(logger);
             var client = DocumentDBClient.CreateDocumentClient();
             var contactDetailsForEmailQuery = client
-                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery=true })
+                ?.CreateDocumentQuery<ContactDetails>(collectionUri, new FeedOptions { MaxItemCount = 1, EnableCrossPartitionQuery = true })
                 .Where(x => x.EmailAddress == email && x.CustomerId != CustomerId)
                 .AsDocumentQuery();
             if (contactDetailsForEmailQuery == null)
@@ -224,7 +220,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             var contactDetails = await contactDetailsForEmailQuery.ExecuteNextAsync<ContactDetails>();
             return contactDetails.ToList();
         }
-        
+
         public async Task<Models.DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
         {
             var collectionUri = DocumentDBHelper.CreateDigitalIdentityDocumentUri();

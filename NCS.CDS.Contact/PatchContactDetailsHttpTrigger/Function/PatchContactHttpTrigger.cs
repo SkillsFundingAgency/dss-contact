@@ -9,12 +9,8 @@ using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -42,7 +38,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             _contactdetailsPatchService = contactdetailsPatchService;
             _provider = provider;
             this.logger = logger;
-            _convertToDynamic = convertToDynamic;   
+            _convertToDynamic = convertToDynamic;
         }
 
 

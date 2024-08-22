@@ -1,10 +1,8 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
-using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {

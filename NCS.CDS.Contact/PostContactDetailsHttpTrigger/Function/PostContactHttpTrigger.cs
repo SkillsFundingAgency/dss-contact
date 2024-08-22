@@ -9,11 +9,8 @@ using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
-using System;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using JsonException = Newtonsoft.Json.JsonException;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
@@ -27,7 +24,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         private readonly IDocumentDBProvider _provider;
         private readonly ILogger log;
         private readonly IConvertToDynamic _convertToDynamic;
-        public PostContactByIdHttpTrigger( IResourceHelper resourceHelper,
+        public PostContactByIdHttpTrigger(IResourceHelper resourceHelper,
             IHttpRequestHelper responseHelper,
             IValidate validate,
             IPostContactDetailsHttpTriggerService contactdetailsPostService,
@@ -53,7 +50,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(Contact.Models.ContactDetails), 200)]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, 
+        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")] HttpRequest req,
             string customerId)
         {
             var touchpointId = _responseHelper.GetDssTouchpointId(req);
