@@ -2,51 +2,47 @@
 using DFC.Swagger.Standard.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
-using NCS.DSS.Contact.Helpers;
-using System;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 {
     public class GetContactHttpTrigger
     {
         private readonly IResourceHelper _resourceHelper;
-        private readonly IHttpResponseMessageHelper _httpResponseMessageHelper;
         private readonly IHttpRequestHelper _httpRequestMessageHelper;
         private readonly IGetContactHttpTriggerService _getContactDetailsByIdService;
+        private readonly ILogger logger;
 
         public GetContactHttpTrigger(IResourceHelper resourceHelper,
             IHttpRequestHelper httpRequestMessageHelper,
             IGetContactHttpTriggerService getContactsService,
-            IHttpResponseMessageHelper httpResponseMessageHelper)
+            ILogger<GetContactHttpTrigger> logger)
         {
             _resourceHelper = resourceHelper;
             _httpRequestMessageHelper = httpRequestMessageHelper;
             _getContactDetailsByIdService = getContactsService;
-            _httpResponseMessageHelper = httpResponseMessageHelper;
+            this.logger = logger;
         }
 
-        [FunctionName("GET")]
+        [Function("GET")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Retrieved", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Get request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [ProducesResponseType(typeof(Models.ContactDetails), 200)]
-        public async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]HttpRequest req, ILogger logger, string customerId)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")] HttpRequest req, string customerId)
         {
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
                 logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _httpResponseMessageHelper.BadRequest();
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             logger.LogInformation("C# HTTP trigger function GetContactHttpTrigger processed a request. " + touchpointId);
@@ -54,7 +50,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.BadRequest(customerGuid);
+                return new BadRequestObjectResult(customerGuid);
             }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
@@ -62,14 +58,17 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 logger.LogInformation($"Customer does not exist.");
-                return _httpResponseMessageHelper.NoContent(customerGuid);
+                return new NoContentResult();
             }
 
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
-            return contact == null ?
-                _httpResponseMessageHelper.NoContent(customerGuid) :
-                _httpResponseMessageHelper.Ok(JsonHelper.SerializeObject(contact));
+            return contact == null
+                ? new NoContentResult()
+                : new JsonResult(contact, new JsonSerializerOptions())
+                {
+                    StatusCode = (int)HttpStatusCode.OK
+                };
         }
     }
 }

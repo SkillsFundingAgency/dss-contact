@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service
+﻿namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service
 {
     public interface IGetContactHttpTriggerService
     {
