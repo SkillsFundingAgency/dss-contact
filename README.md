@@ -1,7 +1,7 @@
 # DSS Contact
 
 > [!NOTE]  
-> The latest version of this API is `v1`
+> The latest version of this API is `v2`
 
 [![Build Status](https://sfa-gov-uk.visualstudio.com/CDS%202.0/_apis/build/status/Yaml/dss-contact?repoName=SkillsFundingAgency%2Fdss-contact&branchName=master)](https://sfa-gov-uk.visualstudio.com/CDS%202.0/_build/latest?definitionId=1457&repoName=SkillsFundingAgency%2Fdss-contact&branchName=master)
 

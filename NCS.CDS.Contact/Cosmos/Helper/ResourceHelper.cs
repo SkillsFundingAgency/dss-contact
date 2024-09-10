@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using NCS.DSS.Contact.Cosmos.Provider;
+﻿using NCS.DSS.Contact.Cosmos.Provider;
 
 namespace NCS.DSS.Contact.Cosmos.Helper
 {
@@ -12,7 +10,7 @@ namespace NCS.DSS.Contact.Cosmos.Helper
         {
             _documentDbProvider = documentDbProvider;
         }
-    
+
         public async Task<bool> DoesCustomerExist(Guid customerId)
         {
             var doesCustomerExist = await _documentDbProvider.DoesCustomerResourceExist(customerId);

@@ -1,5 +1,4 @@
-﻿using System;
-using NCS.DSS.Contact.ReferenceData;
+﻿using NCS.DSS.Contact.ReferenceData;
 
 namespace NCS.DSS.Contact.Models
 {

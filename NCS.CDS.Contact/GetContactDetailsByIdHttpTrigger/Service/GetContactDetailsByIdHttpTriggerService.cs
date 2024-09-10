@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
-using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 {

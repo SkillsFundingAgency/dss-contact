@@ -1,10 +1,8 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
-using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
@@ -13,15 +11,12 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
         private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
-        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-        }
-
-        public PatchContactDetailsHttpTriggerService(ILogger<PatchContactDetailsHttpTriggerService> logger)
-        {
             this.logger = logger;
         }
+
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)

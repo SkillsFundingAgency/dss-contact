@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NCS.DSS.Contact.Models;
 using System.ComponentModel.DataAnnotations;
-using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.Validation
 {

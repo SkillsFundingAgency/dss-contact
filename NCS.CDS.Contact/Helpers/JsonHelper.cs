@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace NCS.DSS.Contact.Helpers
 {
-    public class JsonHelper 
+    public class JsonHelper
     {
         private const string ResourceIdName = "ContactId";
 
@@ -30,9 +28,9 @@ namespace NCS.DSS.Contact.Helpers
 
             foreach (var jToken in tokens)
             {
-                var item = (JObject) jToken;
+                var item = (JObject)jToken;
 
-                if(item == null) 
+                if (item == null)
                     continue;
 
                 var prop = item.Property("id");
