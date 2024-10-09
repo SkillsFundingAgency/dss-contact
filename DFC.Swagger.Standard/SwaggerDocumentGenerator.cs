@@ -535,7 +535,7 @@ namespace DFC.Swagger.Standard
 
                 if (paramType == "System.Nullable`1[NCS.DSS.Contact.ReferenceData.PreferredContactMethod]")
                 {
-                    opParam.type = new[] {"integer", "boolean", "enum"};
+                    opParam.type = new[] {"integer", "boolean"};
                 }
 
                 var enumValues = new List<string>();
