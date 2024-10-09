@@ -6,6 +6,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCS.DSS.Contact", "NCS.CDS.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCS.DSS.Contact.Tests", "NCS.DSS.Contact.Tests\NCS.DSS.Contact.Tests.csproj", "{6F4C0265-95EB-40CF-A596-4D0BEEFE8577}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DFC.Swagger.Standard", "DFC.Swagger.Standard\DFC.Swagger.Standard.csproj", "{42CD329F-CB1D-48BA-BD24-409FDCF59271}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{6F4C0265-95EB-40CF-A596-4D0BEEFE8577}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F4C0265-95EB-40CF-A596-4D0BEEFE8577}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F4C0265-95EB-40CF-A596-4D0BEEFE8577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42CD329F-CB1D-48BA-BD24-409FDCF59271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CD329F-CB1D-48BA-BD24-409FDCF59271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42CD329F-CB1D-48BA-BD24-409FDCF59271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42CD329F-CB1D-48BA-BD24-409FDCF59271}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
