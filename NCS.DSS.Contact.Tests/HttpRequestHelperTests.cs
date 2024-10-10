@@ -52,6 +52,22 @@ namespace NCS.DSS.Contact.Tests
         public async Task GetResourceFromRequest_SetsPreferredContactMethodAsEmail_WhenPreferredContactMethodValueIs1AsString()
         {
             // Arrange
+            const string json = "{\"PreferredContactMethod\": \"1\"}";
+            var request = GetHttpRequest(json);
+
+            // Act
+            var helper = new HttpRequestHelper();
+            var contactDetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetails>(request);
+
+            // Assert
+            Assert.That(contactDetailsPatchRequest, Is.InstanceOf<ContactDetails>());
+            Assert.That(contactDetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Email));
+        }
+
+        [Test]
+        public async Task GetResourceFromRequest_SetsPreferredContactMethodAsEmail_WhenPreferredContactMethodValueIs1AsString_PATCH()
+        {
+            // Arrange
             var json = "{\"PreferredContactMethod\": \"1\"}";
             var request = GetHttpRequest(json);
 
