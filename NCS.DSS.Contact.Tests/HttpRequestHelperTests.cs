@@ -1,10 +1,11 @@
-﻿using DFC.HTTP.Standard;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using DFC.HTTP.Standard;
 using Microsoft.AspNetCore.Http;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ReferenceData;
 using NUnit.Framework;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
 {
@@ -146,7 +147,7 @@ namespace NCS.DSS.Contact.Tests
 
         private static HttpRequest GetHttpRequest(string json)
         {
-            var memoryStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
             var context = new DefaultHttpContext();
             var request = context.Request;
