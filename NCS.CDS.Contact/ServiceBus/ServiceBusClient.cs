@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.ServiceBus;
+using NCS.DSS.Contact.Models;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -6,13 +7,12 @@ namespace NCS.DSS.Contact.ServiceBus
 {
     public static class ServiceBusClient
     {
-        public static readonly string KeyName = Environment.GetEnvironmentVariable("KeyName");
         public static readonly string AccessKey = Environment.GetEnvironmentVariable("AccessKey");
         public static readonly string BaseAddress = Environment.GetEnvironmentVariable("BaseAddress");
         public static readonly string QueueName = Environment.GetEnvironmentVariable("QueueName");
         public static string Connectionstring = $"Endpoint={BaseAddress};SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey={AccessKey}";
 
-        public static async Task SendPostMessageAsync(Models.ContactDetails contactDetails, string reqUrl)
+        public static async Task SendPostMessageAsync(ContactDetails contactDetails, string reqUrl)
         {
             var sender = new QueueClient(Connectionstring, QueueName);
 
@@ -20,7 +20,7 @@ namespace NCS.DSS.Contact.ServiceBus
             {
                 TitleMessage = "New Contact Details record {" + contactDetails.ContactId + "} added at " + DateTime.UtcNow,
                 CustomerGuid = contactDetails.CustomerId,
-                LastModifiedDate = contactDetails.LastModifiedDate,
+                contactDetails.LastModifiedDate,
                 URL = reqUrl + "/" + contactDetails.ContactId,
                 IsNewCustomer = false,
                 TouchpointId = contactDetails.LastModifiedTouchpointId,
@@ -38,23 +38,23 @@ namespace NCS.DSS.Contact.ServiceBus
             await sender.SendAsync(msg);
         }
 
-        public static async Task SendPatchMessageAsync(Models.ContactDetails contactDetails, Guid customerId, string reqUrl)
+        public static async Task SendPatchMessageAsync(ContactDetails contactDetails, Guid customerId, string reqUrl)
         {
             var sender = new QueueClient(Connectionstring, QueueName);
             var messageModel = new
             {
                 TitleMessage = "Contact Details record modification for {" + customerId + "} at " + DateTime.UtcNow,
                 CustomerGuid = customerId,
-                LastModifiedDate = contactDetails.LastModifiedDate,
+                contactDetails.LastModifiedDate,
                 URL = reqUrl,
                 IsNewCustomer = false,
                 TouchpointId = contactDetails.LastModifiedTouchpointId,
-                FirstName = contactDetails.FirstName,
-                LastName = contactDetails.LastName,
+                contactDetails.FirstName,
+                contactDetails.LastName,
                 ChangeEmailAddress = contactDetails.ChangeEmailAddress ?? null,
                 IsDigitalAccount = contactDetails.IsDigitalAccount ?? null,
-                NewEmail = contactDetails.NewEmail,
-                CurrentEmail = contactDetails.CurrentEmail,
+                contactDetails.NewEmail,
+                contactDetails.CurrentEmail,
                 contactDetails.IdentityStoreId
 
             };
@@ -70,19 +70,5 @@ namespace NCS.DSS.Contact.ServiceBus
         }
 
     }
-
-    public class MessageModel
-    {
-        public string TitleMessage { get; set; }
-        public Guid? CustomerGuid { get; set; }
-        public DateTime? LastModifiedDate { get; set; }
-        public string URL { get; set; }
-        public bool IsNewCustomer { get; set; }
-        public string TouchpointId { get; set; }
-        public bool? IsDigitalAccount { get; set; }
-        public string NewEmail { get; set; }
-        public string CurrentEmail { get; set; }
-    }
-
 }
 

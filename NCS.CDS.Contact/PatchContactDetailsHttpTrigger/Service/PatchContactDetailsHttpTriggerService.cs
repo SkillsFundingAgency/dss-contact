@@ -1,27 +1,27 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
-using System.Net;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
-        private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
+        private readonly ILogger<PatchContactDetailsHttpTriggerService> _logger;
         private readonly IDocumentDBProvider _documentDbProvider;
 
         public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-            this.logger = logger;
+            _logger = logger;
         }
 
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
             {
-                logger.LogInformation($"Contact details do not exist.");
+                _logger.LogInformation("Contact details do not exist.");
                 return null;
             }
 

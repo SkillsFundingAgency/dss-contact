@@ -8,7 +8,6 @@ using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Models;
 using System.Net;
-using System.Security.Principal;
 using System.Text.Json;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function

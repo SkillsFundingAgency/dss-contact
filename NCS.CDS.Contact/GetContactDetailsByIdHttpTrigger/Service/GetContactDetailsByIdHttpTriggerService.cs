@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
+using NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function;
+using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 {
@@ -12,9 +14,9 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
             _documentDbProvider = documentDbProvider;
         }
 
-        public async Task<Contact.Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId, ILogger logger)
+        public async Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId, ILogger<GetContactByIdHttpTrigger> logger)
         {
-            logger.LogInformation($"Starting to create Document Collection URI.");
+            logger.LogInformation("Starting to create Document Collection URI.");
             var contactdetails = await _documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;
