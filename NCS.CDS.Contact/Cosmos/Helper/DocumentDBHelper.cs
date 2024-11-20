@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Cosmos.Provider;
 
 namespace NCS.DSS.Contact.Cosmos.Helper
 {
@@ -15,9 +16,9 @@ namespace NCS.DSS.Contact.Cosmos.Helper
         private static readonly string DigitalIdentityDatabaseId = Environment.GetEnvironmentVariable("DigitalIdentityDatabaseId");
         private static readonly string DigitalIdentityCollectionId = Environment.GetEnvironmentVariable("DigitalIdentityCollectionId");
 
-        public static Uri CreateDocumentCollectionUri(ILogger logger)
+        public static Uri CreateDocumentCollectionUri(ILogger<DocumentDBProvider> logger)
         {
-            logger.LogInformation($"Starting to create Document Collection URI.");
+            logger.LogInformation("Starting to create Document Collection URI.");
             if (_documentCollectionUri != null)
             {
                 logger.LogInformation($"Not required. Document Collection URI already exists as [{_documentCollectionUri}].");
@@ -32,7 +33,7 @@ namespace NCS.DSS.Contact.Cosmos.Helper
             return _documentCollectionUri;
         }
 
-        public static Uri CreateDocumentUri(Guid contactDetailsId, ILogger logger)
+        public static Uri CreateDocumentUri(Guid contactDetailsId, ILogger<DocumentDBProvider> logger)
         {
             logger.LogInformation($"Start creating Document URI with DatabaseId [{DatabaseId}] and CollectionId [{CollectionId}].");
             return UriFactory.CreateDocumentUri(DatabaseId, CollectionId, contactDetailsId.ToString());
