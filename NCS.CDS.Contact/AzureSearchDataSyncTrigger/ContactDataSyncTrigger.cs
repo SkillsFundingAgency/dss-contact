@@ -21,46 +21,55 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                 LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
             IReadOnlyList<Document> documents)
         {
-            _logger.LogInformation("Entered SyncDataForContactDetailsSearchTrigger");
+            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
 
-            SearchHelper.GetSearchServiceClient();
-
-            _logger.LogInformation("get search service client");
-
-            var indexClient = SearchHelper.GetIndexClient();
-
-            _logger.LogInformation("get index client");
-
-            _logger.LogInformation("Documents modified " + documents.Count);
-
-            if (documents.Count > 0)
+            try
             {
-                var contactDetails = documents.Select(doc => new
+                _logger.LogInformation("Initializing search service client");
+                SearchHelper.GetSearchServiceClient();
+
+                _logger.LogInformation("Retrieving index client.");
+                var indexClient = SearchHelper.GetIndexClient();
+
+                _logger.LogInformation("Attempting to process {DocumentCount} document(s)", documents.Count);
+                if (documents.Count > 0)
                 {
-                    CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
-                    MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
-                    HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
-                    AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
-                    EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
-                })
-                    .ToList();
+                    var contactDetails = documents.Select(doc => new
+                    {
+                        CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
+                        MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
+                        HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
+                        AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
+                        EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
+                    }).ToList();
 
-                var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
+                    var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
 
-                try
-                {
-                    _logger.LogInformation("attempting to merge docs to azure search");
+                    _logger.LogInformation("Merging or uploading document batch for indexing with {DocumentCount} document(s)", contactDetails.Count);
 
-                    await indexClient.IndexDocumentsAsync(batch);
+                    try
+                    {
+                        _logger.LogInformation("Attempting to index documents to Azure Search");
+                        await indexClient.IndexDocumentsAsync(batch);
+                        _logger.LogInformation("Successfully indexed documents to Azure Search");
 
-                    _logger.LogInformation("successfully merged docs to azure search");
-
+                        _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Error occurred while indexing documents to Azure Search. Exception: {ErrorMessage}", e.Message);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    _logger.LogError("Failed to index some of the documents: {0}");
-                    _logger.LogError(e.ToString());
+                    _logger.LogInformation("No documents to process.");
+                    _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred in {FunctionName}. Exception: {ErrorMessage}", nameof(ContactDataSyncTrigger), ex.Message);
+                throw;
             }
         }
     }
