@@ -65,6 +65,8 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
                 return new NoContentResult();
             }
 
+            _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+
             _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerId}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
