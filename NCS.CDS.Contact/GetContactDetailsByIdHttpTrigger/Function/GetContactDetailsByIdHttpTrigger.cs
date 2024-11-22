@@ -67,13 +67,13 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 
             if (!doesCustomerExist)
             {
-                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerId}", customerGuid);
+                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NoContentResult();
             }
 
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
 
-            _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerId}", customerGuid);
+            _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, _logger);
 
             if (contact != null)

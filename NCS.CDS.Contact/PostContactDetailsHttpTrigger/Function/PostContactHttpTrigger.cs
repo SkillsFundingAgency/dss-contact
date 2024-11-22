@@ -110,7 +110,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             _logger.LogInformation("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
 
-            _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerId}", customerGuid);
+            _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
@@ -163,7 +163,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                     foreach (var contact in contacts)
                     {
                         _logger.LogInformation(
-                            "Attempting to check if customer has a termination date. CustomerId: {CustomerId}",
+                            "Attempting to check if customer has a termination date. Customer ID: {CustomerId}",
                             contact.CustomerId.GetValueOrDefault());
                         var isReadOnly = await _provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
                         
@@ -171,7 +171,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                         {
                             _logger.LogInformation(
                                 "Customer already uses an email address that does not have a termination date." +
-                                " Email address on the request cannot be used. CustomerId: {CustomerId}. ContactDetailsId: {ContactDetailsId}",
+                                " Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                 contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
 
                             //if a customer that has the same email address is not readonly (has date of termination)
@@ -186,7 +186,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
 
             _logger.LogInformation(
-                "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. ContactDetailsId: {ContactDetailsId}",
+                "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. Contact Details ID: {ContactDetailsId}",
                 customerGuid, contactDetailsPostRequest.ContactId.GetValueOrDefault());
             var contactDetails = await _contactdetailsPostService.CreateAsync(contactDetailsPostRequest);
 
@@ -196,10 +196,10 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(customerGuid);
             }
 
-            _logger.LogInformation("PATCH request successful. ContactDetailsId: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
-
+            _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, contactDetails.ContactId.GetValueOrDefault());
             await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, apimURL);
 
+            _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
 
             return new JsonResult(contactDetails, new JsonSerializerOptions())

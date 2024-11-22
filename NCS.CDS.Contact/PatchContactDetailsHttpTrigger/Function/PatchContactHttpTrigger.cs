@@ -163,14 +163,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     foreach (var contact in contacts)
                     {
                         _logger.LogInformation(
-                            "Attempting to check if customer has a termination date. CustomerId: {CustomerId}",
+                            "Attempting to check if customer has a termination date. Customer ID: {CustomerId}",
                             contact.CustomerId.GetValueOrDefault());
                         var isReadOnly = await _provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
                         
                         if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
                         {
                             _logger.LogInformation(
-                                "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. CustomerId: {CustomerId}. ContactDetailsId: {ContactDetailsId}",
+                                "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                 contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
@@ -187,7 +187,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (diaccount != null)
             {
                 _logger.LogInformation(
-                    "Customer has a Digital Identity account. Customer GUID: {CustomerGuid}. IdentityStoreId: {IdentityStoreId}",
+                    "Customer has a Digital Identity account. Customer GUID: {CustomerGuid}. Identity Store ID: {IdentityStoreId}",
                     customerGuid, diaccount.CustomerId.GetValueOrDefault());
 
                 if (contactDetailsPatchRequest.EmailAddress == string.Empty)
@@ -217,10 +217,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(contactGuid);
             }
 
-            _logger.LogInformation("PATCH request successful. ContactDetailsId: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
-
+            _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
             await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, apimURL);
 
+            _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
             return new JsonResult(updatedContactDetails, new JsonSerializerOptions())
