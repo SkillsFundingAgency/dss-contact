@@ -87,7 +87,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                _logger.LogError("Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                _logger.LogError(ex, "Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
                 return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, PropertyToExclude));
             }
 
@@ -115,7 +115,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (!doesCustomerExist)
             {
-                _logger.LogError("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NoContentResult();
             }
 
@@ -141,7 +141,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (doesContactDetailsExist)
             {
-                _logger.LogError("ContactDetails already exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("ContactDetails already exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
                 return new ConflictObjectResult(HttpStatusCode.Conflict);
             }
 
