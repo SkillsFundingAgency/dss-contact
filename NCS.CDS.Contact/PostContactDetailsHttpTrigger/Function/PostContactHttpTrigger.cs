@@ -66,8 +66,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
-            var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
-            if (string.IsNullOrEmpty(ApimURL))
+            var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
+            if (string.IsNullOrEmpty(apimURL))
             {
                 _logger.LogInformation("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
@@ -87,28 +87,28 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                _logger.LogError("Unable to parse ContactDetailsPost from request body. Exception: {ExceptionMessage}", ex.Message);
+                _logger.LogError("Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
                 return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, PropertyToExclude));
             }
 
             if (contactDetailsPostRequest == null)
             {
-                _logger.LogError("ContactDetailsPost object is NULL");
+                _logger.LogError("{ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
                 return new UnprocessableEntityObjectResult(req);
             }
 
             contactDetailsPostRequest.SetIds(customerGuid, touchpointId);
 
-            _logger.LogInformation("Attempting to validate ContactDetailsPost object");
+            _logger.LogInformation("Attempting to validate {ContactDetailsPost} object", nameof(contactDetailsPostRequest));
             var errors = _validate.ValidateResource(contactDetailsPostRequest, null, true);
 
             if (errors != null && errors.Any())
             {
-                _logger.LogError("Validation for ContactDetailsPost object has failed");
+                _logger.LogError("Validation for {ContactDetailsPost} object has failed", nameof(contactDetailsPostRequest));
                 return new UnprocessableEntityObjectResult(errors);
             }
 
-            _logger.LogInformation("Validation for ContactDetailsPost object has passed");
+            _logger.LogInformation("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
 
             _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerId}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
@@ -198,7 +198,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             _logger.LogInformation("PATCH request successful. ContactDetailsId: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
 
-            await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, ApimURL);
+            await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, apimURL);
 
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
 

@@ -52,9 +52,9 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = 422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
         public async Task<IActionResult> RunAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactId}")]
             HttpRequest req,
-            string customerId, string contactid)
+            string customerId, string contactId)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
 
@@ -65,8 +65,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
-            var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
-            if (string.IsNullOrEmpty(ApimURL))
+            var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
+            if (string.IsNullOrEmpty(apimURL))
             {
                 _logger.LogInformation("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
@@ -78,7 +78,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(customerGuid);
             }
 
-            if (!Guid.TryParse(contactid, out var contactGuid))
+            if (!Guid.TryParse(contactId, out var contactGuid))
             {
                 _logger.LogInformation("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
                 return new BadRequestObjectResult(contactGuid);
@@ -92,13 +92,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
             catch (Exception ex)
             {
-                _logger.LogError("Unable to parse ContactDetailsPatch from request body. Exception: {ExceptionMessage}", ex.Message);
+                _logger.LogError("Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
                 return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, PropertyToExclude));
             }
 
             if (contactDetailsPatchRequest == null)
             {
-                _logger.LogError("ContactDetailsPatch object is NULL");
+                _logger.LogError("{ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
                 return new UnprocessableEntityObjectResult(req);
             }
 
@@ -141,16 +141,16 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
 
-            _logger.LogInformation("Attempting to validate ContactDetailsPatch object");
+            _logger.LogInformation("Attempting to validate {ContactDetailsPatch} object", nameof(contactDetailsPatchRequest));
             var errors = _validate.ValidateResource(contactDetailsPatchRequest, contactdetails, false);
 
             if (errors != null && errors.Any())
             {
-                _logger.LogError("Validation for ContactDetailsPatch object has failed");
+                _logger.LogError("Validation for {ContactDetailsPatch} object has failed", nameof(contactDetailsPatchRequest));
                 return new UnprocessableEntityObjectResult(errors);
             }
 
-            _logger.LogInformation("Validation for ContactDetailsPatch object has passed");
+            _logger.LogInformation("Validation for {ContactDetailsPatch} object has passed", nameof(contactDetailsPatchRequest));
 
             if (!string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress))
             {
@@ -219,7 +219,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             _logger.LogInformation("PATCH request successful. ContactDetailsId: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
 
-            await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+            await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, apimURL);
 
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
