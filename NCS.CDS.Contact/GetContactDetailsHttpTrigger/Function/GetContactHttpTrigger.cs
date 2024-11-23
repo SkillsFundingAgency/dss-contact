@@ -56,6 +56,8 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
                 return new BadRequestObjectResult(customerGuid);
             }
 
+            _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
+            
             _logger.LogInformation("Attempting to see if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
