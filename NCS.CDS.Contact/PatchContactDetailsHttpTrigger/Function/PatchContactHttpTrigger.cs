@@ -61,26 +61,26 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(apimURL))
             {
-                _logger.LogInformation("Unable to locate 'apimurl' in request header");
+                _logger.LogWarning("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult(customerGuid);
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
-                _logger.LogInformation("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
+                _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
                 return new BadRequestObjectResult(contactGuid);
             }
 
@@ -171,7 +171,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                         
                         if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
                         {
-                            _logger.LogInformation(
+                            _logger.LogWarning(
                                 "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                 contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
                             //if a customer that has the same email address is not readonly (has date of termination)
@@ -216,6 +216,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (updatedContactDetails == null)
             {
                 _logger.LogError("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
+
                 return new BadRequestObjectResult(contactGuid);
             }
 

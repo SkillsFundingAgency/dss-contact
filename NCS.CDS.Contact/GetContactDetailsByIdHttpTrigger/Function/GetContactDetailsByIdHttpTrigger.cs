@@ -30,7 +30,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             _logger = logger;
         }
 
-        [Function("GETBYID")]
+        [Function("GET_BY_CONTACTDETAILSID")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Retrieved", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Get request is malformed", ShowSchema = false)]
@@ -46,19 +46,19 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult(customerGuid);
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
-                _logger.LogInformation("Unable to parse 'contactGuid' to a GUID. Customer ID: {ContactGuid}", contactGuid);
+                _logger.LogWarning("Unable to parse 'contactGuid' to a GUID. Customer ID: {ContactGuid}", contactGuid);
                 return new BadRequestObjectResult(contactGuid);
             }
 

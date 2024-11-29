@@ -1,4 +1,3 @@
-using Azure.Messaging.ServiceBus;
 using DFC.HTTP.Standard;
 using DFC.Swagger.Standard;
 using Microsoft.Azure.Cosmos;
@@ -15,6 +14,7 @@ using NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
+using NCS.DSS.Contact.ServiceBus;
 using NCS.DSS.Contact.Validation;
 
 namespace NCS.DSS.Contact
@@ -58,6 +58,7 @@ namespace NCS.DSS.Contact
 
                     services.AddLogging();
 
+                    services.AddTransient<IServiceBusClient, ServiceBusClient>();
                     services.AddTransient<ICosmosDBProvider, CosmosDBProvider>();
                     services.AddTransient<IGetContactHttpTriggerService, GetContactHttpTriggerService>();
                     services.AddTransient<IGetContactDetailsByIdHttpTriggerService, GetContactDetailsByIdHttpTriggerService>();
@@ -66,6 +67,7 @@ namespace NCS.DSS.Contact
                     services.AddTransient<IResourceHelper, ResourceHelper>();
                     services.AddTransient<IValidate, Validate>();
                     services.AddTransient<IHttpRequestHelper, HttpRequestHelper>();
+
                     services.AddSingleton<ISearchService, SearchService>();
                     services.AddSingleton<ISwaggerDocumentGenerator, SwaggerDocumentGenerator>();
                     services.AddSingleton<IConvertToDynamic, ConvertToDynamic>();
@@ -126,8 +128,7 @@ namespace NCS.DSS.Contact
                         ));
                     });
 
-                    services.AddSingleton(s => new ServiceBusClient(contactConfigurationSettings.ServiceBusConnectionString));
-
+                    services.AddSingleton(s => new Azure.Messaging.ServiceBus.ServiceBusClient(contactConfigurationSettings.ServiceBusConnectionString));
 
                     services.Configure<LoggerFilterOptions>(options =>
                     {

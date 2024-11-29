@@ -62,20 +62,20 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(apimURL))
             {
-                _logger.LogInformation("Unable to locate 'apimurl' in request header");
+                _logger.LogWarning("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult(customerGuid);
             }
 
@@ -143,8 +143,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (doesContactDetailsExist)
             {
-                _logger.LogInformation("ContactDetails already exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
-                return new ConflictObjectResult(HttpStatusCode.Conflict);
+                _logger.LogWarning("ContactDetails already exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+                return new ConflictResult();
             }
 
             _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
@@ -171,14 +171,14 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                         
                         if (!isReadOnly)
                         {
-                            _logger.LogInformation(
+                            _logger.LogWarning(
                                 "Customer already uses an email address that does not have a termination date." +
                                 " Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                 contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
 
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return new ConflictObjectResult(HttpStatusCode.Conflict);
+                            return new ConflictResult();
                         }
                     }
                 }
@@ -195,6 +195,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (contactDetails == null)
             {
                 _logger.LogError("POST request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactDetailsHttpTrigger));
+
                 return new BadRequestObjectResult(customerGuid);
             }
 
