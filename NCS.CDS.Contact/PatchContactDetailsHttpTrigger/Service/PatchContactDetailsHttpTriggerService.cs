@@ -8,12 +8,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
+        private readonly ICosmosDBProvider _documentDbProvider;
+        private readonly IServiceBusClient _serviceBusClient;
         private readonly ILogger<PatchContactDetailsHttpTriggerService> _logger;
-        private readonly IDocumentDBProvider _documentDbProvider;
 
-        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PatchContactDetailsHttpTriggerService> logger)
+        public PatchContactDetailsHttpTriggerService(ICosmosDBProvider documentDbProvider, IServiceBusClient serviceBusClient, ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
+            _serviceBusClient = serviceBusClient;
             _logger = logger;
         }
 
@@ -44,7 +46,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 
         public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, Guid customerId, string reqUrl)
         {
-            await ServiceBusClient.SendPatchMessageAsync(contactdetails, customerId, reqUrl);
+            await _serviceBusClient.SendPatchMessageAsync(contactdetails, customerId, reqUrl);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace NCS.DSS.Contact.Tests
         private Mock<IPostContactDetailsHttpTriggerService> _postContactHttpTriggerService;
         private Mock<IHttpRequestHelper> _httpRequestMessageHelper;
         private Mock<IResourceHelper> _resourceHelper;
-        private Mock<IDocumentDBProvider> _provider;
+        private Mock<ICosmosDBProvider> _provider;
         private Mock<IConvertToDynamic> _convertToDynamic;
         private Mock<ILogger<PostContactHttpTrigger>> _logger;
 
@@ -43,7 +43,7 @@ namespace NCS.DSS.Contact.Tests
             _postContactHttpTriggerService = new Mock<IPostContactDetailsHttpTriggerService>();
             _httpRequestMessageHelper = new Mock<IHttpRequestHelper>();
             _resourceHelper = new Mock<IResourceHelper>();
-            _provider = new Mock<IDocumentDBProvider>();
+            _provider = new Mock<ICosmosDBProvider>();
             _validate = new Validate();
             _convertToDynamic = new Mock<IConvertToDynamic>();
             _logger = new Mock<ILogger<PostContactHttpTrigger>>();
@@ -149,7 +149,7 @@ namespace NCS.DSS.Contact.Tests
                 .Returns(Task.FromResult(_contactDetails));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
             _postContactHttpTriggerService.Setup(x => x.DoesContactDetailsExistForCustomer(It.IsAny<Guid>()))
-                .Returns(true);
+                .Returns(Task.FromResult(true));
 
             // Act
             var result = await RunFunction(ValidCustomerId);

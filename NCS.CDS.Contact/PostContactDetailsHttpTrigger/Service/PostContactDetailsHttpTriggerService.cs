@@ -9,18 +9,21 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
 
+        private readonly ICosmosDBProvider _documentDbProvider;
+        private readonly IServiceBusClient _serviceBusClient;
         private readonly ILogger<PostContactDetailsHttpTriggerService> _logger;
-        private readonly IDocumentDBProvider _documentDbProvider;
 
-        public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PostContactDetailsHttpTriggerService> logger)
+
+        public PostContactDetailsHttpTriggerService(ICosmosDBProvider documentDbProvider, IServiceBusClient serviceBusClient, ILogger<PostContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
+            _serviceBusClient = serviceBusClient;
             _logger = logger;
         }
 
-        public bool DoesContactDetailsExistForCustomer(Guid customerId)
+        public async Task<bool> DoesContactDetailsExistForCustomer(Guid customerId)
         {
-            var doesContactDetailsExistForCustomer = _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
+            var doesContactDetailsExistForCustomer = await _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
 
             return doesContactDetailsExistForCustomer;
         }
@@ -39,7 +42,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 
         public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, string reqUrl)
         {
-            await ServiceBusClient.SendPostMessageAsync(contactdetails, reqUrl);
+            await _serviceBusClient.SendPostMessageAsync(contactdetails, reqUrl);
         }
     }
 }

@@ -1,49 +1,68 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Models;
 using Newtonsoft.Json;
 using System.Text;
 
 namespace NCS.DSS.Contact.ServiceBus
 {
-    public static class ServiceBusClient
+    public class ServiceBusClient : IServiceBusClient
     {
-        public static readonly string AccessKey = Environment.GetEnvironmentVariable("AccessKey");
-        public static readonly string BaseAddress = Environment.GetEnvironmentVariable("BaseAddress");
-        public static readonly string QueueName = Environment.GetEnvironmentVariable("QueueName");
-        public static string Connectionstring = $"Endpoint={BaseAddress};SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey={AccessKey}";
+        private readonly ServiceBusSender _serviceBusSender;
+        private readonly ILogger<ServiceBusClient> _logger;
 
-        public static async Task SendPostMessageAsync(ContactDetails contactDetails, string reqUrl)
+        public ServiceBusClient(Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, ContactConfigurationSettings contactConfigurationSettings, ILogger<ServiceBusClient> logger)
         {
-            var sender = new QueueClient(Connectionstring, QueueName);
-
-            var messageModel = new
-            {
-                TitleMessage = "New Contact Details record {" + contactDetails.ContactId + "} added at " + DateTime.UtcNow,
-                CustomerGuid = contactDetails.CustomerId,
-                contactDetails.LastModifiedDate,
-                URL = reqUrl + "/" + contactDetails.ContactId,
-                IsNewCustomer = false,
-                TouchpointId = contactDetails.LastModifiedTouchpointId,
-                IsDigitalAccount = contactDetails.IsDigitalAccount ?? null
-            };
-
-
-            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
-            {
-                ContentType = "application/json",
-                MessageId = contactDetails.CustomerId + " " + DateTime.UtcNow
-            };
-
-            //msg.ForcePersistence = true; Required when we save message to cosmos
-            await sender.SendAsync(msg);
+            _serviceBusSender = serviceBusClient.CreateSender(contactConfigurationSettings.QueueName);
+            _logger = logger;
         }
 
-        public static async Task SendPatchMessageAsync(ContactDetails contactDetails, Guid customerId, string reqUrl)
+        public async Task SendPostMessageAsync(ContactDetails contactDetails, string reqUrl)
         {
-            var sender = new QueueClient(Connectionstring, QueueName);
+            _logger.LogInformation(
+                "Starting {MethodName}. ContactDetailsId: {ContactDetailsId}. CustomerId: {CustomerId}",
+                nameof(SendPostMessageAsync), contactDetails.ContactId, contactDetails.CustomerId);
+
+            try
+            {
+                var messageModel = new
+                {
+                    TitleMessage = $"New Contact Details record [{contactDetails.ContactId}] added at {DateTime.UtcNow}",
+                    CustomerGuid = contactDetails.CustomerId,
+                    contactDetails.LastModifiedDate,
+                    URL = $"{reqUrl}/{contactDetails.ContactId}",
+                    IsNewCustomer = false,
+                    TouchpointId = contactDetails.LastModifiedTouchpointId,
+                    IsDigitalAccount = contactDetails.IsDigitalAccount ?? null
+                };
+
+                var msg = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
+                {
+                    ContentType = "application/json",
+                    MessageId = contactDetails.CustomerId + " " + DateTime.UtcNow
+                };
+
+                await _serviceBusSender.SendMessageAsync(msg);
+
+                _logger.LogInformation(
+                    "Successfully completed {MethodName}. ContactDetailsId: {ContactDetailsId}. CustomerId: {CustomerId}",
+                    nameof(SendPostMessageAsync), contactDetails.ContactId, contactDetails.CustomerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "An error occurred in {MethodName}. ContactDetailsId: {ContactDetailsId}. CustomerId: {CustomerId}",
+                    nameof(SendPostMessageAsync), contactDetails.ContactId, contactDetails.CustomerId);
+                throw;
+            }
+        }
+
+        public async Task SendPatchMessageAsync(ContactDetails contactDetails, Guid customerId, string reqUrl)
+        {
             var messageModel = new
             {
-                TitleMessage = "Contact Details record modification for {" + customerId + "} at " + DateTime.UtcNow,
+                TitleMessage = $"Contact Details record modification for [{customerId}] at {DateTime.UtcNow}",
                 CustomerGuid = customerId,
                 contactDetails.LastModifiedDate,
                 URL = reqUrl,
@@ -59,16 +78,14 @@ namespace NCS.DSS.Contact.ServiceBus
 
             };
 
-            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
+            var msg = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
             {
                 ContentType = "application/json",
                 MessageId = customerId + " " + DateTime.UtcNow
             };
 
-            //msg.ForcePersistence = true; Required when we save message to cosmos
-            await sender.SendAsync(msg);
+            await _serviceBusSender.SendMessageAsync(msg);
         }
-
     }
 }
 

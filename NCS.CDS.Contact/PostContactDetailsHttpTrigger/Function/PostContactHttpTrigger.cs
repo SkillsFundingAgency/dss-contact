@@ -20,7 +20,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         private readonly IPostContactDetailsHttpTriggerService _contactdetailsPostService;
         private readonly IHttpRequestHelper _httpRequestMessageHelper;
         private readonly IResourceHelper _resourceHelper;
-        private readonly IDocumentDBProvider _provider;
+        private readonly ICosmosDBProvider _provider;
         private readonly IValidate _validate;
         private readonly IConvertToDynamic _convertToDynamic;
         private readonly ILogger<PostContactHttpTrigger> _logger;
@@ -29,7 +29,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
         public PostContactHttpTrigger(IPostContactDetailsHttpTriggerService contactdetailsPostService,
             IHttpRequestHelper httpRequestMessageHelper,
             IResourceHelper resourceHelper,
-            IDocumentDBProvider provider,
+            ICosmosDBProvider provider,
             IValidate validate,
             IConvertToDynamic convertToDynamic,
             ILogger<PostContactHttpTrigger> logger
@@ -139,7 +139,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
 
             _logger.LogInformation("Attempting to check if customer has ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
-            var doesContactDetailsExist = _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
+            var doesContactDetailsExist = await _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
             if (doesContactDetailsExist)
             {

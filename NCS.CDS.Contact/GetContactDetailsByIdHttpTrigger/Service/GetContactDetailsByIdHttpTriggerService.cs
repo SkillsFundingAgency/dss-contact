@@ -7,9 +7,9 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 {
     public class GetContactDetailsByIdHttpTriggerService : IGetContactDetailsByIdHttpTriggerService
     {
-        private readonly IDocumentDBProvider _documentDbProvider;
+        private readonly ICosmosDBProvider _documentDbProvider;
 
-        public GetContactDetailsByIdHttpTriggerService(IDocumentDBProvider documentDbProvider)
+        public GetContactDetailsByIdHttpTriggerService(ICosmosDBProvider documentDbProvider)
         {
             _documentDbProvider = documentDbProvider;
         }

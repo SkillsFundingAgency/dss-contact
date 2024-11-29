@@ -20,7 +20,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         private readonly IPatchContactDetailsHttpTriggerService _contactdetailsPatchService;
         private readonly IHttpRequestHelper _httpRequestMessageHelper;
         private readonly IResourceHelper _resourceHelper;
-        private readonly IDocumentDBProvider _provider;
+        private readonly ICosmosDBProvider _provider;
         private readonly IValidate _validate;
         private readonly IConvertToDynamic _convertToDynamic;
         private readonly ILogger<PatchContactHttpTrigger> _logger;
@@ -29,7 +29,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         public PatchContactHttpTrigger(IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
             IHttpRequestHelper httpRequestMessageHelper,
             IResourceHelper resourceHelper,
-            IDocumentDBProvider provider,
+            ICosmosDBProvider provider,
             IValidate validate,
             IConvertToDynamic convertToDynamic,
             ILogger<PatchContactHttpTrigger> logger)

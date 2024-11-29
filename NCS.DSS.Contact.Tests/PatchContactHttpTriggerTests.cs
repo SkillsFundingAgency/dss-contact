@@ -31,7 +31,7 @@ namespace NCS.DSS.Contact.Tests
         private Mock<IResourceHelper> _resourceHelper;
         private Mock<IHttpRequestHelper> _httpRequestMessageHelper;
         private Mock<ILogger<PatchContactHttpTrigger>> _logger;
-        private Mock<IDocumentDBProvider> _provider;
+        private Mock<ICosmosDBProvider> _provider;
         private Mock<IConvertToDynamic> _convertToDynamic;
 
         private ContactDetails _contactDetails;
@@ -46,7 +46,7 @@ namespace NCS.DSS.Contact.Tests
             _patchContactHttpTriggerService = new Mock<IPatchContactDetailsHttpTriggerService>();
             _httpRequestMessageHelper = new Mock<IHttpRequestHelper>();
             _resourceHelper = new Mock<IResourceHelper>();
-            _provider = new Mock<IDocumentDBProvider>();
+            _provider = new Mock<ICosmosDBProvider>();
             _convertToDynamic = new Mock<IConvertToDynamic>();
             _logger = new Mock<ILogger<PatchContactHttpTrigger>>();
 
