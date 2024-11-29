@@ -47,7 +47,7 @@ namespace NCS.DSS.Contact
             contactConfigurationSettings.ServiceBusConnectionString =
                 $"Endpoint={contactConfigurationSettings.BaseAddress}" +
                 $";SharedAccessKeyName={contactConfigurationSettings.KeyName}" +
-                $";SharedAccessKey={contactConfigurationSettings.Key}";
+                $";SharedAccessKey={contactConfigurationSettings.AccessKey}";
 
             var host = new HostBuilder()
                 .ConfigureFunctionsWebApplication()
