@@ -8,20 +8,20 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
     public class ContactDataSyncTrigger
     {
-        private readonly ILogger<ContactDataSyncTrigger> _logger;
         private readonly ISearchService _searchService;
+        private readonly ILogger<ContactDataSyncTrigger> _logger;
 
-        public ContactDataSyncTrigger(ILogger<ContactDataSyncTrigger> logger, ISearchService searchService)
+        public ContactDataSyncTrigger(ISearchService searchService, ILogger<ContactDataSyncTrigger> logger)
         {
-            _logger = logger;
             _searchService = searchService;
+            _logger = logger;
         }
 
         [Function("SyncDataForContactDetailsSearchTrigger")]
         public async Task RunAsync(
-            [CosmosDBTrigger("contacts", "contacts", Connection = "ContactDetailsConnectionString",
-                LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
-            IReadOnlyList<JObject> documents)
+        [CosmosDBTrigger("contacts", "contacts", Connection = "ContactDetailsConnectionString",
+            LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
+        IReadOnlyList<JObject> documents)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
 
@@ -29,18 +29,22 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
             {
                 var indexClient = _searchService.GetSearchClient();
 
-                _logger.LogInformation("Attempting to process {DocumentCount} document(s)", documents.Count);
-                if (documents.Count > 0)
-                {
-                    var contactDetails = documents.Select(doc => new
+                _logger.LogInformation("Processing {DocumentCount} documents", documents.Count);
+
+                var contactDetails = documents
+                    .Select(doc => new
                     {
                         CustomerId = doc["CustomerId"]?.ToObject<Guid>(),
-                        MobileNumber = doc["MobileNumber"]?.ToString(),
-                        HomeNumber = doc["HomeNumber"]?.ToString(),
-                        AlternativeNumber = doc["AlternativeNumber"]?.ToString(),
-                        EmailAddress = doc["EmailAddress"]?.ToString()
-                    }).ToList();
+                        MobileNumber = doc["MobileNumber"]?.ToObject<string>(),
+                        HomeNumber = doc["HomeNumber"]?.ToObject<string>(),
+                        AlternativeNumber = doc["AlternativeNumber"]?.ToObject<string>(),
+                        EmailAddress = doc["EmailAddress"]?.ToObject<string>()
+                    })
+                    .Where(x => x.CustomerId != null)
+                    .ToList();
 
+                if (contactDetails.Count > 0)
+                {
                     var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
 
                     _logger.LogInformation("Merging or uploading document batch for indexing with {DocumentCount} document(s)", contactDetails.Count);
@@ -60,9 +64,10 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                 }
                 else
                 {
-                    _logger.LogInformation("No documents to process.");
-                    _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
+                    _logger.LogInformation("No valid documents to process.");
                 }
+
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
             }
             catch (Exception ex)
             {
