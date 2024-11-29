@@ -155,7 +155,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
+            Assert.That(result, Is.InstanceOf<ConflictResult>());
         }
 
         [Test]
@@ -242,7 +242,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.That(result, Is.InstanceOf<ConflictObjectResult>());
+            Assert.That(result, Is.InstanceOf<ConflictResult>());
         }
 
         [Test]
