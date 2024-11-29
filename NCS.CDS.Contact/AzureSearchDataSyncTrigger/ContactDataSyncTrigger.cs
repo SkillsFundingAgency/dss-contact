@@ -1,46 +1,44 @@
 using Azure.Search.Documents.Models;
-using Microsoft.Azure.Documents;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Helpers;
+using NCS.DSS.Contact.Cosmos.Services;
+using Newtonsoft.Json.Linq;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
     public class ContactDataSyncTrigger
     {
         private readonly ILogger<ContactDataSyncTrigger> _logger;
+        private readonly ISearchService _searchService;
 
-        public ContactDataSyncTrigger(ILogger<ContactDataSyncTrigger> logger)
+        public ContactDataSyncTrigger(ILogger<ContactDataSyncTrigger> logger, ISearchService searchService)
         {
             _logger = logger;
+            _searchService = searchService;
         }
 
         [Function("SyncDataForContactDetailsSearchTrigger")]
         public async Task RunAsync(
             [CosmosDBTrigger("contacts", "contacts", Connection = "ContactDetailsConnectionString",
                 LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
-            IReadOnlyList<Document> documents)
+            IReadOnlyList<JObject> documents)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
 
             try
             {
-                _logger.LogInformation("Initializing search service client");
-                SearchHelper.GetSearchServiceClient();
-
-                _logger.LogInformation("Retrieving index client.");
-                var indexClient = SearchHelper.GetIndexClient();
+                var indexClient = _searchService.GetSearchClient();
 
                 _logger.LogInformation("Attempting to process {DocumentCount} document(s)", documents.Count);
                 if (documents.Count > 0)
                 {
                     var contactDetails = documents.Select(doc => new
                     {
-                        CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
-                        MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
-                        HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
-                        AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
-                        EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
+                        CustomerId = doc["CustomerId"]?.ToObject<Guid>(),
+                        MobileNumber = doc["MobileNumber"]?.ToString(),
+                        HomeNumber = doc["HomeNumber"]?.ToString(),
+                        AlternativeNumber = doc["AlternativeNumber"]?.ToString(),
+                        EmailAddress = doc["EmailAddress"]?.ToString()
                     }).ToList();
 
                     var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
