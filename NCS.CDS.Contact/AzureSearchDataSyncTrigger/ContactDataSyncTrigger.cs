@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Services;
 using System.Text.Json;
+using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
@@ -31,29 +32,17 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 
                 _logger.LogInformation("Processing {DocumentCount} documents", documents.Count);
 
-                var contactDetails = new List<dynamic>();
+                var contactDetails = new List<ContactDetailsSync>();
 
                 foreach (var doc in documents)
                 {
                     try
                     {
-                        var rootElement = doc.RootElement;
-
-                        var customerId = rootElement.GetProperty("CustomerId").GetGuid();
-                        var mobileNumber = rootElement.GetProperty("MobileNumber").GetString();
-                        var homeNumber = rootElement.GetProperty("HomeNumber").GetString();
-                        var alternativeNumber = rootElement.GetProperty("AlternativeNumber").GetString();
-                        var emailAddress = rootElement.GetProperty("EmailAddress").GetString();
-
-                        contactDetails.Add(new
+                        var contactDetail = JsonSerializer.Deserialize<ContactDetailsSync>(doc.RootElement.GetRawText());
+                        if (contactDetail != null)
                         {
-                            CustomerId = customerId,
-                            MobileNumber = mobileNumber,
-                            HomeNumber = homeNumber,
-                            AlternativeNumber = alternativeNumber,
-                            EmailAddress = emailAddress
-                        });
-
+                            contactDetails.Add(contactDetail);
+                        }
                     }
                     catch (JsonException e)
                     {
@@ -75,7 +64,7 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Error occurred while indexing documents to Azure Search. Exception: {ErrorMessage}", e.Message);
+                        _logger.LogError(e, "Failed to index batch with {DocumentCount} document(s). Exception: {ErrorMessage}", contactDetails.Count, e.Message);
                     }
                 }
                 else
