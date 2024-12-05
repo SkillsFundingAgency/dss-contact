@@ -16,8 +16,8 @@
         public required string CustomerCollectionId { get; set; }
         public required string DigitalIdentityDatabaseId { get; set; }
         public required string DigitalIdentityCollectionId { get; set; }
-        public required string SearchServiceIndexName { get; set; }
-        public required string SearchServiceKey { get; set; }
+        public required string CustomerSearchIndexName { get; set; }
+        public required string SearchServiceAdminApiKey { get; set; }
         public required string SearchServiceName { get; set; }
     }
 }

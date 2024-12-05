@@ -16,10 +16,10 @@ namespace NCS.DSS.Contact.Cosmos.Services
             var config = configOptions.Value;
             var searchServiceName = config.SearchServiceName ??
                                      throw new ArgumentNullException(nameof(config.SearchServiceName));
-            var searchServiceKey = config.SearchServiceKey ??
-                                    throw new ArgumentNullException(nameof(config.SearchServiceKey));
-            var searchIndexName = config.SearchServiceIndexName ??
-                                   throw new ArgumentNullException(nameof(config.SearchServiceIndexName));
+            var searchServiceKey = config.SearchServiceAdminApiKey ??
+                                    throw new ArgumentNullException(nameof(config.SearchServiceAdminApiKey));
+            var searchIndexName = config.CustomerSearchIndexName ??
+                                   throw new ArgumentNullException(nameof(config.CustomerSearchIndexName));
 
             _indexerClient = new Lazy<SearchIndexerClient>(() => 
                 new SearchIndexerClient(new Uri($"https://{searchServiceName}.search.windows.net"), new AzureKeyCredential(searchServiceKey)));
