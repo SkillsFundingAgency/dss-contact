@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Cosmos.Containers;
+using Microsoft.Extensions.Options;
 using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.Cosmos.Provider
@@ -16,16 +16,19 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         private static readonly PartitionKey PartitionKey = PartitionKey.None;
 
         public CosmosDBProvider(
-            IContactContainer contactContainer,
-            ICustomerContainer customerContainer,
-            IDigitalIdentityContainer digitalIdentityContainer,
+            CosmosClient cosmosClient,
+            IOptions<ContactConfigurationSettings> configOptions,
             ILogger<CosmosDBProvider> logger)
         {
-            _contactContainer = contactContainer.GetContainer();
-            _customerContainer = customerContainer.GetContainer();
-            _digitalIdentityContainer = digitalIdentityContainer.GetContainer();
+            var config = configOptions.Value;
+
+            _contactContainer = GetContainer(cosmosClient, config.DatabaseId, config.CollectionId);
+            _customerContainer = GetContainer(cosmosClient, config.CustomerDatabaseId, config.CustomerCollectionId);
+            _digitalIdentityContainer = GetContainer(cosmosClient, config.DigitalIdentityDatabaseId, config.DigitalIdentityCollectionId);
             _logger = logger;
         }
+        private static Container GetContainer(CosmosClient cosmosClient, string databaseId, string collectionId) 
+            => cosmosClient.GetContainer(databaseId, collectionId);
 
         public async Task<bool> DoesCustomerResourceExist(Guid customerId)
         {

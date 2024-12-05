@@ -9,7 +9,7 @@
         public required string BaseAddress { get; set; }
         public required string QueueName { get; set; }
         public required string ContactDetailsConnectionString { get; set; }
-        public required string ServiceBusConnectionString { get; set; }
+        public required string ServiceBusConnectionString { get; set; } = string.Empty;
         public required string DatabaseId { get; set; }
         public required string CollectionId { get; set; }
         public required string CustomerDatabaseId { get; set; }

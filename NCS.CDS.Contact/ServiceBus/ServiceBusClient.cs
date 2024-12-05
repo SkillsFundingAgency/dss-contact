@@ -1,5 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NCS.DSS.Contact.Models;
 using Newtonsoft.Json;
 using System.Text;
@@ -11,9 +12,10 @@ namespace NCS.DSS.Contact.ServiceBus
         private readonly ServiceBusSender _serviceBusSender;
         private readonly ILogger<ServiceBusClient> _logger;
 
-        public ServiceBusClient(Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, ContactConfigurationSettings contactConfigurationSettings, ILogger<ServiceBusClient> logger)
+        public ServiceBusClient(Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, IOptions<ContactConfigurationSettings> configOptions, ILogger<ServiceBusClient> logger)
         {
-            _serviceBusSender = serviceBusClient.CreateSender(contactConfigurationSettings.QueueName);
+            var config = configOptions.Value;
+            _serviceBusSender = serviceBusClient.CreateSender(config.QueueName);
             _logger = logger;
         }
 

@@ -2,10 +2,11 @@ using DFC.HTTP.Standard;
 using DFC.Swagger.Standard;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NCS.DSS.Contact.Cosmos.Containers;
+using Microsoft.Extensions.Options;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Cosmos.Services;
@@ -23,36 +24,21 @@ namespace NCS.DSS.Contact
     {
         private static async Task Main(string[] args)
         {
-            var contactConfigurationSettings = new ContactConfigurationSettings()
-            {
-                Endpoint = Environment.GetEnvironmentVariable("Endpoint") ?? throw new ArgumentNullException(),
-                Key = Environment.GetEnvironmentVariable("Key") ?? throw new ArgumentNullException(),
-                KeyName = Environment.GetEnvironmentVariable("KeyName") ?? throw new ArgumentNullException(),
-                AccessKey = Environment.GetEnvironmentVariable("AccessKey") ?? throw new ArgumentNullException(),
-                BaseAddress = Environment.GetEnvironmentVariable("BaseAddress") ?? throw new ArgumentNullException(),
-                QueueName = Environment.GetEnvironmentVariable("QueueName") ?? throw new ArgumentNullException(),
-                ContactDetailsConnectionString = Environment.GetEnvironmentVariable("ContactDetailsConnectionString") 
-                                                 ?? throw new ArgumentNullException(),
-                ServiceBusConnectionString = string.Empty,
-                DatabaseId = Environment.GetEnvironmentVariable("DatabaseId") ?? throw new ArgumentNullException(),
-                CollectionId = Environment.GetEnvironmentVariable("CollectionId") ?? throw new ArgumentNullException(),
-                CustomerDatabaseId = Environment.GetEnvironmentVariable("CustomerDatabaseId") ?? throw new ArgumentNullException(),
-                CustomerCollectionId = Environment.GetEnvironmentVariable("CustomerCollectionId") ?? throw new ArgumentNullException(),
-                DigitalIdentityDatabaseId = Environment.GetEnvironmentVariable("DigitalIdentityDatabaseId") ?? throw new ArgumentNullException(),
-                DigitalIdentityCollectionId = Environment.GetEnvironmentVariable("DigitalIdentityCollectionId") ?? throw new ArgumentNullException(),
-                SearchServiceIndexName = Environment.GetEnvironmentVariable("CustomerSearchIndexName") ?? throw new ArgumentNullException(),
-                SearchServiceKey = Environment.GetEnvironmentVariable("SearchServiceAdminApiKey") ?? throw new ArgumentNullException(),
-                SearchServiceName = Environment.GetEnvironmentVariable("SearchServiceName") ?? throw new ArgumentNullException()
-            };
-            contactConfigurationSettings.ServiceBusConnectionString =
-                $"Endpoint={contactConfigurationSettings.BaseAddress}" +
-                $";SharedAccessKeyName={contactConfigurationSettings.KeyName}" +
-                $";SharedAccessKey={contactConfigurationSettings.AccessKey}";
-
             var host = new HostBuilder()
                 .ConfigureFunctionsWebApplication()
-                .ConfigureServices(services =>
+                .ConfigureAppConfiguration(configBuilder =>
                 {
+                    configBuilder.SetBasePath(Environment.CurrentDirectory)
+                        .AddJsonFile("local.settings.json", optional: true,
+                            reloadOnChange: false)
+                        .AddEnvironmentVariables();
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    var configuration = context.Configuration;
+                    services.AddOptions<ContactConfigurationSettings>()
+                        .Bind(configuration);
+
                     services.AddApplicationInsightsTelemetryWorkerService();
                     services.ConfigureFunctionsApplicationInsights();
 
@@ -72,63 +58,25 @@ namespace NCS.DSS.Contact
                     services.AddSingleton<ISwaggerDocumentGenerator, SwaggerDocumentGenerator>();
                     services.AddSingleton<IConvertToDynamic, ConvertToDynamic>();
 
-                    services.AddSingleton(contactConfigurationSettings);
-
-                    services.AddSingleton(s =>
+                    services.AddSingleton(sp =>
                     {
+                        var settings = sp.GetRequiredService<IOptions<ContactConfigurationSettings>>().Value;
                         var options = new CosmosClientOptions()
                         {
                             ConnectionMode = ConnectionMode.Gateway
                         };
 
-                        var cosmosClient = new CosmosClient(contactConfigurationSettings.ContactDetailsConnectionString, options);
-
-                        cosmosClient.GetContainer(
-                            contactConfigurationSettings.DatabaseId,
-                            contactConfigurationSettings.CollectionId
-                        );
-
-                        cosmosClient.GetContainer(
-                            contactConfigurationSettings.CustomerDatabaseId,
-                            contactConfigurationSettings.CustomerCollectionId
-                        );
-
-                        cosmosClient.GetContainer(
-                            contactConfigurationSettings.DigitalIdentityDatabaseId,
-                            contactConfigurationSettings.DigitalIdentityCollectionId
-                        );
-
-                        return cosmosClient;
+                        return new CosmosClient(settings.ContactDetailsConnectionString, options);
                     });
 
-                    services.AddSingleton<IContactContainer>(s =>
+                    services.AddSingleton(sp =>
                     {
-                        var cosmosClient = s.GetRequiredService<CosmosClient>();
-                        return new ContactContainer(cosmosClient.GetContainer(
-                            contactConfigurationSettings.DatabaseId,
-                            contactConfigurationSettings.CollectionId
-                        ));
-                    });
+                        var settings = sp.GetRequiredService<IOptions<ContactConfigurationSettings>>().Value;
+                        settings.ServiceBusConnectionString =
+                            $"Endpoint={settings.BaseAddress};SharedAccessKeyName={settings.KeyName};SharedAccessKey={settings.AccessKey}";
 
-                    services.AddSingleton<ICustomerContainer>(s =>
-                    {
-                        var cosmosClient = s.GetRequiredService<CosmosClient>();
-                        return new CustomerContainer(cosmosClient.GetContainer(
-                            contactConfigurationSettings.CustomerDatabaseId,
-                            contactConfigurationSettings.CustomerCollectionId
-                        ));
+                        return new Azure.Messaging.ServiceBus.ServiceBusClient(settings.ServiceBusConnectionString);
                     });
-
-                    services.AddSingleton<IDigitalIdentityContainer>(s =>
-                    {
-                        var cosmosClient = s.GetRequiredService<CosmosClient>();
-                        return new DigitalIdentityContainer(cosmosClient.GetContainer(
-                            contactConfigurationSettings.DigitalIdentityDatabaseId,
-                            contactConfigurationSettings.DigitalIdentityCollectionId
-                        ));
-                    });
-
-                    services.AddSingleton(s => new Azure.Messaging.ServiceBus.ServiceBusClient(contactConfigurationSettings.ServiceBusConnectionString));
 
                     services.Configure<LoggerFilterOptions>(options =>
                     {
