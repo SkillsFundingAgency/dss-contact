@@ -65,8 +65,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
             catch
             {
-                _logger.LogWarning("Invalid JSON format in the request body.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Invalid JSON format in the request body.");
             }
 
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
