@@ -10,9 +10,6 @@ using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
 using JsonException = Newtonsoft.Json.JsonException;
@@ -65,14 +62,12 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
           
             try
             {
-                JsonHelper.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
+                JsonConvert.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
             }
             catch
             {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent("Invalid JSON format in the request body.")
-                };
+                _logger.LogWarning("Invalid JSON format in the request body.");
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);

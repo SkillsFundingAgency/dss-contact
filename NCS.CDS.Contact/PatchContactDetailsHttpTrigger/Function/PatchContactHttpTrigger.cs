@@ -10,10 +10,6 @@ using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
@@ -62,19 +58,17 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             string customerId, string contactId)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
-          
+
             try
             {
-                JsonHelper.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
+                JsonConvert.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
             }
             catch
             {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent("Invalid JSON format in the request body.")
-                };
+                _logger.LogWarning("Invalid JSON format in the request body.");
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
-            
+
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
