@@ -11,7 +11,6 @@ using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
 using System.Net;
-using System.Text.Json;
 using JsonException = Newtonsoft.Json.JsonException;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
@@ -216,9 +215,10 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
 
-            return new JsonResult(contactDetails, new JsonSerializerOptions())
+            return new JsonResult(contactDetails)
             {
-                StatusCode = (int)HttpStatusCode.Created
+                StatusCode = (int)HttpStatusCode.Created,
+                Value = JsonConvert.SerializeObject(contactDetails)
             };
         }
     }
