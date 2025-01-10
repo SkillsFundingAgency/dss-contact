@@ -2,12 +2,10 @@
 using DFC.Swagger.Standard.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Helper;
 using NCS.DSS.Contact.Cosmos.Provider;
-using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
@@ -16,50 +14,55 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
     public class PatchContactHttpTrigger
     {
-        private IResourceHelper _resourceHelper;
-        private IHttpRequestHelper _httpRequestMessageHelper;
-        private IValidate _validate;
-        private IPatchContactDetailsHttpTriggerService _contactdetailsPatchService;
-        private IDocumentDBProvider _provider;
-        private readonly IHttpResponseMessageHelper _httpResponseMessageHelper;
+        private readonly IPatchContactDetailsHttpTriggerService _contactdetailsPatchService;
+        private readonly IHttpRequestHelper _httpRequestMessageHelper;
+        private readonly IResourceHelper _resourceHelper;
+        private readonly ICosmosDBProvider _provider;
+        private readonly IValidate _validate;
+        private readonly IConvertToDynamic _convertToDynamic;
+        private readonly ILogger<PatchContactHttpTrigger> _logger;
+        private static readonly string[] PropertyToExclude = { "TargetSite" };
 
-
-        public PatchContactHttpTrigger(IResourceHelper resourceHelper,
-             IHttpRequestHelper httpRequestMessageHelper,
-             IValidate validate,
-             IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
-             IDocumentDBProvider provider,
-             IHttpResponseMessageHelper httpResponseMessageHelper)
+        public PatchContactHttpTrigger(IPatchContactDetailsHttpTriggerService contactdetailsPatchService,
+            IHttpRequestHelper httpRequestMessageHelper,
+            IResourceHelper resourceHelper,
+            ICosmosDBProvider provider,
+            IValidate validate,
+            IConvertToDynamic convertToDynamic,
+            ILogger<PatchContactHttpTrigger> logger)
         {
-            _resourceHelper = resourceHelper;
-            _httpRequestMessageHelper = httpRequestMessageHelper;
-            _validate = validate;
             _contactdetailsPatchService = contactdetailsPatchService;
+            _httpRequestMessageHelper = httpRequestMessageHelper;
+            _resourceHelper = resourceHelper;
             _provider = provider;
-            _httpResponseMessageHelper = httpResponseMessageHelper;
+            _validate = validate;
+            _convertToDynamic = convertToDynamic;
+            _logger = logger;
         }
 
-
-        [FunctionName("PATCH")]
+        [Function("PATCH")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Patched", ShowSchema = true)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Patch request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
-        [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.UnprocessableEntity, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
-        public async Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req, ILogger logger,
-            string customerId, string contactid)
+        public async Task<IActionResult> RunAsync(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactId}")]
+            HttpRequest req,
+            string customerId, string contactId)
         {
-
+            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
+          
             try
             {
                 JsonHelper.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
@@ -71,126 +74,180 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     Content = new StringContent("Invalid JSON format in the request body.")
                 };
             }
-
+            
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return _httpResponseMessageHelper.BadRequest();
+                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
 
-            var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
-            if (string.IsNullOrEmpty(ApimURL))
+            var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
+            if (string.IsNullOrEmpty(apimURL))
             {
-                logger.LogInformation("Unable to locate 'apimurl' in request header");
-                return _httpResponseMessageHelper.BadRequest();
+                _logger.LogWarning("Unable to locate 'apimurl' in request header");
+                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
             }
-
-            logger.LogInformation("C# HTTP trigger function Patch Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.BadRequest(customerGuid);
+                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                return new BadRequestObjectResult(customerGuid);
             }
 
-            if (!Guid.TryParse(contactid, out var contactGuid))
+            if (!Guid.TryParse(contactId, out var contactGuid))
             {
-                logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return _httpResponseMessageHelper.BadRequest(contactGuid);
+                _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
+                return new BadRequestObjectResult(contactGuid);
             }
 
-            ContactDetailsPatch contactdetailsPatchRequest;
+            _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
+            
+            ContactDetailsPatch contactDetailsPatchRequest;
 
             try
             {
-                contactdetailsPatchRequest = await _httpRequestMessageHelper.GetResourceFromRequest<ContactDetailsPatch>(req);
+                contactDetailsPatchRequest = await _httpRequestMessageHelper.GetResourceFromRequest<ContactDetailsPatch>(req);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
-                return _httpResponseMessageHelper.UnprocessableEntity(ex);
+                _logger.LogError(ex, "Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, PropertyToExclude));
             }
 
-            if (contactdetailsPatchRequest == null)
-                return _httpResponseMessageHelper.UnprocessableEntity(req);
+            if (contactDetailsPatchRequest == null)
+            {
+                _logger.LogError("{ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
+                return new UnprocessableEntityObjectResult(req);
+            }
 
-            contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
+            contactDetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
+            _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerId}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
             {
-                logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return _httpResponseMessageHelper.NoContent(customerGuid);
+                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                return new NoContentResult();
             }
 
+            _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+
+            _logger.LogInformation("Attempting to check if customer is read only. Customer GUID: {CustomerGuid}", customerGuid);
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
             {
-                logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
-                return _httpResponseMessageHelper.Forbidden(customerGuid);
+                _logger.LogError("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
+
+                return new ObjectResult(customerGuid.ToString())
+                {
+                    StatusCode = (int)HttpStatusCode.Forbidden
+                };
             }
 
+            _logger.LogInformation("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
+
+            _logger.LogInformation("Attempting to retrieve ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
             var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
 
             if (contactdetails == null)
             {
-                logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return _httpResponseMessageHelper.NoContent(contactGuid);
+                _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+                return new NoContentResult();
             }
 
-            var errors = _validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
+            _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
 
-            if (!string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress))
+            _logger.LogInformation("Attempting to validate {ContactDetailsPatch} object", nameof(contactDetailsPatchRequest));
+            var errors = _validate.ValidateResource(contactDetailsPatchRequest, contactdetails, false);
+
+            if (errors != null && errors.Any())
             {
-                var contacts = await _provider.GetContactsByEmail(contactdetailsPatchRequest.EmailAddress);
+                _logger.LogError("Validation for {ContactDetailsPatch} object has failed", nameof(contactDetailsPatchRequest));
+                return new UnprocessableEntityObjectResult(errors);
+            }
+
+            _logger.LogInformation("Validation for {ContactDetailsPatch} object has passed", nameof(contactDetailsPatchRequest));
+
+            if (!string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress))
+            {
+                _logger.LogInformation("Attempting to retrieve ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
+                var contacts = await _provider.GetContactsByEmail(contactDetailsPatchRequest.EmailAddress);
                 if (contacts != null)
                 {
+                    _logger.LogInformation("Customer has ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
+
                     foreach (var contact in contacts)
                     {
+                        _logger.LogInformation(
+                            "Attempting to check if customer has a termination date. Customer ID: {CustomerId}",
+                            contact.CustomerId.GetValueOrDefault());
                         var isReadOnly = await _provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
+                        
                         if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
                         {
+                            _logger.LogWarning(
+                                "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
+                                contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return _httpResponseMessageHelper.Conflict();
+                            return new ConflictObjectResult(HttpStatusCode.Conflict);
                         }
                     }
                 }
+                _logger.LogError("Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}", customerGuid);
             }
 
             // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
-            var diaccount = await _provider.GetIdentityForCustomerAsync(contactdetails.CustomerId.Value);
+            _logger.LogInformation("Attempting to retrieve DigitalIdentity for customer. Customer GUID: {CustomerGuid}", customerGuid);
+            var diaccount = await _provider.GetIdentityForCustomerAsync(contactdetails.CustomerId!.Value);
             if (diaccount != null)
             {
-                if (contactdetailsPatchRequest.EmailAddress == string.Empty)
+                _logger.LogInformation(
+                    "Customer has a Digital Identity account. Customer GUID: {CustomerGuid}. Identity Store ID: {IdentityStoreId}",
+                    customerGuid, diaccount.CustomerId.GetValueOrDefault());
+
+                if (contactDetailsPatchRequest.EmailAddress == string.Empty)
                 {
                     if (errors == null)
-                        errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-                    errors.Add(new System.ComponentModel.DataAnnotations.ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string>() { "EmailAddress" }));
-                    return _httpResponseMessageHelper.UnprocessableEntity(errors);
+                    {
+                        errors = new List<ValidationResult>();
+                    }
+
+                    errors.Add(new ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string> { "EmailAddress" }));
+                    return new UnprocessableEntityObjectResult(errors);
                 }
 
-                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
+                if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactDetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
                 {
-                    contactdetails.SetDigitalAccountEmailChanged(contactdetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
+                    _logger.LogInformation("Digital Identity account email address has been changed to email address on the request");
+                    contactdetails.SetDigitalAccountEmailChanged(contactDetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
                 }
             }
 
-            if (errors != null && errors.Any())
-                return _httpResponseMessageHelper.UnprocessableEntity(errors);
+            _logger.LogInformation("Attempting to PATCH a ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
+            var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactDetailsPatchRequest);
 
-            var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
+            if (updatedContactDetails == null)
+            {
+                _logger.LogError("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
-            if (updatedContactDetails != null)
-                await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, ApimURL);
+                return new BadRequestObjectResult(contactGuid);
+            }
 
-            return updatedContactDetails == null ?
-                _httpResponseMessageHelper.BadRequest(contactGuid) :
-                _httpResponseMessageHelper.Ok(JsonHelper.SerializeObject(updatedContactDetails));
+            _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
+            await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, apimURL);
+
+            _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
+            _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
+
+            return new JsonResult(updatedContactDetails, new JsonSerializerOptions())
+            {
+                StatusCode = (int)HttpStatusCode.OK
+            };
         }
-
     }
 }

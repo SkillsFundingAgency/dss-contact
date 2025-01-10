@@ -1,10 +1,11 @@
-﻿using DFC.HTTP.Standard;
+﻿using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using DFC.HTTP.Standard;
 using Microsoft.AspNetCore.Http;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ReferenceData;
 using NUnit.Framework;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace NCS.DSS.Contact.Tests
 {
@@ -28,8 +29,8 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Unknown, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Unknown));
         }
 
         [Test]
@@ -44,12 +45,28 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.IsNull(contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.Null);
         }
 
         [Test]
         public async Task GetResourceFromRequest_SetsPreferredContactMethodAsEmail_WhenPreferredContactMethodValueIs1AsString()
+        {
+            // Arrange
+            const string json = "{\"PreferredContactMethod\": \"1\"}";
+            var request = GetHttpRequest(json);
+
+            // Act
+            var helper = new HttpRequestHelper();
+            var contactDetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetails>(request);
+
+            // Assert
+            Assert.That(contactDetailsPatchRequest, Is.InstanceOf<ContactDetails>());
+            Assert.That(contactDetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Email));
+        }
+
+        [Test]
+        public async Task GetResourceFromRequest_SetsPreferredContactMethodAsEmail_WhenPreferredContactMethodValueIs1AsString_PATCH()
         {
             // Arrange
             var json = "{\"PreferredContactMethod\": \"1\"}";
@@ -60,8 +77,8 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Email, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Email));
         }
 
         [Test]
@@ -76,8 +93,8 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Email, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Email));
         }
 
         [Test]
@@ -92,8 +109,8 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Unknown, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Unknown));
         }
 
         [Test]
@@ -108,8 +125,8 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Post, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Post));
         }
 
         [Test]
@@ -124,13 +141,13 @@ namespace NCS.DSS.Contact.Tests
             var contactdetailsPatchRequest = await helper.GetResourceFromRequest<ContactDetailsPatch>(request);
 
             // Assert
-            Assert.IsInstanceOf<ContactDetailsPatch>(contactdetailsPatchRequest);
-            Assert.AreEqual(PreferredContactMethod.Unknown, contactdetailsPatchRequest.PreferredContactMethod);
+            Assert.That(contactdetailsPatchRequest, Is.InstanceOf<ContactDetailsPatch>());
+            Assert.That(contactdetailsPatchRequest.PreferredContactMethod, Is.EqualTo(PreferredContactMethod.Unknown));
         }
 
         private static HttpRequest GetHttpRequest(string json)
         {
-            var memoryStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
             var context = new DefaultHttpContext();
             var request = context.Request;

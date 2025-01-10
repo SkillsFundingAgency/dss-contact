@@ -1,67 +1,83 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
-using NCS.DSS.Contact.Helpers;
-using NCS.DSS.Contact.Models;
-using Azure.Search;
 using Azure.Search.Documents.Models;
-using Microsoft.Azure.Documents;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using NCS.DSS.Contact.Cosmos.Services;
+using System.Text.Json;
+using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
 {
-    public static class ContactDataSyncTrigger
+    public class ContactDataSyncTrigger
     {
-        [FunctionName("SyncDataForContactDetailsSearchTrigger")]
-        public static async Task Run(
-            [CosmosDBTrigger("contacts", "contacts", ConnectionStringSetting = "ContactDetailsConnectionString",
-                LeaseCollectionName = "contacts-leases", CreateLeaseCollectionIfNotExists = true)]
-            IReadOnlyList<Document> documents,
-            ILogger log)
+        private readonly ILogger<ContactDataSyncTrigger> _logger;
+        private readonly ISearchService _searchService;
+
+        public ContactDataSyncTrigger(ILogger<ContactDataSyncTrigger> logger, ISearchService searchService)
         {
-            log.LogInformation("Entered SyncDataForContactDetailsSearchTrigger");
+            _logger = logger;
+            _searchService = searchService;
+        }
 
-            SearchHelper.GetSearchServiceClient();
+        [Function("SyncDataForContactDetailsSearchTrigger")]
+        public async Task RunAsync(
+            [CosmosDBTrigger("contacts", "contacts", Connection = "ContactDetailsConnectionString",
+                LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
+            IReadOnlyList<JsonDocument> documents)
+        {
+            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
 
-            log.LogInformation("get search service client");
-
-            var indexClient = SearchHelper.GetIndexClient();
-
-            log.LogInformation("get index client");
-            
-            log.LogInformation("Documents modified " + documents.Count);
-
-            if (documents.Count > 0)
+            try
             {
-                var contactDetails = documents.Select(doc => new
+                var indexClient = _searchService.GetSearchClient();
+
+                _logger.LogInformation("Processing {DocumentCount} documents", documents.Count);
+
+                var contactDetails = new List<ContactDetailsSync>();
+
+                foreach (var doc in documents)
+                {
+                    try
                     {
-                        CustomerId = doc.GetPropertyValue<Guid>("CustomerId"),
-                        MobileNumber = doc.GetPropertyValue<string>("MobileNumber"),
-                        HomeNumber = doc.GetPropertyValue<string>("HomeNumber"),
-                        AlternativeNumber = doc.GetPropertyValue<string>("AlternativeNumber"),
-                        EmailAddress = doc.GetPropertyValue<string>("EmailAddress")
-                    })
-                    .ToList();
-
-                var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
-                
-                try
-                {
-                    log.LogInformation("attempting to merge docs to azure search");
-
-                    await indexClient.IndexDocumentsAsync(batch);
-
-                    log.LogInformation("successfully merged docs to azure search");
-
+                        var contactDetail = JsonSerializer.Deserialize<ContactDetailsSync>(doc.RootElement.GetRawText());
+                        if (contactDetail != null)
+                        {
+                            contactDetails.Add(contactDetail);
+                        }
+                    }
+                    catch (JsonException e)
+                    {
+                        _logger.LogError(e, "Failed to process document: {Document}", doc);
+                    }
                 }
-                catch (Exception e)
+
+                if (contactDetails.Count > 0)
                 {
-                    log.LogError("Failed to index some of the documents: {0}");
-                    log.LogError(e.ToString());
+                    var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
+
+                    _logger.LogInformation("Merging or uploading document batch for indexing with {DocumentCount} document(s)", contactDetails.Count);
+
+                    try
+                    {
+                        _logger.LogInformation("Attempting to index {DocumentCount} document(s) to Azure Search", contactDetails.Count);
+                        await indexClient.IndexDocumentsAsync(batch);
+                        _logger.LogInformation("Successfully indexed {DocumentCount} document(s) to Azure Search", contactDetails.Count);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to index batch with {DocumentCount} document(s). Exception: {ErrorMessage}", contactDetails.Count, e.Message);
+                    }
                 }
+                else
+                {
+                    _logger.LogInformation("No valid documents to process.");
+                }
+
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred in {FunctionName}. Exception: {ErrorMessage}", nameof(ContactDataSyncTrigger), ex.Message);
+                throw;
             }
         }
     }

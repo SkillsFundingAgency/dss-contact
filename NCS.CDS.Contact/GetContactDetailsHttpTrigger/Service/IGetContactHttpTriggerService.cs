@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using NCS.DSS.Contact.Models;
 
 namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Service
 {
     public interface IGetContactHttpTriggerService
     {
-        Task<Models.ContactDetails> GetContactDetailsForCustomerAsync(Guid customerGuid);
+        Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerGuid);
     }
 }

@@ -1,10 +1,10 @@
-﻿using DFC.Swagger.Standard.Annotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using DFC.Swagger.Standard.Annotations;
 using NCS.DSS.Contact.Helpers;
 using NCS.DSS.Contact.ReferenceData;
 using Newtonsoft.Json;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
 
 namespace NCS.DSS.Contact.Models
 {
@@ -12,9 +12,9 @@ namespace NCS.DSS.Contact.Models
     {
         [Display(Description = "Unique identifier for a contact record")]
         [Example(Description = "b8592ff8-af97-49ad-9fb2-e5c3c717fd85")]
-        [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
+        [JsonProperty(PropertyName = "id")]
         public Guid? ContactId { get; set; }
-     
+
         [Display(Description = "Unique identifier of a customer")]
         [Example(Description = "2730af9c-fc34-4c2b-a905-c4b584b0f379")]
         public Guid? CustomerId { get; set; }
@@ -29,7 +29,7 @@ namespace NCS.DSS.Contact.Models
                                 "6 - WhatsApp,   " +
                                 "99 - Not known")]
         [Example(Description = "3")]
-        [JsonConverter(typeof(PermissiveEnumConverter))]
+        [Newtonsoft.Json.JsonConverter(typeof(PermissiveEnumConverter))]
         public PreferredContactMethod? PreferredContactMethod { get; set; }
 
         [StringLength(20)]
@@ -65,26 +65,26 @@ namespace NCS.DSS.Contact.Models
         public string LastModifiedTouchpointId { get; set; }
 
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public bool? IsDigitalAccount { get; set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string FirstName { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string LastName { get; private set; }
 
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public bool? ChangeEmailAddress { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
-        public string  CurrentEmail { get; private set; }
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+        public string CurrentEmail { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string NewEmail { get; private set; }
         [IgnoreDataMember]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public Guid? IdentityStoreId { get; private set; }
 
 
@@ -108,13 +108,13 @@ namespace NCS.DSS.Contact.Models
             if (contactdetailsPatch == null)
                 return;
 
-            if(contactdetailsPatch.PreferredContactMethod.HasValue)
+            if (contactdetailsPatch.PreferredContactMethod.HasValue)
                 PreferredContactMethod = contactdetailsPatch.PreferredContactMethod;
 
-            if(contactdetailsPatch.AlternativeNumber != null)
+            if (contactdetailsPatch.AlternativeNumber != null)
                 AlternativeNumber = contactdetailsPatch.AlternativeNumber;
 
-            if(contactdetailsPatch.EmailAddress != null)
+            if (contactdetailsPatch.EmailAddress != null)
                 EmailAddress = contactdetailsPatch.EmailAddress;
 
             if (contactdetailsPatch.HomeNumber != null)
@@ -123,7 +123,7 @@ namespace NCS.DSS.Contact.Models
             if (contactdetailsPatch.MobileNumber != null)
                 MobileNumber = contactdetailsPatch.MobileNumber;
 
-            if(contactdetailsPatch.LastModifiedDate.HasValue)
+            if (contactdetailsPatch.LastModifiedDate.HasValue)
                 LastModifiedDate = contactdetailsPatch.LastModifiedDate;
 
             if (!string.IsNullOrEmpty(contactdetailsPatch.LastModifiedTouchpointId))
@@ -139,5 +139,5 @@ namespace NCS.DSS.Contact.Models
             CurrentEmail = EmailAddress;
             IdentityStoreId = storeId;
         }
-    }    
+    }
 }
