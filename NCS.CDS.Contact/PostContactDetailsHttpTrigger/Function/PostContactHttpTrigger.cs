@@ -58,7 +58,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             HttpRequest req, string customerId)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PostContactHttpTrigger));
-          
+
             try
             {
                 JsonConvert.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
@@ -199,6 +199,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation(
                 "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. Contact Details ID: {ContactDetailsId}",
                 customerGuid, contactDetailsPostRequest.ContactId.GetValueOrDefault());
+
             var contactDetails = await _contactdetailsPostService.CreateAsync(contactDetailsPostRequest);
 
             if (contactDetails == null)
@@ -215,10 +216,9 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
 
-            return new JsonResult(contactDetails)
+            return new JsonResult(JsonConvert.SerializeObject(contactDetails))
             {
-                StatusCode = (int)HttpStatusCode.Created,
-                Value = JsonConvert.SerializeObject(contactDetails)
+                StatusCode = (int)HttpStatusCode.Created
             };
         }
     }

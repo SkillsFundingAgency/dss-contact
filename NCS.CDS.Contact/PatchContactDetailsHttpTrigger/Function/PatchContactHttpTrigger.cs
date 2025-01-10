@@ -236,10 +236,9 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
-            return new JsonResult(updatedContactDetails)
+            return new JsonResult(JsonConvert.SerializeObject(updatedContactDetails))
             {
-                StatusCode = (int)HttpStatusCode.OK,
-                Value = JsonConvert.SerializeObject(updatedContactDetails)
+                StatusCode = (int)HttpStatusCode.OK
             };
         }
     }
