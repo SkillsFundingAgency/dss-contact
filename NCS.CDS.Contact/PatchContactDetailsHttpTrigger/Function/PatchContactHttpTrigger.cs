@@ -12,6 +12,7 @@ using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.Json;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -236,7 +237,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
             _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
-            return new JsonResult(JsonConvert.SerializeObject(updatedContactDetails))
+            return new JsonResult(updatedContactDetails, new JsonSerializerOptions())
             {
                 StatusCode = (int)HttpStatusCode.OK
             };
