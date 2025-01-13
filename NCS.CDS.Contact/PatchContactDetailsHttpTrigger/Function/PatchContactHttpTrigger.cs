@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
+using JsonException = Newtonsoft.Json.JsonException;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 {
@@ -59,13 +60,21 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
 
-            try
+            string requestBody;
+            using (var reader = new StreamReader(req.Body))
             {
-                JsonConvert.SerializeObject(JsonConvert.DeserializeObject(await new StreamReader(req.Body).ReadToEndAsync()));
+                requestBody = await reader.ReadToEndAsync();
             }
-            catch
+            if (!string.IsNullOrEmpty(requestBody))
             {
-                return new BadRequestObjectResult("Invalid JSON format in the request body.");
+                try
+                {
+                    JsonDocument.Parse(requestBody);
+                }
+                catch (JsonException)
+                {
+                    return new BadRequestObjectResult("Invalid JSON format in the request body.");
+                }
             }
 
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
