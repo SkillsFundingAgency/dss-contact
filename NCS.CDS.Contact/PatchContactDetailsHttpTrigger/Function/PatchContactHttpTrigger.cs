@@ -12,6 +12,7 @@ using NCS.DSS.Contact.Validation;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using JsonException = Newtonsoft.Json.JsonException;
 
@@ -60,11 +61,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
 
-            string requestBody;
+            string requestBody = null;
             using (var reader = new StreamReader(req.Body))
             {
                 requestBody = await reader.ReadToEndAsync();
             }
+
+            req.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody)); //rewind stream
+
             if (!string.IsNullOrEmpty(requestBody))
             {
                 try
