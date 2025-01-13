@@ -67,7 +67,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 requestBody = await reader.ReadToEndAsync();
             }
 
-            req.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody)); //rewind stream
+            req.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
 
             if (!string.IsNullOrEmpty(requestBody))
             {
@@ -75,20 +75,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 {
                     JsonDocument.Parse(requestBody);
                 }
-                catch (JsonSerializationException ex)
-                {
-                    _logger.LogError("JSON Deserialization error: {ErrorMessage}", ex.Message);
-                    return new BadRequestObjectResult("The JSON in the request body could not be parsed.");
-                }
-                catch (JsonException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError("Invalid JSON format: {ErrorMessage}", ex.Message);
                     return new BadRequestObjectResult("The JSON in the request body is in an invalid format.");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Unexpected error: {ErrorMessage}", ex.Message);
-                    return new BadRequestObjectResult("There was an unexpected error relating to the request body.");
                 }
             }
 
