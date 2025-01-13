@@ -1,5 +1,6 @@
 ﻿using DFC.HTTP.Standard;
 using DFC.Swagger.Standard.Annotations;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -75,9 +76,20 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 {
                     JsonDocument.Parse(requestBody);
                 }
-                catch (JsonException)
+                catch (JsonSerializationException ex)
                 {
-                    return new BadRequestObjectResult("Invalid JSON format in the request body.");
+                    _logger.LogError("JSON Deserialization error: {ErrorMessage}", ex.Message);
+                    return new BadRequestObjectResult("The JSON in the request body could not be parsed.");
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError("Invalid JSON format: {ErrorMessage}", ex.Message);
+                    return new BadRequestObjectResult("The JSON in the request body is in an invalid format.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Unexpected error: {ErrorMessage}", ex.Message);
+                    return new BadRequestObjectResult("There was an unexpected error relating to the request body.");
                 }
             }
 
