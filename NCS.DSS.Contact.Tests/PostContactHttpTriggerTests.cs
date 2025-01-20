@@ -113,7 +113,7 @@ namespace NCS.DSS.Contact.Tests
         }
 
         [Test]
-        public async Task PostContactHttpTrigger_ReturnsStatusCodeNoContent_WhenCustomerDoesNotExist()
+        public async Task PostContactHttpTrigger_ReturnsStatusCodeNotFound_WhenCustomerDoesNotExist()
         {
             //Arrange
             _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
@@ -125,7 +125,7 @@ namespace NCS.DSS.Contact.Tests
             var result = await RunFunction(ValidCustomerId);
 
             // Assert
-            Assert.That(result, Is.InstanceOf<NoContentResult>());
+            Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
         }
 
         [Test]
