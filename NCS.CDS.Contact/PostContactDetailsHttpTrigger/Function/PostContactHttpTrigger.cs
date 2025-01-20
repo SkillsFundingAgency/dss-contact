@@ -43,10 +43,9 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
         [Function("POST")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Added", ShowSchema = true)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Post request is malformed", ShowSchema = false)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(Contact.Models.ContactDetails), 200)]
@@ -57,20 +56,23 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 log.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             var ApimURL = _responseHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 log.LogInformation("Unable to locate 'apimurl' in request header");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'apimurl' in request header");
             }
 
             log.LogInformation("C# HTTP trigger function Post Contact processed a request. " + touchpointId);
 
             if (!Guid.TryParse(customerId, out var customerGuid))
-                return new BadRequestObjectResult(customerGuid);
+            {
+                log.LogInformation($"Unable to parse 'customerId' to a GUID [{customerId}]");
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
+            }
 
             ContactDetails contactdetailsRequest;
             try
@@ -79,36 +81,52 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
+                log.LogError($"Json Exception. Unable to retrieve request body.", ex);
+                return new UnprocessableEntityObjectResult($"Json exception. Unable to retrieve request body." + _convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
             }
 
             if (contactdetailsRequest == null)
-                return new UnprocessableEntityObjectResult(req);
+            {
+                log.LogInformation($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+                return new UnprocessableEntityObjectResult($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+            }
 
             contactdetailsRequest.SetIds(customerGuid, touchpointId);
 
             var errors = _validate.ValidateResource(contactdetailsRequest, null, true);
 
             if (errors != null && errors.Any())
-                return new UnprocessableEntityObjectResult(errors);
+            {
+                log.LogInformation("Validation errors present with the resource:\n" + errors);
+                return new UnprocessableEntityObjectResult("Validation errors present with the resource:\n" + errors);
+            }
 
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
-                return new NoContentResult();
+            {
+                log.LogInformation($"Customer does not exist.");
+                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
+            }
 
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
-                return new ObjectResult(customerGuid.ToString())
+            {
+                log.LogInformation($"Customer ({customerGuid}) is read-only");
+                return new ObjectResult($"Customer ({customerGuid}) is read-only")
                 {
                     StatusCode = (int)HttpStatusCode.Forbidden
                 };
+            }
 
             var doesContactDetailsExist = _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
             if (doesContactDetailsExist)
-                return new ConflictObjectResult(HttpStatusCode.Conflict);
+            {
+                log.LogInformation($"Contact details already exist for customer ({customerGuid})");
+                return new ConflictObjectResult($"Contact details already exist for customer ({customerGuid})");
+            }
 
             if (!string.IsNullOrEmpty(contactdetailsRequest.EmailAddress))
             {
@@ -122,7 +140,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                         {
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return new ConflictObjectResult(HttpStatusCode.Conflict);
+                            log.LogInformation($"The email address {contactdetailsRequest.EmailAddress} cannot be used because it's being used by another customer.");
+                            return new ConflictObjectResult($"The email address {contactdetailsRequest.EmailAddress} cannot be used because it's being used by another customer.");
                         }
                     }
                 }
@@ -136,7 +155,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
 
             return contactDetails == null
-                ? new BadRequestObjectResult(customerGuid)
+                ? new BadRequestObjectResult($"Failed to POST contact details to Cosmos DB for customer {customerGuid}. Contact details are NULL after creation attempt.")
                 : new JsonResult(contactDetails, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.Created

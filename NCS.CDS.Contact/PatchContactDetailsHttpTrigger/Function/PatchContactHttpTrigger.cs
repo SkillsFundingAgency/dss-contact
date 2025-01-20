@@ -44,10 +44,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
         [Function("PATCH")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Patched", ShowSchema = true)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Patch request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)422, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
         public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactid}")] HttpRequest req,
@@ -57,14 +57,14 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             var ApimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(ApimURL))
             {
                 logger.LogInformation("Unable to locate 'apimurl' in request header");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'apimurl' in request header");
             }
 
             logger.LogInformation("C# HTTP trigger function Patch Contact processed a request. " + touchpointId);
@@ -72,13 +72,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return new BadRequestObjectResult(customerGuid);
+                return new BadRequestObjectResult($"No customer with ID [{customerGuid}]");
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return new BadRequestObjectResult(contactGuid);
+                return new BadRequestObjectResult($"No contact with ID [{contactGuid}]");
             }
 
             ContactDetailsPatch contactdetailsPatchRequest;
@@ -89,12 +89,15 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error: JsonException caught, UnprocessableEntity.");
-                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
+                logger.LogError($"JsonException caught. Unable to process request");
+                return new UnprocessableEntityObjectResult("JsonException caught. Unable to process request" + _convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
             }
 
             if (contactdetailsPatchRequest == null)
-                return new UnprocessableEntityObjectResult(req);
+            {
+                logger.LogInformation($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+                return new UnprocessableEntityObjectResult($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+            }
 
             contactdetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
@@ -103,7 +106,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 logger.LogInformation($"No customer with ID [{customerGuid}]");
-                return new NoContentResult();
+                return new NotFoundObjectResult($"No customer with ID [{customerGuid}]");
             }
 
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
@@ -111,7 +114,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 logger.LogInformation($"Customer with ID [{customerGuid}] is read only, operation forbidden.");
-                return new ObjectResult(customerGuid.ToString())
+                return new ObjectResult($"Customer with ID [{customerGuid}] is read only, operation forbidden.")
                 {
                     StatusCode = (int)HttpStatusCode.Forbidden
                 };
@@ -122,7 +125,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (contactdetails == null)
             {
                 logger.LogInformation($"No contact with ID [{contactGuid}]");
-                return new NoContentResult();
+                return new NotFoundObjectResult($"No contact with ID [{contactGuid}]");
             }
 
             var errors = _validate.ValidateResource(contactdetailsPatchRequest, contactdetails, false);
@@ -139,7 +142,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                         {
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return new ConflictObjectResult(HttpStatusCode.Conflict);
+                            return new ConflictObjectResult($"Email address already in use by another customer (id: {contact.CustomerId}).");
                         }
                     }
                 }
@@ -154,7 +157,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     if (errors == null)
                         errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
                     errors.Add(new System.ComponentModel.DataAnnotations.ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string>() { "EmailAddress" }));
-                    return new UnprocessableEntityObjectResult(errors);
+                    return new UnprocessableEntityObjectResult("Validation errors caught after retrieving digitial identity:\n " + errors);
                 }
 
                 if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactdetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactdetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
@@ -164,7 +167,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
 
             if (errors != null && errors.Any())
-                return new UnprocessableEntityObjectResult(errors);
+                return new UnprocessableEntityObjectResult("Validation errors caught:\n " + errors);
 
             var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactdetailsPatchRequest);
 
@@ -174,7 +177,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             }
 
             return updatedContactDetails == null
-                ? new BadRequestObjectResult(contactGuid)
+                ? new BadRequestObjectResult($"Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.")
                 : new JsonResult(updatedContactDetails, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.OK
