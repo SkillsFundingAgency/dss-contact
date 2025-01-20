@@ -49,10 +49,9 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
         [Function("POST")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Added", ShowSchema = true)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Post request is malformed", ShowSchema = false)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Conflict, Description = "Contact Details already exists for customer", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.UnprocessableEntity, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
@@ -87,40 +86,39 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(apimURL))
             {
                 _logger.LogWarning("Unable to locate 'apimurl' in request header");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'apimurl' in request header");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult(customerGuid);
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
 
             ContactDetails contactDetailsPostRequest;
-
             try
             {
                 contactDetailsPostRequest = await _httpRequestMessageHelper.GetResourceFromRequest<ContactDetails>(req);
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
-                return new UnprocessableEntityObjectResult(_convertToDynamic.ExcludeProperty(ex, PropertyToExclude));
+                _logger.LogError(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                return new UnprocessableEntityObjectResult($"Json exception. Unable to retrieve request body." + _convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
             }
 
             if (contactDetailsPostRequest == null)
             {
-                _logger.LogError("{ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
-                return new UnprocessableEntityObjectResult(req);
+                _logger.LogError("Unable to retrieve contact details from request data. {ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
+                return new UnprocessableEntityObjectResult($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
             }
 
             contactDetailsPostRequest.SetIds(customerGuid, touchpointId);
@@ -131,7 +129,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (errors != null && errors.Any())
             {
                 _logger.LogError("Validation for {ContactDetailsPost} object has failed", nameof(contactDetailsPostRequest));
-                return new UnprocessableEntityObjectResult(errors);
+                return new UnprocessableEntityObjectResult("Validation errors present with the resource:\n" + errors);
             }
 
             _logger.LogInformation("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
@@ -142,7 +140,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
-                return new NoContentResult();
+                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -153,8 +151,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 _logger.LogError("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
-
-                return new ObjectResult(customerGuid.ToString())
+                return new ObjectResult($"Customer ({customerGuid}) is read-only")
                 {
                     StatusCode = (int)HttpStatusCode.Forbidden
                 };
@@ -167,11 +164,11 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (doesContactDetailsExist)
             {
-                _logger.LogWarning("ContactDetails already exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
-                return new ConflictResult();
+                log.LogError($"Contact details already exist for customer ({customerGuid})");
+                return new ConflictObjectResult($"Contact details already exist for customer ({customerGuid})");
             }
 
-            _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogInformation("ContactDetails does not already exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
 
             if (!string.IsNullOrEmpty(contactDetailsPostRequest.EmailAddress))
             {
@@ -202,7 +199,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            return new ConflictResult();
+                            log.LogError($"The email address {contactdetailsRequest.EmailAddress} cannot be used because it's being used by another customer.");
+                            return new ConflictObjectResult($"The email address {contactdetailsRequest.EmailAddress} cannot be used because it's being used by another customer.");
                         }
                     }
                 }
@@ -222,7 +220,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 _logger.LogError("POST request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                 _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactDetailsHttpTrigger));
 
-                return new BadRequestObjectResult(customerGuid);
+                return new BadRequestObjectResult($"Failed to POST contact details to Cosmos DB for customer {customerGuid}. Contact details are NULL after creation attempt.");
             }
 
             _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, contactDetails.ContactId.GetValueOrDefault());

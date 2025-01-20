@@ -32,10 +32,9 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 
         [Function("GET_BY_CONTACTDETAILSID")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Retrieved", ShowSchema = true)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Get request is malformed", ShowSchema = false)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
         public async Task<IActionResult> RunAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")]
@@ -47,19 +46,19 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult(customerGuid);
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
                 _logger.LogWarning("Unable to parse 'contactGuid' to a GUID. Customer ID: {ContactGuid}", contactGuid);
-                return new BadRequestObjectResult(contactGuid);
+                return new BadRequestObjectResult($"Unable to parse 'contactid' to a GUID. Contact ID: {contactid}.");
             }
 
             _logger.LogInformation("Attempting to see if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -70,11 +69,10 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
-                return new NoContentResult();
+                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
-
             _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, _logger);
 
@@ -87,10 +85,12 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
                     StatusCode = (int)HttpStatusCode.OK
                 };
             }
-                
-            _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
-            _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
-            return new NoContentResult();
+            else
+            {
+                _logger.LogWarning("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
+                return new NotFoundObjectResult($"Contact details ({contactGuid}) for customer ({customerGuid}) do not exist.");
+            }
         }
     }
 }
