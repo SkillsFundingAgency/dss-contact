@@ -53,6 +53,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.UnprocessableEntity, Description = "Contact Details resource validation error(s)", ShowSchema = false)]
+
         [ProducesResponseType(typeof(ContactDetails), 200)]
         public async Task<IActionResult> RunAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "customers/{customerId}/ContactDetails/{contactId}")]
@@ -254,7 +255,6 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             {
                 StatusCode = (int)HttpStatusCode.OK
             };
-            
         }
     }
 }

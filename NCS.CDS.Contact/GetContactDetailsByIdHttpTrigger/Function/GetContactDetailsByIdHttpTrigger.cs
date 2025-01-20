@@ -68,7 +68,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
 
             if (!doesCustomerExist)
             {
-                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogError("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 

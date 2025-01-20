@@ -66,7 +66,6 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             {
                 requestBody = await reader.ReadToEndAsync();
             }
-
             req.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
 
             if (!string.IsNullOrEmpty(requestBody))
