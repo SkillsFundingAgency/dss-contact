@@ -2,20 +2,11 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "templateBaseUrl": {
-      "value": "__NestedArmTemplateBaseUrl__"
-    },
     "environmentName": {
       "value": "__NotTokenised__"
     },
     "functionAppNames": {
       "value": "__NotTokenised__"
-    },
-    "sharedAppServicePlanName": {
-      "value": "__SharedAppServicePlanName__"
-    },
-    "sharedAppServicePlanResourceGroup": {
-      "value": "__SharedAppServicePlanResourceGroup__"
     },
     "cosmosDbCollectionId": {
       "value": "__DatabaseName__"

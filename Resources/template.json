@@ -35,15 +35,6 @@
     "serviceBusQueueName": {
       "type": "string"
     },
-    "sharedAppServicePlanName": {
-      "type": "string"
-    },
-    "sharedAppServicePlanResourceGroup": {
-      "type": "string"
-    },
-    "templateBaseUrl": {
-      "type": "string"
-    },
     "SearchServiceName": {
       "type": "string"
     },
@@ -54,71 +45,46 @@
       "type": "string"
     }
   },
-  "variables": {
-    "functionAppTemplateUri": "[concat(parameters('templateBaseUrl'), '/deployments/function-app-resources.json')]",
-    "sharedAppServicePlanId": "[resourceId(parameters('sharedAppServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('sharedAppServicePlanName'))]"
-  },
   "resources": [
     {
-      "name": "[concat('FunctionApp-', parameters('functionAppNames')[copyIndex()])]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2023-12-01",
+      "name": "[format('{0}/{1}', parameters('functionAppNames')[copyIndex()], 'appsettings')]",
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('functionAppTemplateUri')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "functionAppName": {
-            "value": "[parameters('functionAppNames')[copyIndex()]]"
-          },
-          "appServicePlanId": {
-            "value": "[variables('sharedAppServicePlanId')]"
-          },
-          "configEnvironmentName": {
-            "value": "[parameters('environmentName')]"
-          },
-          "cosmosDbCollectionId": {
-            "value": "[parameters('cosmosDbCollectionId')]"
-          },
-          "cosmosDbDatabaseId": {
-            "value": "[parameters('cosmosDbDatabaseId')]"
-          },
-          "cosmosDbEndpoint": {
-            "value": "[parameters('cosmosDbEndpoint')]"
-          },
-          "cosmosDbKey": {
-            "value": "[parameters('cosmosDbKey')]"
-          },
-          "serviceBusAccessKey": {
-            "value": "[parameters('serviceBusAccessKey')]"
-          },
-          "serviceBusAccessKeyName": {
-            "value": "[parameters('serviceBusAccessKeyName')]"
-          },
-          "serviceBusBaseAddress": {
-            "value": "[parameters('serviceBusBaseAddress')]"
-          },
-          "serviceBusQueueName": {
-            "value": "[parameters('serviceBusQueueName')]"
-          },
-          "SearchServiceName": {
-            "value": "[parameters('SearchServiceName')]"
-          },
-          "SearchServiceAdminApiKey": {
-            "value": "[parameters('SearchServiceAdminApiKey')]"
-          },
-          "CosmosDbConnectionString": {
-            "value": "[parameters('CosmosDbConnectionString')]"
-          },
-          "appInsightsInstrumentationKey": {
-            "value": "[parameters('appInsightsInstrumentationKey')]"
-          }
-        }
+        "EnvironmentName": "[toUpper(parameters('environmentName'))]",
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[parameters('appInsightsInstrumentationKey')]",
+        "FUNCTIONS_EXTENSION_VERSION": "~4",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "MSDEPLOY_RENAME_LOCKED_FILES": "1",
+        "CollectionId": "[parameters('cosmosDbCollectionId')]",
+        "DatabaseId": "[parameters('cosmosDbDatabaseId')]",
+        "Endpoint": "[parameters('cosmosDbEndpoint')]",
+        "Key": "[parameters('cosmosDbKey')]",
+        "CustomerCollectionId": "customers",
+        "CustomerDatabaseId": "customers",
+        "KeyName": "[parameters('serviceBusAccessKeyName')]",
+        "AccessKey": "[parameters('serviceBusAccessKey')]",
+        "BaseAddress": "[parameters('serviceBusBaseAddress')]",
+        "QueueName": "[parameters('serviceBusQueueName')]",
+        "CustomerSearchIndexName": "customer-search-index-v2",
+        "SearchServiceName": "[parameters('SearchServiceName')]",
+        "SearchServiceAdminApiKey": "[parameters('SearchServiceAdminApiKey')]",
+        "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
+        "DigitalIdentityDatabaseId": "digitalidentities",
+        "DigitalIdentityCollectionId": "digitalidentities"
       },
       "copy": {
-        "name": "FunctionAppCopy",
+        "name": "FunctionAppSettingsCopy",
+        "count": "[length(parameters('functionAppNames'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2023-12-01",
+      "name": "[format('{0}/{1}', parameters('functionAppNames'), 'connectionstrings')]",
+      "properties": {},
+      "copy": {
+        "name": "FunctionConnectionStringsCopy",
         "count": "[length(parameters('functionAppNames'))]"
       }
     }
