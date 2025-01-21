@@ -128,7 +128,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (errors != null && errors.Any())
             {
                 _logger.LogError("Validation for {ContactDetailsPost} object has failed", nameof(contactDetailsPostRequest));
-                return new UnprocessableEntityObjectResult("Validation errors present with the resource:\n" + errors);
+                return new UnprocessableEntityObjectResult(errors);
             }
 
             _logger.LogInformation("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
