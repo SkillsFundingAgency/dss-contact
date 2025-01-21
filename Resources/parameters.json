@@ -1,48 +1,57 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "environmentName": {
-            "value": "__NotTokenised__"
-        },
-        "functionAppNames": {
-            "value": "__NotTokenised__"
-        },
-        "cosmosDbCollectionId": {
-            "value": "__DatabaseName__"
-        },
-        "cosmosDbDatabaseId": {
-            "value": "__DatabaseName__"
-        },
-        "cosmosDbEndpoint": {
-            "value": "__CosmosDbEndpoint__"
-        },
-        "cosmosDbKey": {
-            "value": "__CosmosDbKey__"
-        },
-        "CosmosDbConnectionString": {
-            "value": "__CosmosDbConnectionString__"
-        },
-        "serviceBusAccessKey": {
-            "value": "__serviceBusAccessKey__"
-        },
-        "serviceBusAccessKeyName": {
-            "value": "__serviceBusAccessKeyName__"
-        },
-        "serviceBusBaseAddress": {
-            "value": "__serviceBusBaseAddress__"
-        },
-        "serviceBusQueueName": {
-            "value": "__serviceBusQueueName__"
-        },
-        "SearchServiceName": {
-            "value": "__SearchServiceName__"
-        },
-        "SearchServiceAdminApiKey": {
-            "value": "__SearchServiceAdminApiKey__"
-        },
-        "appInsightsInstrumentationKey": {
-            "value": "__appInsightsInstrumentationKey__" 
-        }
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templateBaseUrl": {
+      "value": "__NestedArmTemplateBaseUrl__"
+    },
+    "environmentName": {
+      "value": "__NotTokenised__"
+    },
+    "functionAppNames": {
+      "value": "__NotTokenised__"
+    },
+    "sharedAppServicePlanName": {
+      "value": "__SharedAppServicePlanName__"
+    },
+    "sharedAppServicePlanResourceGroup": {
+      "value": "__SharedAppServicePlanResourceGroup__"
+    },
+    "cosmosDbCollectionId": {
+      "value": "__DatabaseName__"
+    },
+    "cosmosDbDatabaseId": {
+      "value": "__DatabaseName__"
+    },
+    "cosmosDbEndpoint": {
+      "value": "__CosmosDbEndpoint__"
+    },
+    "cosmosDbKey": {
+      "value": "__CosmosDbKey__"
+    },
+    "CosmosDbConnectionString": {
+      "value": "__CosmosDbConnectionString__"
+    },
+    "serviceBusAccessKey": {
+      "value": "__serviceBusAccessKey__"
+    },
+    "serviceBusAccessKeyName": {
+      "value": "__serviceBusAccessKeyName__"
+    },
+    "serviceBusBaseAddress": {
+      "value": "__serviceBusBaseAddress__"
+    },
+    "serviceBusQueueName": {
+      "value": "__serviceBusQueueName__"
+    },
+    "SearchServiceName": {
+      "value": "__SearchServiceName__"
+    },
+    "SearchServiceAdminApiKey": {
+      "value": "__SearchServiceAdminApiKey__"
+    },
+    "appInsightsInstrumentationKey": {
+      "value": "__appInsightsInstrumentationKey__"
     }
+  }
 }
