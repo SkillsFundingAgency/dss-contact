@@ -100,13 +100,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult($"Unable to parse {customerId} into a guid,");
+                return new BadRequestObjectResult($"Unable to parse {customerId} into a guid.");
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
                 _logger.LogError("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
-                return new BadRequestObjectResult($"Unable to parse {contactId} into a GUID.");
+                return new BadRequestObjectResult($"Unable to parse {contactId} into a guid.");
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -126,7 +126,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (contactDetailsPatchRequest == null)
                 {
                     _logger.LogError("Unable to retrieve contact details from request data. {ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
-                    return new UnprocessableEntityObjectResult($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+                    return new UnprocessableEntityObjectResult($"Contact details in request body are NULL. Please add data to request body.");
                 }
 
                 contactDetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
@@ -224,7 +224,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                         }
 
                         errors.Add(new ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string> { "EmailAddress" }));
-                        return new UnprocessableEntityObjectResult("Validation errors caught after retrieving digitial identity:\n " + errors);
+                        return new UnprocessableEntityObjectResult("Email Address cannot be removed because it is associated with a Digital Account");
                     }
 
                     if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactDetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
