@@ -100,13 +100,15 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult(("Unable to parse {CustomerId} into a guid.", customerId));
+                var message = string.Format("Unable to parse {CustomerId} into a guid.", customerId);
+                return new BadRequestObjectResult(message);
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
                 _logger.LogError("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
-                return new BadRequestObjectResult(("Unable to parse {ContactId} into a guid.", contactId));
+                var message = string.Format("Unable to parse {ContactId} into a guid.", contactId);
+                return new BadRequestObjectResult(message);
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -120,7 +122,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
-                    return new UnprocessableEntityObjectResult("JsonException caught. Unable to process request" + _convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
+                    var message = string.Format("Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                    return new UnprocessableEntityObjectResult(message);
                 }
 
                 if (contactDetailsPatchRequest == null)
@@ -137,7 +140,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (!doesCustomerExist)
                 {
                     _logger.LogError("No customer with ID {CustomerGuid} exists", customerGuid);
-                    return new NotFoundObjectResult(("No customer with ID [{CustomerGuid}]", customerGuid));
+                    var message = string.Format("No customer with ID [{CustomerGuid}]", customerGuid);
+                    return new NotFoundObjectResult(message);
                 }
 
                 _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -148,7 +152,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (isCustomerReadOnly)
                 {
                     _logger.LogError("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
-                    return new ObjectResult(("Customer with ID [{CustomerGuid}] is read only, operation forbidden.", customerGuid))
+                    var message = string.Format("Customer with ID [{CustomerGuid}] is read only, operation forbidden.", customerGuid);
+                    return new ObjectResult(message)
                     {
                         StatusCode = (int)HttpStatusCode.Forbidden
                     };
@@ -162,7 +167,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (contactdetails == null)
                 {
                     _logger.LogError("No contact with ID {ContactGuid} exist for Customer {CustomerGuid}", contactGuid, customerGuid);
-                    return new NotFoundObjectResult(("No contact with ID [{ContactGuid}]", contactGuid));
+                    var message = string.Format("No contact with ID [{ContactGuid}]", contactGuid);
+                    return new NotFoundObjectResult(message);
                 }
 
                 _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
@@ -198,9 +204,10 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                                 _logger.LogError(
                                     "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                     contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
-                                //if a customer that has the same email address is not readonly (has date of termination)
-                                //then email address on the request cannot be used.
-                                return new ConflictObjectResult(("Email address already in use by another customer (id: {CustomerId}).", contact.CustomerId));
+                            //if a customer that has the same email address is not readonly (has date of termination)
+                            //then email address on the request cannot be used.
+                                var message = string.Format("Email address already in use by another customer (id: {CustomerId}).", contact.CustomerId);
+                                return new ConflictObjectResult(message);
                             }
                         }
                     }
@@ -242,7 +249,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     _logger.LogError("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                     _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
-                    return new BadRequestObjectResult(("Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.", contactGuid));
+                    var message = string.Format("Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.", contactGuid);
+                    return new BadRequestObjectResult(message);
                 }
 
                 _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
