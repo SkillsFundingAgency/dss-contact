@@ -98,7 +98,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
+                return new BadRequestObjectResult(("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}.", customerId));
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -111,13 +111,13 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             catch (JsonException ex)
             {
                 _logger.LogError(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
-                return new UnprocessableEntityObjectResult($"Json exception. Unable to retrieve request body." + _convertToDynamic.ExcludeProperty(ex, ["TargetSite"]));
+                return new UnprocessableEntityObjectResult(("Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message));
             }
 
             if (contactDetailsPostRequest == null)
             {
                 _logger.LogError("Unable to retrieve contact details from request data. {ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
-                return new UnprocessableEntityObjectResult($"Unable to retrieve contact details from request data. Contact details returned from database are NULL");
+                return new UnprocessableEntityObjectResult("Unable to retrieve contact details from request data. Contact details returned from database are NULL");
             }
 
             contactDetailsPostRequest.SetIds(customerGuid, touchpointId);
@@ -139,7 +139,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
-                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
+                return new NotFoundObjectResult(("Customer ({CustomerGuid}) does not exist.", customerGuid));
             }
 
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -150,7 +150,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             if (isCustomerReadOnly)
             {
                 _logger.LogError("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
-                return new ObjectResult($"Customer ({customerGuid}) is read-only")
+                return new ObjectResult(("Customer ({CustomerGuid}) is read-only", customerGuid))
                 {
                     StatusCode = (int)HttpStatusCode.Forbidden
                 };
@@ -163,8 +163,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (doesContactDetailsExist)
             {
-                _logger.LogError($"Contact details already exist for customer ({customerGuid})");
-                return new ConflictObjectResult($"Contact details already exist for customer ({customerGuid})");
+                _logger.LogError("Contact details already exist for customer ({CustomerGuid})", customerGuid);
+                return new ConflictObjectResult(("Contact details already exist for customer ({CustomerGuid})", customerGuid));
             }
 
             _logger.LogInformation("ContactDetails does not already exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
@@ -198,8 +198,8 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            _logger.LogError($"The email address {contactDetailsPostRequest.EmailAddress} cannot be used because it's being used by another customer.");
-                            return new ConflictObjectResult($"The email address {contactDetailsPostRequest.EmailAddress} cannot be used because it's being used by another customer.");
+                            _logger.LogError("The email address {EmailAddress} cannot be used because it's being used by another customer.", contactDetailsPostRequest.EmailAddress);
+                            return new ConflictObjectResult(("The email address {EmailAddress} cannot be used because it's being used by another customer.", contactDetailsPostRequest.EmailAddress));
                         }
                     }
                 }
@@ -219,7 +219,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 _logger.LogError("POST request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                 _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactDetailsHttpTrigger));
 
-                return new BadRequestObjectResult($"Failed to POST contact details to Cosmos DB for customer {customerGuid}. Contact details are NULL after creation attempt.");
+                return new BadRequestObjectResult(("Failed to POST contact details to Cosmos DB for customer {CustomerGuid}. Contact details are NULL after creation attempt.", customerGuid));
             }
 
             _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, contactDetails.ContactId.GetValueOrDefault());

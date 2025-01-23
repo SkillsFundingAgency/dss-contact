@@ -100,13 +100,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult($"Unable to parse {customerId} into a guid.");
+                return new BadRequestObjectResult(("Unable to parse {CustomerId} into a guid.", customerId));
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
                 _logger.LogError("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
-                return new BadRequestObjectResult($"Unable to parse {contactId} into a guid.");
+                return new BadRequestObjectResult(("Unable to parse {ContactId} into a guid.", contactId));
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -126,7 +126,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (contactDetailsPatchRequest == null)
                 {
                     _logger.LogError("Unable to retrieve contact details from request data. {ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
-                    return new UnprocessableEntityObjectResult($"Contact details in request body are NULL. Please add data to request body.");
+                    return new UnprocessableEntityObjectResult("Contact details in request body are NULL. Please add data to request body.");
                 }
 
                 contactDetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
@@ -136,8 +136,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
                 if (!doesCustomerExist)
                 {
-                    _logger.LogError($"No customer with ID {customerGuid} exists");
-                    return new NotFoundObjectResult($"No customer with ID [{customerGuid}]");
+                    _logger.LogError("No customer with ID {CustomerGuid} exists", customerGuid);
+                    return new NotFoundObjectResult(("No customer with ID [{CustomerGuid}]", customerGuid));
                 }
 
                 _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -148,7 +148,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (isCustomerReadOnly)
                 {
                     _logger.LogError("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
-                    return new ObjectResult($"Customer with ID [{customerGuid}] is read only, operation forbidden.")
+                    return new ObjectResult(("Customer with ID [{CustomerGuid}] is read only, operation forbidden.", customerGuid))
                     {
                         StatusCode = (int)HttpStatusCode.Forbidden
                     };
@@ -161,8 +161,8 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
                 if (contactdetails == null)
                 {
-                    _logger.LogError($"No contact with ID {contactGuid} exist for Customer {customerGuid}");
-                    return new NotFoundObjectResult($"No contact with ID [{contactGuid}]");
+                    _logger.LogError("No contact with ID {ContactGuid} exist for Customer {CustomerGuid}", contactGuid, customerGuid);
+                    return new NotFoundObjectResult(("No contact with ID [{ContactGuid}]", contactGuid));
                 }
 
                 _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
@@ -200,7 +200,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                                     contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
                                 //if a customer that has the same email address is not readonly (has date of termination)
                                 //then email address on the request cannot be used.
-                                return new ConflictObjectResult($"Email address already in use by another customer (id: {contact.CustomerId}).");
+                                return new ConflictObjectResult(("Email address already in use by another customer (id: {CustomerId}).", contact.CustomerId));
                             }
                         }
                     }
@@ -242,7 +242,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     _logger.LogError("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                     _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
-                    return new BadRequestObjectResult($"Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.");
+                    return new BadRequestObjectResult(("Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.", contactGuid));
                 }
 
                 _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
