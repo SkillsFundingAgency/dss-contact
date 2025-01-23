@@ -52,8 +52,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                var message = string.Format("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}.", customerId);
-                return new BadRequestObjectResult(message);
+                return new BadRequestObjectResult("Unable to parse 'customerId' to a GUID. Customer ID: " + customerId);
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
