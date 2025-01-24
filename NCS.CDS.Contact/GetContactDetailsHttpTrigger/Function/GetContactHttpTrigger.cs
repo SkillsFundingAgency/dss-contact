@@ -72,7 +72,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
             return contact == null
-                ? new NotFoundObjectResult("No contact details found for customer ({customerGuid}).")
+                ? new NotFoundObjectResult($"No contact details found for customer ({customerGuid}).")
                 : new JsonResult(contact, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.OK
