@@ -53,8 +53,7 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogError("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                var message = string.Format("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}.", customerId);
-                return new BadRequestObjectResult(message);
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -65,17 +64,15 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (!doesCustomerExist)
             {
                 _logger.LogError("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
-                var message = string.Format("Customer ({CustomerGuid}) does not exist.", customerGuid);
-                return new NotFoundObjectResult(message);
+                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
 
             _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
-            var failMessage = string.Format("No contact details found for customer ({CustomerGuid}).", customerGuid);
             return contact == null
-                ? new NotFoundObjectResult(failMessage)
+                ? new NotFoundObjectResult("No contact details found for customer ({customerGuid}).")
                 : new JsonResult(contact, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.OK
