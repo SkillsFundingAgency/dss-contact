@@ -11,7 +11,7 @@
     "cosmosDbDatabaseId": {
       "type": "string"
     },
-    "cosmosDbEndpoint": {
+    "CosmosDbEndpoint": {
       "type": "string"
     },
     "cosmosDbKey": {
@@ -58,7 +58,6 @@
         "MSDEPLOY_RENAME_LOCKED_FILES": "1",
         "CollectionId": "[parameters('cosmosDbCollectionId')]",
         "DatabaseId": "[parameters('cosmosDbDatabaseId')]",
-        "Endpoint": "[parameters('cosmosDbEndpoint')]",
         "Key": "[parameters('cosmosDbKey')]",
         "CustomerCollectionId": "customers",
         "CustomerDatabaseId": "customers",
@@ -72,6 +71,7 @@
         "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
         "DigitalIdentityDatabaseId": "digitalidentities",
         "DigitalIdentityCollectionId": "digitalidentities",
+        "CosmosDbEndpoint": "[parameters('CosmosDbEndpoint')]"
       },
       "copy": {
         "name": "FunctionAppSettingsCopy",
