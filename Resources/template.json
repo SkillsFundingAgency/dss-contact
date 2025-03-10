@@ -71,7 +71,7 @@
         "SearchServiceAdminApiKey": "[parameters('SearchServiceAdminApiKey')]",
         "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
         "DigitalIdentityDatabaseId": "digitalidentities",
-        "DigitalIdentityCollectionId": "digitalidentities",
+        "DigitalIdentityCollectionId": "digitalidentities"
       },
       "copy": {
         "name": "FunctionAppSettingsCopy",
