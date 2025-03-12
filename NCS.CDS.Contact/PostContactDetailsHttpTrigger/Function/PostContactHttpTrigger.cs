@@ -139,7 +139,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (!doesCustomerExist)
             {
-                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogWarning("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 

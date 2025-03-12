@@ -105,7 +105,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
-                _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactGuid);
+                _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactId);
                 return new BadRequestObjectResult($"Unable to parse {contactId} into a guid.");
             }
 
@@ -224,6 +224,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                         }
 
                         errors.Add(new ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string> { "EmailAddress" }));
+                        _logger.LogWarning("Email Address cannot be removed because it is associated with a Digital Account");
                         return new UnprocessableEntityObjectResult("Email Address cannot be removed because it is associated with a Digital Account");
                     }
 
