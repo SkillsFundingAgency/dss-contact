@@ -100,13 +100,13 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult($"Unable to parse {customerId} into a guid.");
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. CustomerID: {customerId}");
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
                 _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactId);
-                return new BadRequestObjectResult($"Unable to parse {contactId} into a guid.");
+                return new BadRequestObjectResult($"Unable to parse 'contactId' to a GUID. ContactID: {contactId}");
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -137,7 +137,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (!doesCustomerExist)
                 {
                     _logger.LogWarning("No customer with ID {CustomerGuid} exists", customerGuid);
-                    return new NotFoundObjectResult($"No customer with ID [{customerGuid}]");
+                    return new NotFoundObjectResult($"No customer with ID [{customerGuid}] exists");
                 }
 
                 _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
@@ -162,7 +162,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 if (contactdetails == null)
                 {
                     _logger.LogWarning("No contact with ID {ContactGuid} exist for Customer {CustomerGuid}", contactGuid, customerGuid);
-                    return new NotFoundObjectResult($"No contact with ID [{contactGuid}]");
+                    return new NotFoundObjectResult($"No contact with ID [{contactGuid}] exists for customer with ID [{customerGuid}]");
                 }
 
                 _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
