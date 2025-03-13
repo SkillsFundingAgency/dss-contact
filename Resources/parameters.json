@@ -14,7 +14,7 @@
         "cosmosDbDatabaseId": {
             "value": "__DatabaseName__"
         },
-        "cosmosDbEndpoint": {
+        "CosmosDbEndpoint": {
             "value": "__CosmosDbEndpoint__"
         },
         "cosmosDbKey": {
