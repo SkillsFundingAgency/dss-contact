@@ -43,6 +43,9 @@
     },
     "CosmosDbConnectionString": {
       "type": "string"
+    },
+    "keyVaultName": {
+      "type": "string"
     }
   },
   "resources": [
@@ -68,7 +71,7 @@
         "QueueName": "[parameters('serviceBusQueueName')]",
         "CustomerSearchIndexName": "customer-search-index-v2",
         "SearchServiceName": "[parameters('SearchServiceName')]",
-        "SearchServiceAdminApiKey": "[parameters('SearchServiceAdminApiKey')]",
+        "SearchServiceAdminApiKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedSearchAdminKey)', parameters('keyVaultName'))]",
         "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
         "DigitalIdentityDatabaseId": "digitalidentities",
         "DigitalIdentityCollectionId": "digitalidentities"
