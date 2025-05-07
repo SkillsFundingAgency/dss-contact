@@ -239,6 +239,31 @@ namespace NCS.DSS.Contact.Tests
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
+        [Test]
+        public async Task PatchContactHttpTrigger_ReturnsUnprocessableEntity_WhenEmptyPatchingEmailWithAnAssociatedDigitalEntity()
+        {
+            // Arange
+            _httpRequestMessageHelper.Setup(x => x.GetDssTouchpointId(_request)).Returns("0000000001");
+            _httpRequestMessageHelper.Setup(x => x.GetDssApimUrl(_request)).Returns("http://localhost:7071/");
+            var patch = new ContactDetailsPatch { EmailAddress = "" };
+            _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetailsPatch>(_request)).Returns(Task.FromResult(patch));
+            _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _patchContactHttpTriggerService
+                .Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new ContactDetails { CustomerId = new Guid(ValidCustomerId) }));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new DigitalIdentity { CustomerId = new Guid(ValidCustomerId) }));
+            _patchContactHttpTriggerService.Setup(x => x.UpdateAsync(It.IsAny<ContactDetails>(),
+                    It.IsAny<ContactDetailsPatch>()))
+                .Returns(Task.FromResult(new ContactDetails()));
+
+            // Act
+            var result = await RunFunction(ValidCustomerId, ValidContactId);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<UnprocessableEntityObjectResult>());
+        }
+
 
         [Test]
         public async Task PatchContactHttpTrigger_ReturnsStatusCodeOK_WhenRequestIsValid()
@@ -249,6 +274,8 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetailsPatch>(_request))
                 .Returns(Task.FromResult(_contactDetailsPatch));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult<DigitalIdentity>(null));
             _provider
                 .Setup(x => x.DoesContactDetailsWithEmailExistsForAnotherCustomer(It.IsAny<string>(), It.IsAny<Guid>()))
                 .Returns(Task.FromResult(false));
@@ -278,6 +305,8 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetailsPatch>(_request))
                 .Returns(Task.FromResult(_contactDetailsPatch));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult<DigitalIdentity>(null));
             _patchContactHttpTriggerService
                 .Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(
                     Task.FromResult(new ContactDetails { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
@@ -305,6 +334,8 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetailsPatch>(_request))
                 .Returns(Task.FromResult(_contactDetailsPatch));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult<DigitalIdentity>(null));
             _patchContactHttpTriggerService
                 .Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(
                     Task.FromResult(new ContactDetails { CustomerId = new Guid(ValidCustomerId), EmailAddress = "test@test.com" }));
@@ -335,6 +366,8 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetailsPatch>(_request))
                 .Returns(Task.FromResult(_contactDetailsPatch));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
+            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult<DigitalIdentity>(null));
             _patchContactHttpTriggerService.Setup(x => x.GetContactDetailsForCustomerAsync(It.IsAny<Guid>(),
                     It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new ContactDetails

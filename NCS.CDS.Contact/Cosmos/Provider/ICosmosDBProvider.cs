@@ -15,5 +15,6 @@ namespace NCS.DSS.Contact.Cosmos.Provider
         Task<bool> DoesContactDetailsWithEmailExists(string email);
         Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid customerId);
         Task<IList<ContactDetails>> GetContactsByEmail(string email);
+        Task<DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId);
     }
 }
