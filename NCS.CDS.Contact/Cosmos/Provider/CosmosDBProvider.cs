@@ -10,6 +10,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
     {
         private readonly Container _contactContainer;
         private readonly Container _customerContainer;
+        private readonly Container _digitalIdentityContainer;
         private readonly ILogger<CosmosDBProvider> _logger;
 
         private static readonly PartitionKey PartitionKey = PartitionKey.None;
@@ -23,6 +24,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             _contactContainer = GetContainer(cosmosClient, config.DatabaseId, config.CollectionId);
             _customerContainer = GetContainer(cosmosClient, config.CustomerDatabaseId, config.CustomerCollectionId);
+            _digitalIdentityContainer = GetContainer(cosmosClient, config.DigitalIdentityDatabaseId, config.DigitalIdentityCollectionId);
             _logger = logger;
         }
         private static Container GetContainer(CosmosClient cosmosClient, string databaseId, string collectionId) 
@@ -299,6 +301,44 @@ namespace NCS.DSS.Contact.Cosmos.Provider
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while retrieving ContactDetails using email address. Error message: {ErrorMessage}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<DigitalIdentity> GetIdentityForCustomerAsync(Guid customerId)
+        {
+            _logger.LogInformation("Retrieving digital identity for CustomerId [{CustomerId}]", customerId);
+
+            try
+            {
+                var query = _digitalIdentityContainer.GetItemLinqQueryable<DigitalIdentity>()
+                    .Where(x => x.CustomerId == customerId)
+                    .Take(1)
+                    .ToFeedIterator();
+
+                var response = await query.ReadNextAsync();
+                var digitalIdentity = response.FirstOrDefault();
+
+                if (digitalIdentity != null)
+                {
+                    _logger.LogInformation("Successfully retrieved DigitalIdentity for CustomerId [{CustomerId}]", customerId);
+                }
+                else
+                {
+                    _logger.LogInformation("No DigitalIdentity exists for CustomerId [{CustomerId}]", customerId);
+                }
+
+                return digitalIdentity;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // If a 404 occurs, the resource does not exist
+                _logger.LogInformation("ContactDetail does not exist");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while retrieving DigitalIdentity for CustomerId [{CustomerId}]", customerId);
                 throw;
             }
         }

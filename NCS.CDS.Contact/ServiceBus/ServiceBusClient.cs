@@ -34,7 +34,8 @@ namespace NCS.DSS.Contact.ServiceBus
                     contactDetails.LastModifiedDate,
                     URL = $"{reqUrl}/{contactDetails.ContactId}",
                     IsNewCustomer = false,
-                    TouchpointId = contactDetails.LastModifiedTouchpointId
+                    TouchpointId = contactDetails.LastModifiedTouchpointId,
+                    IsDigitalAccount = contactDetails.IsDigitalAccount ?? null
                 };
 
                 var msg = new ServiceBusMessage(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageModel)))
@@ -72,8 +73,10 @@ namespace NCS.DSS.Contact.ServiceBus
                 contactDetails.FirstName,
                 contactDetails.LastName,
                 ChangeEmailAddress = contactDetails.ChangeEmailAddress ?? null,
+                IsDigitalAccount = contactDetails.IsDigitalAccount ?? null,
                 contactDetails.NewEmail,
-                contactDetails.CurrentEmail
+                contactDetails.CurrentEmail,
+                contactDetails.IdentityStoreId
 
             };
 
