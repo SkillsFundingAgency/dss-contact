@@ -72,9 +72,7 @@
         "CustomerSearchIndexName": "customer-search-index-v2",
         "SearchServiceName": "[parameters('SearchServiceName')]",
         "SearchServiceAdminApiKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedSearchAdminKey)', parameters('keyVaultName'))]",
-        "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
-        "DigitalIdentityDatabaseId": "digitalidentities",
-        "DigitalIdentityCollectionId": "digitalidentities"
+        "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]"
       },
       "copy": {
         "name": "FunctionAppSettingsCopy",
