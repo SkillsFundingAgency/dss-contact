@@ -1,8 +1,10 @@
-﻿namespace NCS.DSS.Contact.Models
+﻿using Newtonsoft.Json;
+
+namespace NCS.DSS.Contact.Models
 {
     public class DigitalIdentity
     {
-        [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
+        [JsonProperty(PropertyName = "id")]
         public Guid? IdentityID { get; set; }
         public Guid? CustomerId { get; set; }
         public Guid? IdentityStoreId { get; set; }

@@ -4,9 +4,9 @@ namespace NCS.DSS.Contact.Cosmos.Helper
 {
     public class ResourceHelper : IResourceHelper
     {
-        private readonly IDocumentDBProvider _documentDbProvider;
+        private readonly ICosmosDBProvider _documentDbProvider;
 
-        public ResourceHelper(IDocumentDBProvider documentDbProvider)
+        public ResourceHelper(ICosmosDBProvider documentDbProvider)
         {
             _documentDbProvider = documentDbProvider;
         }

@@ -1,27 +1,29 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
-using System.Net;
 
 namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 {
     public class PatchContactDetailsHttpTriggerService : IPatchContactDetailsHttpTriggerService
     {
-        private readonly ILogger<PatchContactDetailsHttpTriggerService> logger;
-        private readonly IDocumentDBProvider _documentDbProvider;
+        private readonly ICosmosDBProvider _documentDbProvider;
+        private readonly IServiceBusClient _serviceBusClient;
+        private readonly ILogger<PatchContactDetailsHttpTriggerService> _logger;
 
-        public PatchContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PatchContactDetailsHttpTriggerService> logger)
+        public PatchContactDetailsHttpTriggerService(ICosmosDBProvider documentDbProvider, IServiceBusClient serviceBusClient, ILogger<PatchContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-            this.logger = logger;
+            _serviceBusClient = serviceBusClient;
+            _logger = logger;
         }
 
         public async Task<ContactDetails> UpdateAsync(ContactDetails contactdetails, ContactDetailsPatch contactdetailsPatch)
         {
             if (contactdetails == null)
             {
-                logger.LogInformation($"Contact details do not exist.");
+                _logger.LogInformation("Contact details do not exist.");
                 return null;
             }
 
@@ -44,7 +46,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Service
 
         public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, Guid customerId, string reqUrl)
         {
-            await ServiceBusClient.SendPatchMessageAsync(contactdetails, customerId, reqUrl);
+            await _serviceBusClient.SendPatchMessageAsync(contactdetails, customerId, reqUrl);
         }
     }
 }

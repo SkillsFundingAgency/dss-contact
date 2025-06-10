@@ -1,8 +1,9 @@
-﻿using DFC.Swagger.Standard;
+﻿using System.Reflection;
+using DFC.Swagger.Standard;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using System.Reflection;
+
 namespace NCS.DSS.Contact.APIDefinition
 {
     public class GenerateCustomerSwaggerDoc

@@ -1,26 +1,29 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Net;
+using Microsoft.Extensions.Logging;
 using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.ServiceBus;
-using System.Net;
 
 namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 {
     public class PostContactDetailsHttpTriggerService : IPostContactDetailsHttpTriggerService
     {
 
-        private readonly ILogger<PostContactDetailsHttpTriggerService> logger;
-        private readonly IDocumentDBProvider _documentDbProvider;
+        private readonly ICosmosDBProvider _documentDbProvider;
+        private readonly IServiceBusClient _serviceBusClient;
+        private readonly ILogger<PostContactDetailsHttpTriggerService> _logger;
 
-        public PostContactDetailsHttpTriggerService(IDocumentDBProvider documentDbProvider, ILogger<PostContactDetailsHttpTriggerService> logger)
+
+        public PostContactDetailsHttpTriggerService(ICosmosDBProvider documentDbProvider, IServiceBusClient serviceBusClient, ILogger<PostContactDetailsHttpTriggerService> logger)
         {
             _documentDbProvider = documentDbProvider;
-            this.logger = logger;
+            _serviceBusClient = serviceBusClient;
+            _logger = logger;
         }
 
-        public bool DoesContactDetailsExistForCustomer(Guid customerId)
+        public async Task<bool> DoesContactDetailsExistForCustomer(Guid customerId)
         {
-            var doesContactDetailsExistForCustomer = _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
+            var doesContactDetailsExistForCustomer = await _documentDbProvider.DoesContactDetailsExistForCustomer(customerId);
 
             return doesContactDetailsExistForCustomer;
         }
@@ -34,12 +37,12 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service
 
             var response = await _documentDbProvider.CreateContactDetailsAsync(contactdetails);
 
-            return response.StatusCode == HttpStatusCode.Created ? (dynamic)response.Resource : (Guid?)null;
+            return response.StatusCode == HttpStatusCode.Created ? (dynamic)response.Resource : null;
         }
 
         public async Task SendToServiceBusQueueAsync(ContactDetails contactdetails, string reqUrl)
         {
-            await ServiceBusClient.SendPostMessageAsync(contactdetails, reqUrl);
+            await _serviceBusClient.SendPostMessageAsync(contactdetails, reqUrl);
         }
     }
 }
