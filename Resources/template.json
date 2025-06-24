@@ -72,8 +72,6 @@
         "SearchServiceName": "[parameters('SearchServiceName')]",
         "SearchServiceAdminApiKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedSearchAdminKey)', parameters('keyVaultName'))]",
         "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
-        "DigitalIdentityDatabaseId": "digitalidentities",
-        "DigitalIdentityCollectionId": "digitalidentities",
         "CosmosDbEndpoint": "[parameters('CosmosDbEndpoint')]"
       },
       "copy": {
