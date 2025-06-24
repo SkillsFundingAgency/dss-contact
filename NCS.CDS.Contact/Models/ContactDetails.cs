@@ -66,9 +66,6 @@ namespace NCS.DSS.Contact.Models
 
         [IgnoreDataMember]
         [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public bool? IsDigitalAccount { get; set; }
-        [IgnoreDataMember]
-        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string FirstName { get; private set; }
         [IgnoreDataMember]
         [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -83,10 +80,6 @@ namespace NCS.DSS.Contact.Models
         [IgnoreDataMember]
         [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public string NewEmail { get; private set; }
-        [IgnoreDataMember]
-        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        public Guid? IdentityStoreId { get; private set; }
-
 
         public void SetDefaultValues()
         {
@@ -129,15 +122,6 @@ namespace NCS.DSS.Contact.Models
             if (!string.IsNullOrEmpty(contactdetailsPatch.LastModifiedTouchpointId))
                 LastModifiedTouchpointId = contactdetailsPatch.LastModifiedTouchpointId;
 
-        }
-
-        public void SetDigitalAccountEmailChanged(string newEmail, Guid storeId)
-        {
-            IsDigitalAccount = true;
-            ChangeEmailAddress = true;
-            NewEmail = newEmail;
-            CurrentEmail = EmailAddress;
-            IdentityStoreId = storeId;
         }
     }
 }
