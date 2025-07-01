@@ -188,7 +188,6 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation(
                 "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. Contact Details ID: {ContactDetailsId}",
                 customerGuid, contactDetailsPostRequest.ContactId.GetValueOrDefault());
-
             var contactDetails = await _contactdetailsPostService.CreateAsync(contactDetailsPostRequest);
 
             if (contactDetails == null)

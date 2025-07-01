@@ -11,7 +11,7 @@
     "cosmosDbDatabaseId": {
       "type": "string"
     },
-    "cosmosDbEndpoint": {
+    "CosmosDbEndpoint": {
       "type": "string"
     },
     "cosmosDbKey": {
@@ -43,6 +43,9 @@
     },
     "CosmosDbConnectionString": {
       "type": "string"
+    },
+    "keyVaultName": {
+      "type": "string"
     }
   },
   "resources": [
@@ -58,7 +61,6 @@
         "MSDEPLOY_RENAME_LOCKED_FILES": "1",
         "CollectionId": "[parameters('cosmosDbCollectionId')]",
         "DatabaseId": "[parameters('cosmosDbDatabaseId')]",
-        "Endpoint": "[parameters('cosmosDbEndpoint')]",
         "Key": "[parameters('cosmosDbKey')]",
         "CustomerCollectionId": "customers",
         "CustomerDatabaseId": "customers",
@@ -68,10 +70,9 @@
         "QueueName": "[parameters('serviceBusQueueName')]",
         "CustomerSearchIndexName": "customer-search-index-v2",
         "SearchServiceName": "[parameters('SearchServiceName')]",
-        "SearchServiceAdminApiKey": "[parameters('SearchServiceAdminApiKey')]",
+        "SearchServiceAdminApiKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedSearchAdminKey)', parameters('keyVaultName'))]",
         "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
-        "DigitalIdentityDatabaseId": "digitalidentities",
-        "DigitalIdentityCollectionId": "digitalidentities"
+        "CosmosDbEndpoint": "[parameters('CosmosDbEndpoint')]"
       },
       "copy": {
         "name": "FunctionAppSettingsCopy",

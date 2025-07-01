@@ -295,8 +295,6 @@ namespace NCS.DSS.Contact.Tests
             _httpRequestMessageHelper.Setup(x => x.GetResourceFromRequest<ContactDetails>(_request))
                 .Returns(Task.FromResult(contactDetails));
             _resourceHelper.Setup(x => x.DoesCustomerExist(It.IsAny<Guid>())).Returns(Task.FromResult(true));
-            _provider.Setup(x => x.GetIdentityForCustomerAsync(It.IsAny<Guid>()))
-                .Returns(Task.FromResult<DigitalIdentity>(null));
             _provider.Setup(x => x.GetContactsByEmail(It.IsAny<string>())).Returns(
                 Task.FromResult<IList<ContactDetails>>(new List<ContactDetails> { new ContactDetails() }));
             _provider.Setup(x => x.DoesCustomerHaveATerminationDate(It.IsAny<Guid>())).Returns(Task.FromResult(true));

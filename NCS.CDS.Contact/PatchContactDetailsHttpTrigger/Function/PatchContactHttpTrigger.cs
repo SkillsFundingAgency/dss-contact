@@ -183,34 +183,6 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     _logger.LogWarning("Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}", customerGuid);
                 }
 
-                // Set Digital account properties so that contentenhancer can queue change on digital identity topic.
-                _logger.LogInformation("Attempting to retrieve DigitalIdentity for customer. Customer GUID: {CustomerGuid}", customerGuid);
-                var diaccount = await _provider.GetIdentityForCustomerAsync(contactdetails.CustomerId!.Value);
-                if (diaccount != null)
-                {
-                    _logger.LogInformation(
-                        "Customer has a Digital Identity account. Customer GUID: {CustomerGuid}. Identity Store ID: {IdentityStoreId}",
-                        customerGuid, diaccount.CustomerId.GetValueOrDefault());
-
-                    if (contactDetailsPatchRequest.EmailAddress == string.Empty)
-                    {
-                        if (errors == null)
-                        {
-                            errors = new List<ValidationResult>();
-                        }
-
-                        errors.Add(new ValidationResult("Email Address cannot be removed because it is associated with a Digital Account", new List<string> { "EmailAddress" }));
-                        _logger.LogWarning("Email Address cannot be removed because it is associated with a Digital Account");
-                        return new UnprocessableEntityObjectResult("Email Address cannot be removed because it is associated with a Digital Account");
-                    }
-
-                    if (!string.IsNullOrEmpty(contactdetails.EmailAddress) && !string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress) && contactdetails.EmailAddress?.ToLower() != contactDetailsPatchRequest.EmailAddress?.ToLower() && diaccount.IdentityStoreId.HasValue)
-                    {
-                        _logger.LogInformation("Digital Identity account email address has been changed to email address on the request");
-                        contactdetails.SetDigitalAccountEmailChanged(contactDetailsPatchRequest.EmailAddress?.ToLower(), diaccount.IdentityStoreId.Value);
-                    }
-                }
-
                 _logger.LogInformation("Attempting to PATCH a ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
                 var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactDetailsPatchRequest);
 
