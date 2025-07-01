@@ -1,5 +1,6 @@
 ﻿using DFC.HTTP.Standard;
 using DFC.Swagger.Standard.Annotations;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -9,7 +10,9 @@ using NCS.DSS.Contact.Cosmos.Provider;
 using NCS.DSS.Contact.Models;
 using NCS.DSS.Contact.PostContactDetailsHttpTrigger.Service;
 using NCS.DSS.Contact.Validation;
+using Newtonsoft.Json;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using JsonException = Newtonsoft.Json.JsonException;
 
@@ -58,6 +61,27 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             HttpRequest req, string customerId)
         {
             _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PostContactHttpTrigger));
+
+            string requestBody = null;
+            using (var reader = new StreamReader(req.Body))
+            {
+                requestBody = await reader.ReadToEndAsync();
+            }
+
+            req.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
+
+            if (!string.IsNullOrEmpty(requestBody))
+            {
+                try
+                {
+                    JsonDocument.Parse(requestBody);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Invalid JSON format: {ErrorMessage}", ex.Message);
+                    return new BadRequestObjectResult("The JSON in the request body is in an invalid format.");
+                }
+            }
 
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
@@ -190,6 +214,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             _logger.LogInformation(
                 "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. Contact Details ID: {ContactDetailsId}",
                 customerGuid, contactDetailsPostRequest.ContactId.GetValueOrDefault());
+
             var contactDetails = await _contactdetailsPostService.CreateAsync(contactDetailsPostRequest);
 
             if (contactDetails == null)
