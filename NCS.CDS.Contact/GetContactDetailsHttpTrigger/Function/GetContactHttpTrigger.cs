@@ -32,10 +32,10 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 
         [Function("GET_BY_CUSTOMERID")]
         [Response(HttpStatusCode = (int)HttpStatusCode.OK, Description = "Contact Details Retrieved", ShowSchema = true)]
-        [Response(HttpStatusCode = (int)HttpStatusCode.NoContent, Description = "Resource Does Not Exist", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.BadRequest, Description = "Get request is malformed", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Unauthorized, Description = "API Key unknown or invalid", ShowSchema = false)]
         [Response(HttpStatusCode = (int)HttpStatusCode.Forbidden, Description = "Insufficient Access To This Resource", ShowSchema = false)]
+        [Response(HttpStatusCode = (int)HttpStatusCode.NotFound, Description = "Resource Does Not Exist", ShowSchema = false)]
         [ProducesResponseType(typeof(ContactDetails), 200)]
         public async Task<IActionResult> RunAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/")]
@@ -47,13 +47,13 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
             if (string.IsNullOrEmpty(touchpointId))
             {
                 _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
-                return new BadRequestObjectResult(HttpStatusCode.BadRequest);
+                return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
                 _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
-                return new BadRequestObjectResult(customerGuid);
+                return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
             }
 
             _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
@@ -63,15 +63,21 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
 
             if (!doesCustomerExist)
             {
-                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
-                return new NoContentResult();
+                _logger.LogWarning("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
             _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
 
             _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid);
 
-            if (contact != null)
+            if (contact == null)
+            {
+                _logger.LogWarning("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
+                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactHttpTrigger));
+                return new NotFoundObjectResult($"No contact details found for customer ({customerGuid}).");
+            }
+            else
             {
                 _logger.LogInformation("ContactDetails successfully retrieved. Contact Detail ID: {ContactId}", contact.ContactId.GetValueOrDefault());
                 _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactHttpTrigger));
@@ -80,11 +86,6 @@ namespace NCS.DSS.Contact.GetContactDetailsHttpTrigger.Function
                     StatusCode = (int)HttpStatusCode.OK
                 };
             }
-
-            _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
-            _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactHttpTrigger));
-            return new NoContentResult();
-
         }
     }
 }
