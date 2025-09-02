@@ -14,9 +14,6 @@
     "CosmosDbEndpoint": {
       "type": "string"
     },
-    "cosmosDbKey": {
-      "type": "string"
-    },
     "environmentName": {
       "type": "string"
     },
@@ -41,9 +38,6 @@
     "SearchServiceAdminApiKey": {
       "type": "string"
     },
-    "CosmosDbConnectionString": {
-      "type": "string"
-    },
     "keyVaultName": {
       "type": "string"
     }
@@ -61,7 +55,6 @@
         "MSDEPLOY_RENAME_LOCKED_FILES": "1",
         "CollectionId": "[parameters('cosmosDbCollectionId')]",
         "DatabaseId": "[parameters('cosmosDbDatabaseId')]",
-        "Key": "[parameters('cosmosDbKey')]",
         "CustomerCollectionId": "customers",
         "CustomerDatabaseId": "customers",
         "KeyName": "[parameters('serviceBusAccessKeyName')]",
@@ -71,7 +64,6 @@
         "CustomerSearchIndexName": "customer-search-index-v2",
         "SearchServiceName": "[parameters('SearchServiceName')]",
         "SearchServiceAdminApiKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedSearchAdminKey)', parameters('keyVaultName'))]",
-        "ContactDetailsConnectionString": "[parameters('CosmosDbConnectionString')]",
         "CosmosDbEndpoint": "[parameters('CosmosDbEndpoint')]"
       },
       "copy": {
