@@ -20,9 +20,6 @@
     "functionAppNames": {
       "type": "array"
     },
-    "serviceBusAccessKey": {
-      "type": "string"
-    },
     "serviceBusAccessKeyName": {
       "type": "string"
     },
@@ -58,7 +55,7 @@
         "CustomerCollectionId": "customers",
         "CustomerDatabaseId": "customers",
         "KeyName": "[parameters('serviceBusAccessKeyName')]",
-        "AccessKey": "[parameters('serviceBusAccessKey')]",
+        "AccessKey": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=SharedServiceBusSASManageAccessKey)', parameters('keyVaultName'))]",
         "BaseAddress": "[parameters('serviceBusBaseAddress')]",
         "QueueName": "[parameters('serviceBusQueueName')]",
         "CustomerSearchIndexName": "customer-search-index-v2",
