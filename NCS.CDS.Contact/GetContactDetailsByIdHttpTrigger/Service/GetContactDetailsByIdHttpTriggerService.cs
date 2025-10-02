@@ -16,7 +16,7 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Service
 
         public async Task<ContactDetails> GetContactDetailsForCustomerAsync(Guid customerId, Guid contactId, ILogger<GetContactByIdHttpTrigger> logger)
         {
-            logger.LogInformation("Starting to create Document Collection URI.");
+            logger.LogTrace("Starting to create Document Collection URI.");
             var contactdetails = await _documentDbProvider.GetContactDetailForCustomerAsync(customerId, contactId);
 
             return contactdetails;

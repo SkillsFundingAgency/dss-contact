@@ -59,7 +59,7 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "customers/{customerId}/ContactDetails/")]
             HttpRequest req, string customerId)
         {
-            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PostContactHttpTrigger));
+            _logger.LogTrace("Function {FunctionName} has been invoked", nameof(PostContactHttpTrigger));
 
             string requestBody = null;
             using (var reader = new StreamReader(req.Body))
@@ -85,24 +85,24 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(apimURL))
             {
-                _logger.LogWarning("Unable to locate 'apimurl' in request header");
+                _logger.LogInformation("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult("Unable to locate 'apimurl' in request header");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}.");
             }
 
-            _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
+            _logger.LogTrace("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
 
             ContactDetails contactDetailsPostRequest;
             try
@@ -111,19 +111,19 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
             }
             catch (JsonException ex)
             {
-                _logger.LogWarning(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                _logger.LogError(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
                 return new UnprocessableEntityObjectResult($"Json exception caught. Unable to parse ContactDetails from request body. Exception: {ex.Message}");
             }
 
             if (contactDetailsPostRequest == null)
             {
-                _logger.LogWarning("Unable to retrieve contact details from request data. {ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
+                _logger.LogInformation("Unable to retrieve contact details from request data. {ContactDetailsPost} object is NULL", nameof(contactDetailsPostRequest));
                 return new UnprocessableEntityObjectResult("Unable to retrieve contact details from request data. Contact details returned from database are NULL");
             }
 
             contactDetailsPostRequest.SetIds(customerGuid, touchpointId);
 
-            _logger.LogInformation("Attempting to validate {ContactDetailsPost} object", nameof(contactDetailsPostRequest));
+            _logger.LogTrace("Attempting to validate {ContactDetailsPost} object", nameof(contactDetailsPostRequest));
             var errors = _validate.ValidateResource(contactDetailsPostRequest, null, true);
 
             if (errors != null && errors.Any())
@@ -132,84 +132,87 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
                 return new UnprocessableEntityObjectResult(errors);
             }
 
-            _logger.LogInformation("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
+            _logger.LogTrace("Validation for {ContactDetailsPost} object has passed", nameof(contactDetailsPostRequest));
 
-            _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Attempting to check if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
             if (!doesCustomerExist)
             {
-                _logger.LogWarning("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 
-            _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
 
-            _logger.LogInformation("Attempting to check if customer is read only. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Attempting to check if customer is read only. Customer GUID: {CustomerGuid}", customerGuid);
             var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
             if (isCustomerReadOnly)
             {
-                _logger.LogWarning("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
                 return new ObjectResult($"Customer ({customerGuid}) is read-only")
                 {
                     StatusCode = (int)HttpStatusCode.Forbidden
                 };
             }
 
-            _logger.LogInformation("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
 
-            _logger.LogInformation("Attempting to check if customer has ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Attempting to check if customer has ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
             var doesContactDetailsExist = await _contactdetailsPostService.DoesContactDetailsExistForCustomer(customerGuid);
 
             if (doesContactDetailsExist)
             {
-                _logger.LogWarning("Contact details already exist for customer ({CustomerGuid})", customerGuid);
+                _logger.LogInformation("Contact details already exist for customer ({CustomerGuid})", customerGuid);
                 return new ConflictObjectResult($"Contact details already exist for customer ({customerGuid})");
             }
 
-            _logger.LogInformation("ContactDetails does not already exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("ContactDetails does not already exist for Customer. Customer GUID: {CustomerGuid}", customerGuid);
 
             if (!string.IsNullOrEmpty(contactDetailsPostRequest.EmailAddress))
             {
-                _logger.LogInformation(
+                _logger.LogTrace(
                     "Attempting to retrieve ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}",
                     customerGuid);
                 var contacts = await _provider.GetContactsByEmail(contactDetailsPostRequest.EmailAddress);
 
                 if (contacts != null)
                 {
-                    _logger.LogInformation(
+                    _logger.LogTrace(
                         "Customer has ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}",
                         customerGuid);
 
                     foreach (var contact in contacts)
                     {
-                        _logger.LogInformation(
+                        _logger.LogTrace(
                             "Attempting to check if customer has a termination date. Customer ID: {CustomerId}",
                             contact.CustomerId.GetValueOrDefault());
                         var isReadOnly = await _provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
 
                         if (!isReadOnly)
                         {
-                            _logger.LogWarning(
+                            _logger.LogInformation(
                                 "Customer already uses an email address that does not have a termination date." +
                                 " Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                 contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
 
                             //if a customer that has the same email address is not readonly (has date of termination)
                             //then email address on the request cannot be used.
-                            _logger.LogWarning("Email address {EmailAddress} already in use by another customer", contactDetailsPostRequest.EmailAddress);
+                            _logger.LogInformation("Email address {EmailAddress} already in use by another customer", contactDetailsPostRequest.EmailAddress);
                             return new ConflictObjectResult($"The email address {contactDetailsPostRequest.EmailAddress} cannot be used because it's being used by another customer.");
                         }
                     }
                 }
-                _logger.LogWarning(
-                    "Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}",
-                    customerGuid);
+                else
+                {
+                    _logger.LogWarning(
+                        "Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}",
+                        customerGuid);
+                }
             }
 
-            _logger.LogInformation(
+            _logger.LogTrace(
                 "Attempting to POST a ContactDetails. Customer GUID: {CustomerGuid}. Contact Details ID: {ContactDetailsId}",
                 customerGuid, contactDetailsPostRequest.ContactId.GetValueOrDefault());
 
@@ -217,17 +220,15 @@ namespace NCS.DSS.Contact.PostContactDetailsHttpTrigger.Function
 
             if (contactDetails == null)
             {
-                _logger.LogWarning("POST request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
-                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactDetailsHttpTrigger));
-
+                _logger.LogInformation("POST request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                 return new BadRequestObjectResult($"Failed to POST contact details to Cosmos DB for customer {customerGuid}. Contact details are NULL after creation attempt.");
             }
 
-            _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, contactDetails.ContactId.GetValueOrDefault());
+            _logger.LogTrace("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, contactDetails.ContactId.GetValueOrDefault());
             await _contactdetailsPostService.SendToServiceBusQueueAsync(contactDetails, apimURL);
 
-            _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
-            _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
+            _logger.LogTrace("PATCH request successful. Contact Details ID: {ContactDetailsId}", contactDetails.ContactId.GetValueOrDefault());
+            _logger.LogTrace("Function {FunctionName} has finished invoking", nameof(PostContactHttpTrigger));
 
             return new JsonResult(contactDetails, new JsonSerializerOptions())
             {

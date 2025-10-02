@@ -24,13 +24,13 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                 LeaseContainerName = "contacts-leases", CreateLeaseContainerIfNotExists = true)]
             IReadOnlyList<JsonDocument> documents)
         {
-            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
+            _logger.LogTrace("Function {FunctionName} has been invoked", nameof(ContactDataSyncTrigger));
 
             try
             {
                 var indexClient = _searchService.GetSearchClient();
 
-                _logger.LogInformation("Processing {DocumentCount} documents", documents.Count);
+                _logger.LogTrace("Processing {DocumentCount} documents", documents.Count);
 
                 var contactDetails = new List<ContactDetailsSync>();
 
@@ -54,13 +54,13 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                 {
                     var batch = IndexDocumentsBatch.MergeOrUpload(contactDetails);
 
-                    _logger.LogInformation("Merging or uploading document batch for indexing with {DocumentCount} document(s)", contactDetails.Count);
+                    _logger.LogTrace("Merging or uploading document batch for indexing with {DocumentCount} document(s)", contactDetails.Count);
 
                     try
                     {
-                        _logger.LogInformation("Attempting to index {DocumentCount} document(s) to Azure Search", contactDetails.Count);
+                        _logger.LogTrace("Attempting to index {DocumentCount} document(s) to Azure Search", contactDetails.Count);
                         await indexClient.IndexDocumentsAsync(batch);
-                        _logger.LogInformation("Successfully indexed {DocumentCount} document(s) to Azure Search", contactDetails.Count);
+                        _logger.LogTrace("Successfully indexed {DocumentCount} document(s) to Azure Search", contactDetails.Count);
                     }
                     catch (Exception e)
                     {
@@ -72,7 +72,7 @@ namespace NCS.DSS.Contact.AzureSearchDataSyncTrigger
                     _logger.LogInformation("No valid documents to process.");
                 }
 
-                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
+                _logger.LogTrace("Function {FunctionName} has finished invoking", nameof(ContactDataSyncTrigger));
             }
             catch (Exception ex)
             {
