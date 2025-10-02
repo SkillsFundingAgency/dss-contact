@@ -52,7 +52,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesCustomerHaveATerminationDate(Guid customerId)
         {
-            _logger.LogInformation("Checking for termination date. Customer ID: {CustomerId}", customerId);
+            _logger.LogTrace("Checking for termination date. Customer ID: {CustomerId}", customerId);
 
             try
             {
@@ -63,12 +63,11 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 var dateOfTermination = response.Resource?.DateOfTermination;
                 var hasTerminationDate = dateOfTermination != null;
 
-                _logger.LogInformation("Termination date check completed. CustomerId: {CustomerId}. HasTerminationDate: {HasTerminationDate}", customerId, hasTerminationDate);
+                _logger.LogTrace("Termination date check completed. CustomerId: {CustomerId}. HasTerminationDate: {HasTerminationDate}", customerId, hasTerminationDate);
                 return hasTerminationDate;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                // If a 404 occurs, the resource does not exist
                 _logger.LogInformation("Customer does not exist. Customer ID: {CustomerId}", customerId);
                 return false;
             }
@@ -100,7 +99,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId)
         {
-            _logger.LogInformation("Attempting to retrieve ContactDetails. Customer ID: {CustomerId}", customerId);
+            _logger.LogTrace("Attempting to retrieve ContactDetails. Customer ID: {CustomerId}", customerId);
 
             try
             {
@@ -114,7 +113,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
                 if (contactDetail != null)
                 {
-                    _logger.LogInformation("Successfully retrieved ContactDetails. Customer ID: {CustomerId}", customerId);
+                    _logger.LogTrace("Successfully retrieved ContactDetails. Customer ID: {CustomerId}", customerId);
                 }
                 else
                 {
@@ -138,7 +137,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ContactDetails> GetContactDetailForCustomerAsync(Guid customerId, Guid contactDetailsId)
         {
-            _logger.LogInformation("Attempting to retrieve ContactDetails. Customer ID: {CustomerId}. ContactDetails ID: {ContactDetailsId}", customerId, contactDetailsId);
+            _logger.LogTrace("Attempting to retrieve ContactDetails. Customer ID: {CustomerId}. ContactDetails ID: {ContactDetailsId}", customerId, contactDetailsId);
 
             try
             {
@@ -149,7 +148,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 var response = await query.ReadNextAsync();
                 if (response.Any())
                 {
-                    _logger.LogInformation("Successfully retrieved ContactDetails. Customer ID: {CustomerId}. ContactDetails ID: {ContactDetailsId}", customerId, contactDetailsId);
+                    _logger.LogTrace("Successfully retrieved ContactDetails. Customer ID: {CustomerId}. ContactDetails ID: {ContactDetailsId}", customerId, contactDetailsId);
                     return response.FirstOrDefault();
                 }
 
@@ -165,19 +164,19 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<ItemResponse<ContactDetails>> CreateContactDetailsAsync(ContactDetails contactDetails)
         {
-            _logger.LogInformation("Creating ContactDetails. Customer ID: {CustomerId}", contactDetails.CustomerId);
+            _logger.LogTrace("Creating ContactDetails. Customer ID: {CustomerId}", contactDetails.CustomerId);
 
             var response = await _contactContainer.CreateItemAsync(
                 contactDetails,
                 PartitionKey);
 
-            _logger.LogInformation("Finished creating ContactDetails. Customer ID: {CustomerId}", contactDetails.CustomerId);
+            _logger.LogTrace("Finished creating ContactDetails. Customer ID: {CustomerId}", contactDetails.CustomerId);
             return response;
         }
 
         public async Task<ItemResponse<ContactDetails>> UpdateContactDetailsAsync(ContactDetails contactDetails)
         {
-            _logger.LogInformation("Updating ContactDetail. Contact Detail ID: {ContactDetailId}", contactDetails.ContactId);
+            _logger.LogTrace("Updating ContactDetail. Contact Detail ID: {ContactDetailId}", contactDetails.ContactId);
 
             if (contactDetails.ContactId == null)
             {
@@ -187,19 +186,18 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
             try
             {
-                _logger.LogInformation("Attempting to update ContactDetail with ID: {ContactDetailId}", contactDetails.ContactId);
+                _logger.LogTrace("Attempting to update ContactDetail with ID: {ContactDetailId}", contactDetails.ContactId);
 
                 var response = await _contactContainer.ReplaceItemAsync(
                     contactDetails,
                     contactDetails.ContactId.ToString(),
                     PartitionKey);
 
-                _logger.LogInformation("ContactDetail updated successfully. Contact Detail ID: {ContactDetailId}", contactDetails.ContactId);
+                _logger.LogTrace("ContactDetail updated successfully. Contact Detail ID: {ContactDetailId}", contactDetails.ContactId);
                 return response;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                // If a 404 occurs, the resource does not exist
                 _logger.LogInformation("ContactDetail does not exist");
                 return null;
             }
@@ -212,7 +210,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesContactDetailsWithEmailExists(string email)
         {
-            _logger.LogInformation("Checking existence of ContactDetails using customer email address");
+            _logger.LogTrace("Checking existence of ContactDetails using customer email address");
 
             try
             {
@@ -224,12 +222,11 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 var response = await query.ReadNextAsync();
 
                 var exists = response.Any();
-                _logger.LogInformation("ContactDetails existence check using customer email address returned: {Exists}", exists);
+                _logger.LogTrace("ContactDetails existence check using customer email address returned: {Exists}", exists);
                 return exists;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                // If a 404 occurs, the resource does not exist
                 _logger.LogInformation("ContactDetail does not exist");
                 return false;
             }
@@ -242,7 +239,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<bool> DoesContactDetailsWithEmailExistsForAnotherCustomer(string email, Guid customerId)
         {
-            _logger.LogInformation("Checking existence of ContactDetails for another customer using email address");
+            _logger.LogTrace("Checking existence of ContactDetails for another customer using email address");
 
             try
             {
@@ -254,12 +251,11 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                 var response = await query.ReadNextAsync();
 
                 var exists = response.Any();
-                _logger.LogInformation("ContactDetails existence check for another customer using email address returned: {Exists}", exists);
+                _logger.LogTrace("ContactDetails existence check for another customer using email address returned: {Exists}", exists);
                 return exists;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                // If a 404 occurs, the resource does not exist
                 _logger.LogInformation("ContactDetail does not exist");
                 return false;
             }
@@ -272,7 +268,7 @@ namespace NCS.DSS.Contact.Cosmos.Provider
 
         public async Task<IList<ContactDetails>> GetContactsByEmail(string emailAddressToCheck)
         {
-            _logger.LogInformation("Attempting to retreieve ContactDetails using email address");
+            _logger.LogTrace("Attempting to retreieve ContactDetails using email address");
 
             try
             {
@@ -287,12 +283,11 @@ namespace NCS.DSS.Contact.Cosmos.Provider
                     contactDetails.AddRange(response);
                 }
 
-                _logger.LogInformation("Retreieved {Count} ContactDetails using email address", contactDetails.Count);
+                _logger.LogTrace("Retreieved {Count} ContactDetails using email address", contactDetails.Count);
                 return contactDetails;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                // If a 404 occurs, the resource does not exist
                 _logger.LogInformation("ContactDetail does not exist");
                 return null;
             }

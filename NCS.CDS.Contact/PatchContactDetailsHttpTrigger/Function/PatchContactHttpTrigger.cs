@@ -60,7 +60,7 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             HttpRequest req,
             string customerId, string contactId)
         {
-            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
+            _logger.LogTrace("Function {FunctionName} has been invoked", nameof(PatchContactHttpTrigger));
 
             string requestBody = null;
             using (var reader = new StreamReader(req.Body))
@@ -86,30 +86,30 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             var apimURL = _httpRequestMessageHelper.GetDssApimUrl(req);
             if (string.IsNullOrEmpty(apimURL))
             {
-                _logger.LogWarning("Unable to locate 'apimurl' in request header");
+                _logger.LogInformation("Unable to locate 'apimurl' in request header");
                 return new BadRequestObjectResult("Unable to locate 'apimurl' in request header");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. CustomerID: {customerId}");
             }
 
             if (!Guid.TryParse(contactId, out var contactGuid))
             {
-                _logger.LogWarning("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactId);
+                _logger.LogInformation("Unable to parse 'contactId' to a GUID. Contact ID: {ContactId}", contactId);
                 return new BadRequestObjectResult($"Unable to parse 'contactId' to a GUID. ContactID: {contactId}");
             }
 
-            _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
+            _logger.LogTrace("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
 
                 ContactDetailsPatch contactDetailsPatchRequest;
 
@@ -119,55 +119,55 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
+                    _logger.LogError(ex, "Json exception caught. Unable to parse ContactDetails from request body. Exception: {ExceptionMessage}", ex.Message);
                     return new UnprocessableEntityObjectResult($"Json exception caught. Unable to parse ContactDetails from request body. Exception: {ex.Message}");
                 }
 
                 if (contactDetailsPatchRequest == null)
                 {
-                    _logger.LogWarning("Unable to retrieve contact details from request data. {ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
+                    _logger.LogInformation("Unable to retrieve contact details from request data. {ContactDetailsPatch} object is NULL", nameof(contactDetailsPatchRequest));
                     return new UnprocessableEntityObjectResult("Contact details in request body are NULL. Please add data to request body.");
                 }
 
                 contactDetailsPatchRequest.LastModifiedTouchpointId = touchpointId;
 
-                _logger.LogInformation("Attempting to check if customer exists. Customer GUID: {CustomerId}", customerGuid);
+                _logger.LogTrace("Attempting to check if customer exists. Customer GUID: {CustomerId}", customerGuid);
                 var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
                 if (!doesCustomerExist)
                 {
-                    _logger.LogWarning("No customer with ID {CustomerGuid} exists", customerGuid);
+                    _logger.LogInformation("No customer with ID {CustomerGuid} exists", customerGuid);
                     return new NotFoundObjectResult($"No customer with ID [{customerGuid}] exists");
                 }
 
-                _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
 
-                _logger.LogInformation("Attempting to check if customer is read only. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("Attempting to check if customer is read only. Customer GUID: {CustomerGuid}", customerGuid);
                 var isCustomerReadOnly = await _resourceHelper.IsCustomerReadOnly(customerGuid);
 
                 if (isCustomerReadOnly)
                 {
-                    _logger.LogWarning("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
+                    _logger.LogInformation("Customer is read-only. Operation is forbidden. Customer GUID: {CustomerGuid}", customerGuid);
                     return new ObjectResult($"Customer with ID [{customerGuid}] is read only, operation forbidden.")
                     {
                         StatusCode = (int)HttpStatusCode.Forbidden
                     };
                 }
 
-                _logger.LogInformation("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("Customer is not read-only. Customer GUID: {CustomerGuid}", customerGuid);
 
-                _logger.LogInformation("Attempting to retrieve ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("Attempting to retrieve ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
                 var contactdetails = await _contactdetailsPatchService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid);
 
                 if (contactdetails == null)
                 {
-                    _logger.LogWarning("No contact with ID {ContactGuid} exist for Customer {CustomerGuid}", contactGuid, customerGuid);
+                    _logger.LogInformation("No contact with ID {ContactGuid} exist for Customer {CustomerGuid}", contactGuid, customerGuid);
                     return new NotFoundObjectResult($"No contact with ID [{contactGuid}] exists for customer with ID [{customerGuid}]");
                 }
 
-                _logger.LogInformation("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("ContactDetails exists for Customer. Customer GUID: {CustomerGuid}", customerGuid);
 
-                _logger.LogInformation("Attempting to validate {ContactDetailsPatch} object", nameof(contactDetailsPatchRequest));
+                _logger.LogTrace("Attempting to validate {ContactDetailsPatch} object", nameof(contactDetailsPatchRequest));
                 var errors = _validate.ValidateResource(contactDetailsPatchRequest, contactdetails, false);
 
                 if (errors != null && errors.Any())
@@ -176,26 +176,26 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                     return new UnprocessableEntityObjectResult(errors);
                 }
 
-                _logger.LogInformation("Validation for {ContactDetailsPatch} object has passed", nameof(contactDetailsPatchRequest));
+                _logger.LogTrace("Validation for {ContactDetailsPatch} object has passed", nameof(contactDetailsPatchRequest));
 
                 if (!string.IsNullOrEmpty(contactDetailsPatchRequest.EmailAddress))
                 {
-                    _logger.LogInformation("Attempting to retrieve ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
+                    _logger.LogTrace("Attempting to retrieve ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
                     var contacts = await _provider.GetContactsByEmail(contactDetailsPatchRequest.EmailAddress);
                     if (contacts != null)
                     {
-                        _logger.LogInformation("Customer has ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
+                        _logger.LogTrace("Customer has ContactDetails using the email address on the request. Customer GUID: {CustomerGuid}", customerGuid);
 
                         foreach (var contact in contacts)
                         {
-                            _logger.LogInformation(
+                            _logger.LogTrace(
                                 "Attempting to check if customer has a termination date. Customer ID: {CustomerId}",
                                 contact.CustomerId.GetValueOrDefault());
                             var isReadOnly = await _provider.DoesCustomerHaveATerminationDate(contact.CustomerId.GetValueOrDefault());
 
                             if (!isReadOnly && contact.CustomerId != contactdetails.CustomerId)
                             {
-                                _logger.LogWarning(
+                                _logger.LogInformation(
                                     "Customer already uses an email address that does not have a termination date. Email address on the request cannot be used. Customer ID: {CustomerId}. Contact Details ID: {ContactDetailsId}",
                                     contact.CustomerId.GetValueOrDefault(), contact.ContactId.GetValueOrDefault());
                             //if a customer that has the same email address is not readonly (has date of termination)
@@ -204,25 +204,26 @@ namespace NCS.DSS.Contact.PatchContactDetailsHttpTrigger.Function
                             }
                         }
                     }
-                    _logger.LogWarning("Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}", customerGuid);
+                    else
+                    {
+                        _logger.LogInformation("Retrieving ContactDetails using the email address on the request has returned NULL. Customer GUID: {CustomerGuid}", customerGuid);
+                    }
                 }
 
-                _logger.LogInformation("Attempting to PATCH a ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogTrace("Attempting to PATCH a ContactDetails. Customer GUID: {CustomerGuid}", customerGuid);
                 var updatedContactDetails = await _contactdetailsPatchService.UpdateAsync(contactdetails, contactDetailsPatchRequest);
 
                 if (updatedContactDetails == null)
                 {
-                    _logger.LogError("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
-                    _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
-
+                    _logger.LogInformation("PATCH request unsuccessful. Customer GUID: {CustomerGuid}", customerGuid);
                     return new BadRequestObjectResult($"Failed to PATCH contact details {contactGuid} in Cosmos DB. Contact details are NULL after creation attempt.");
                 }
 
-                _logger.LogInformation("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
+                _logger.LogTrace("Sending newly created ContactDetails to service bus. Customer GUID: {CustomerGuid}. Contact Details ID: {contactDetailsId}", customerGuid, updatedContactDetails.ContactId.GetValueOrDefault());
                 await _contactdetailsPatchService.SendToServiceBusQueueAsync(updatedContactDetails, customerGuid, apimURL);
 
-                _logger.LogInformation("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
-                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
+                _logger.LogTrace("PATCH request successful. Contact Details ID: {ContactDetailsId}", updatedContactDetails.ContactId.GetValueOrDefault());
+                _logger.LogTrace("Function {FunctionName} has finished invoking", nameof(PatchContactHttpTrigger));
 
                 return new JsonResult(updatedContactDetails, new JsonSerializerOptions())
                 {

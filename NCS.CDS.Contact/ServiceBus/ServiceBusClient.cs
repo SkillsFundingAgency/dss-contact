@@ -21,7 +21,7 @@ namespace NCS.DSS.Contact.ServiceBus
 
         public async Task SendPostMessageAsync(ContactDetails contactDetails, string reqUrl)
         {
-            _logger.LogInformation(
+            _logger.LogTrace(
                 "Starting {MethodName}. ContactDetailsId: {ContactDetailsId}. CustomerId: {CustomerId}",
                 nameof(SendPostMessageAsync), contactDetails.ContactId, contactDetails.CustomerId);
 
@@ -45,7 +45,7 @@ namespace NCS.DSS.Contact.ServiceBus
 
                 await _serviceBusSender.SendMessageAsync(msg);
 
-                _logger.LogInformation(
+                _logger.LogTrace(
                     "Successfully completed {MethodName}. ContactDetailsId: {ContactDetailsId}. CustomerId: {CustomerId}",
                     nameof(SendPostMessageAsync), contactDetails.ContactId, contactDetails.CustomerId);
             }
