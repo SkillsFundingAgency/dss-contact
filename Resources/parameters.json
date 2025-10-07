@@ -17,9 +17,6 @@
         "CosmosDbEndpoint": {
             "value": "__CosmosDbEndpoint__"
         },
-        "serviceBusAccessKey": {
-            "value": "__serviceBusAccessKey__"
-        },
         "serviceBusAccessKeyName": {
             "value": "__serviceBusAccessKeyName__"
         },
