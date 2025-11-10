@@ -40,46 +40,46 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "customers/{customerId}/ContactDetails/{contactid}")]
             HttpRequest req, string customerId, string contactid)
         {
-            _logger.LogInformation("Function {FunctionName} has been invoked", nameof(GetContactByIdHttpTrigger));
+            _logger.LogTrace("Function {FunctionName} has been invoked", nameof(GetContactByIdHttpTrigger));
 
             var touchpointId = _httpRequestMessageHelper.GetDssTouchpointId(req);
             if (string.IsNullOrEmpty(touchpointId))
             {
-                _logger.LogWarning("Unable to locate 'TouchpointId' in request header.");
+                _logger.LogInformation("Unable to locate 'TouchpointId' in request header.");
                 return new BadRequestObjectResult("Unable to locate 'TouchpointId' in request header.");
             }
 
             if (!Guid.TryParse(customerId, out var customerGuid))
             {
-                _logger.LogWarning("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
+                _logger.LogInformation("Unable to parse 'customerId' to a GUID. Customer ID: {CustomerId}", customerId);
                 return new BadRequestObjectResult($"Unable to parse 'customerId' to a GUID. Customer ID: {customerId}");
             }
 
             if (!Guid.TryParse(contactid, out var contactGuid))
             {
-                _logger.LogWarning("Unable to parse 'contactid' to a GUID. Contact ID: {Contactid}", contactid);
+                _logger.LogInformation("Unable to parse 'contactid' to a GUID. Contact ID: {Contactid}", contactid);
                 return new BadRequestObjectResult($"Unable to parse 'contactId' to a GUID. Contact ID: {contactid}.");
             }
 
-            _logger.LogInformation("Attempting to see if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Attempting to see if customer exists. Customer GUID: {CustomerGuid}", customerGuid);
             var doesCustomerExist = await _resourceHelper.DoesCustomerExist(customerGuid);
 
-            _logger.LogInformation("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
+            _logger.LogTrace("Header validation has succeeded. Touchpoint ID: {TouchpointId}", touchpointId);
 
             if (!doesCustomerExist)
             {
-                _logger.LogWarning("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
+                _logger.LogInformation("Customer does not exist. Customer GUID: {CustomerGuid}", customerGuid);
                 return new NotFoundObjectResult($"Customer ({customerGuid}) does not exist.");
             }
 
-            _logger.LogInformation("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
-            _logger.LogInformation("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Customer exists. Customer GUID: {CustomerGuid}", customerGuid);
+            _logger.LogTrace("Attempting to retrieve ContactDetails for Customer. Customer GUID: {CustomerGuid}", customerGuid);
             var contact = await _getContactDetailsByIdService.GetContactDetailsForCustomerAsync(customerGuid, contactGuid, _logger);
 
             if (contact != null)
             {
-                _logger.LogInformation("ContactDetails successfully retrieved. Contact Detail ID: {ContactId}", contact.ContactId.GetValueOrDefault());
-                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
+                _logger.LogTrace("ContactDetails successfully retrieved. Contact Detail ID: {ContactId}", contact.ContactId.GetValueOrDefault());
+                _logger.LogTrace("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
                 return new JsonResult(contact, new JsonSerializerOptions())
                 {
                     StatusCode = (int)HttpStatusCode.OK
@@ -87,8 +87,8 @@ namespace NCS.DSS.Contact.GetContactDetailsByIdHttpTrigger.Function
             }
             else
             {
-                _logger.LogWarning("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
-                _logger.LogInformation("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
+                _logger.LogInformation("ContactDetails does not exist for Customer. Customer GUID: {CustomerId}", customerGuid);
+                _logger.LogTrace("Function {FunctionName} has finished invoking", nameof(GetContactByIdHttpTrigger));
                 return new NotFoundObjectResult($"Contact details ({contactGuid}) for customer ({customerGuid}) do not exist.");
             }
         }
